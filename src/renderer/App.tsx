@@ -210,7 +210,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     position: 'relative',
     width: '100%',
     height: '500px',
-    padding: '4px',
+    padding: '0',
     background: 'linear-gradient(135deg, #00ffff 0%, #ff00ff 100%)',
     borderRadius: '4px',
     boxShadow: '0 0 30px rgba(0, 255, 255, 0.3), 0 0 60px rgba(255, 0, 255, 0.2)',

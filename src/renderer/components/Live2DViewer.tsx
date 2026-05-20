@@ -89,9 +89,9 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         const modelWidth = model.width;
         const modelHeight = model.height;
 
-        // 计算适合容器的缩放比例（留出一些边距）
-        const scaleX = (containerWidth * 0.8) / modelWidth;
-        const scaleY = (containerHeight * 0.8) / modelHeight;
+        // 计算适合容器的缩放比例（留出少量边距）
+        const scaleX = (containerWidth * 0.95) / modelWidth;
+        const scaleY = (containerHeight * 0.95) / modelHeight;
         const autoScale = Math.min(scaleX, scaleY, scale); // 使用最小值，但不超过指定的最大缩放
 
         model.scale.set(autoScale, autoScale);
@@ -268,6 +268,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       minHeight: '400px',
       background: 'linear-gradient(180deg, #0a0a12 0%, #151525 100%)',
       overflow: 'hidden',
+      margin: '0',
+      padding: '0',
     },
     canvas: {
       width: '100%',
