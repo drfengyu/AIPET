@@ -9,7 +9,12 @@
     "Motions": {
       "Idle": [
         {
-          "File": "Mao/motions/idle.motion3.json"
+          "File": "Mao/motions/mtn_01.motion3.json"
+        }
+      ],
+      "TapBody": [
+        {
+          "File": "Mao/motions/mtn_02.motion3.json"
         }
       ]
     }
@@ -19,14 +24,18 @@
       "Target": "Parameter",
       "Name": "EyeBlink",
       "Ids": [
-        "PARAM_EYE_L_OPEN",
-        "PARAM_EYE_R_OPEN"
+        "ParamEyeLOpen",
+        "ParamEyeROpen"
       ]
     }
   ],
   "HitAreas": [
     {
-      "Id": "HitArea",
+      "Id": "HitAreaHead",
+      "Name": "Head"
+    },
+    {
+      "Id": "HitAreaBody",
       "Name": "Body"
     }
   ]

@@ -9,7 +9,10 @@
     "Motions": {
       "Idle": [
         {
-          "File": "Mark/motions/idle.motion3.json"
+          "File": "Mark/motions/mark_m01.motion3.json"
+        },
+        {
+          "File": "Mark/motions/mark_m02.motion3.json"
         }
       ]
     }
@@ -19,15 +22,10 @@
       "Target": "Parameter",
       "Name": "EyeBlink",
       "Ids": [
-        "PARAM_EYE_L_OPEN",
-        "PARAM_EYE_R_OPEN"
+        "ParamEyeLOpen",
+        "ParamEyeROpen"
       ]
     }
   ],
-  "HitAreas": [
-    {
-      "Id": "HitArea",
-      "Name": "Body"
-    }
-  ]
+  "HitAreas": []
 }
