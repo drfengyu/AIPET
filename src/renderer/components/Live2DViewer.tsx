@@ -66,14 +66,27 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         setCharacterName(modelMap[modelUrl] || 'Haru');
 
         const model = await Live2DModel.from(modelUrl);
-        model.scale.set(scale, scale);
+
+        // 计算自适应缩放比例
+        const containerWidth = app.screen.width;
+        const containerHeight = app.screen.height;
+        const modelWidth = model.width;
+        const modelHeight = model.height;
+
+        // 计算适合容器的缩放比例（留出一些边距）
+        const scaleX = (containerWidth * 0.8) / modelWidth;
+        const scaleY = (containerHeight * 0.8) / modelHeight;
+        const autoScale = Math.min(scaleX, scaleY, scale); // 使用最小值，但不超过指定的最大缩放
+
+        model.scale.set(autoScale, autoScale);
 
         console.log('Model loaded successfully:', model);
         console.log('Model size:', model.width, 'x', model.height);
+        console.log('Auto scale:', autoScale);
 
         // 居中模型
-        model.x = app.screen.width / 2;
-        model.y = app.screen.height / 2;
+        model.x = containerWidth / 2;
+        model.y = containerHeight / 2;
         model.anchor.set(0.5, 0.5);
 
         // 添加到舞台
@@ -225,8 +238,9 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   const styles: { [key: string]: React.CSSProperties } = {
     viewer: {
       position: 'relative',
-      width: '400px',
-      height: '500px',
+      width: '100%',
+      height: '100%',
+      minHeight: '400px',
       background: 'linear-gradient(180deg, #0a0a12 0%, #151525 100%)',
       overflow: 'hidden',
     },
