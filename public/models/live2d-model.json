@@ -3,13 +3,19 @@
   "FileReferences": {
     "Moc": "Haru/Haru.moc3",
     "Textures": [
-      "Haru/Haru.2048/texture_00.png"
+      "Haru/Haru.2048/texture_00.png",
+      "Haru/Haru.2048/texture_01.png"
     ],
     "Physics": "Haru/Haru.physics3.json",
     "Motions": {
       "Idle": [
         {
-          "File": "Haru/motions/idle.motion3.json"
+          "File": "Haru/motions/haru_g_idle.motion3.json"
+        }
+      ],
+      "TapBody": [
+        {
+          "File": "Haru/motions/haru_g_m26.motion3.json"
         }
       ]
     }
@@ -19,14 +25,18 @@
       "Target": "Parameter",
       "Name": "EyeBlink",
       "Ids": [
-        "PARAM_EYE_L_OPEN",
-        "PARAM_EYE_R_OPEN"
+        "ParamEyeLOpen",
+        "ParamEyeROpen"
       ]
     }
   ],
   "HitAreas": [
     {
       "Id": "HitArea",
+      "Name": "Head"
+    },
+    {
+      "Id": "HitArea2",
       "Name": "Body"
     }
   ]

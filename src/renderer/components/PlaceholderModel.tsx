@@ -29,7 +29,7 @@ const PlaceholderModel: React.FC<PlaceholderModelProps> = ({
       });
 
       // 添加到DOM
-      containerRef.current?.appendChild(app.view);
+      containerRef.current?.appendChild(app.view as unknown as Node);
 
       // 创建角色图形
       const character = new PIXI.Graphics();
@@ -94,9 +94,9 @@ const PlaceholderModel: React.FC<PlaceholderModelProps> = ({
       character.filters = [glowFilter];
 
       // 添加交互
-      app.stage.interactive = true;
-      app.stage.on('pointerdown', (event: PIXI.InteractionEvent) => {
-        const position = event.data.global;
+      app.stage.eventMode = 'static';
+      app.stage.on('pointerdown', (event: PIXI.FederatedPointerEvent) => {
+        const position = event.global;
         const dx = position.x - 200;
         const dy = position.y - 180;
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
-import { Live2DModel } from 'pixi-live2d-display/cubism4';
+import { Live2DModel } from 'pixi-live2d-display';
 
 // 注册 Pixi Ticker (必须在使用 Live2DModel 之前调用)
 Live2DModel.registerTicker(PIXI.Ticker);
@@ -65,9 +65,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         };
         setCharacterName(modelMap[modelUrl] || 'Haru');
 
-        const model = await Live2DModel.from(modelUrl, {
-          scale: scale,
-        });
+        const model = await Live2DModel.from(modelUrl);
+        model.scale.set(scale, scale);
 
         console.log('Model loaded successfully:', model);
         console.log('Model size:', model.width, 'x', model.height);
@@ -82,8 +81,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
         // 添加交互 (使用 eventMode 替代 deprecated interactive)
         model.eventMode = 'static';
-        model.on('pointerdown', (event: PIXI.InteractionEvent) => {
-          const position = event.data.global;
+        model.on('pointerdown', (event: PIXI.FederatedPointerEvent) => {
+          const position = event.global;
           const dx = position.x - model.x;
           const dy = position.y - model.y;
 
@@ -183,8 +182,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
         // 添加交互
         app.stage.eventMode = 'static';
-        app.stage.on('pointerdown', (event: PIXI.InteractionEvent) => {
-          const position = event.data.global;
+        app.stage.on('pointerdown', (event: PIXI.FederatedPointerEvent) => {
+          const position = event.global;
           const dx = position.x - 200;
           const dy = position.y - 180;
 
