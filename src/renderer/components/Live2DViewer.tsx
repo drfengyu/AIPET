@@ -33,8 +33,11 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
     if (!containerRef.current) return;
 
     let app: PIXI.Application | null = null;
+    let isMounted = true;
 
     const initCharacter = async () => {
+      if (!isMounted) return;
+
       setIsLoading(true);
       setError(null);
 
@@ -66,6 +69,19 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         setCharacterName(modelMap[modelUrl] || 'Haru');
 
         const model = await Live2DModel.from(modelUrl);
+
+        // 检查组件是否仍然挂载
+        if (!isMounted) return;
+
+        // 检查模型是否成功加载
+        if (!model) {
+          throw new Error('Model failed to load');
+        }
+
+        // 检查 app 是否存在
+        if (!app) {
+          throw new Error('App is null');
+        }
 
         // 计算自适应缩放比例
         const containerWidth = app.screen.width;
@@ -237,6 +253,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
     // 清理函数
     return () => {
+      isMounted = false;
       if (app) {
         app.destroy(true, { children: true, texture: true, baseTexture: true });
       }
