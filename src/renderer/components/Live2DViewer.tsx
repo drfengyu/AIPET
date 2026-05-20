@@ -86,19 +86,19 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
           if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
             // 点击头部 - 触发动画
             try {
-              model.motion('tap_head');
+              model.motion('Idle');
             } catch (e) {
-              console.log('tap_head motion not available');
+              console.log('Idle motion not available');
             }
-            onMotion?.('tap_head');
+            onMotion?.('Idle');
           } else if (Math.abs(dx) < 80 && (dy > 50 && dy < 200)) {
             // 点击身体 - 触发动画
             try {
-              model.motion('tap_body');
+              model.motion('Idle');
             } catch (e) {
-              console.log('tap_body motion not available');
+              console.log('Idle motion not available');
             }
-            onMotion?.('tap_body');
+            onMotion?.('Idle');
           }
         });
 

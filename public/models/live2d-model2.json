@@ -1,26 +1,33 @@
 {
-  "version": "3.0",
-  "model": {
-    "name": "Wanko",
-    "file": "moc/moc3/Wanko.moc3"
+  "Version": 3,
+  "FileReferences": {
+    "Moc": "moc/moc3/Wanko.moc3",
+    "Textures": [
+      "textures/texture_00.png"
+    ],
+    "Physics": "physics/Wanko.physics3.json",
+    "Motions": {
+      "Idle": [
+        {
+          "File": "motions/idle.motion3.json"
+        }
+      ]
+    }
   },
-  "textures": [
-    "textures/texture_00.png"
+  "Groups": [
+    {
+      "Target": "Parameter",
+      "Name": "EyeBlink",
+      "Ids": [
+        "PARAM_EYE_L_OPEN",
+        "PARAM_EYE_R_OPEN"
+      ]
+    }
   ],
-  "motions": {
-    "idle": [
-      {
-        "file": "motions/idle.motion3.json",
-        "fade_in": 500,
-        "fade_out": 500
-      }
-    ]
-  },
-  "physics": {
-    "file": "physics/Wanko.physics3.json"
-  },
-  "display": {
-    "width": 800,
-    "height": 1000
-  }
+  "HitAreas": [
+    {
+      "Id": "HitArea",
+      "Name": "Body"
+    }
+  ]
 }

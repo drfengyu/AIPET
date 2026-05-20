@@ -42,16 +42,16 @@ async function init() {
       if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
         console.log('Click on head');
         try {
-          model.motion('tap_head');
+          model.motion('Idle');
         } catch (e) {
-          console.log('tap_head motion not available:', e);
+          console.log('Idle motion not available:', e);
         }
       } else if (Math.abs(dx) < 80 && (dy > 50 && dy < 200)) {
         console.log('Click on body');
         try {
-          model.motion('tap_body');
+          model.motion('Idle');
         } catch (e) {
-          console.log('tap_body motion not available:', e);
+          console.log('Idle motion not available:', e);
         }
       }
     });
