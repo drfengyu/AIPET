@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
-import { Live2DModel } from 'pixi-live2d-display';
+import { Live2DModel } from 'pixi-live2d-display/cubism4';
 
 // 注册 Pixi Ticker (必须在使用 Live2DModel 之前调用)
 Live2DModel.registerTicker(PIXI.Ticker);
