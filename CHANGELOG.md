@@ -18,6 +18,9 @@
   - 修复 `Unknown settings format` 错误
   - 移除不兼容的 Cubism 2 运行时 (`live2d.min.js`)
   - 修正模型配置格式（textures 数组格式）
+- **测试页面兼容性**
+  - 修复测试页面引用 Cubism 2 运行时的问题
+  - 将测试脚本移到独立文件 `test-live2d.js`
 
 ### 📦 变更
 
