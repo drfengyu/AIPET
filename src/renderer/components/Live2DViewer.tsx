@@ -108,10 +108,10 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         // 添加到舞台
         app.stage.addChild(model);
 
-        // 添加交互 (使用 eventMode 替代 deprecated interactive)
-        model.eventMode = 'static';
-        model.on('pointerdown', (event: PIXI.FederatedPointerEvent) => {
-          const position = event.global;
+        // 添加交互
+        model.interactive = true;
+        model.on('pointerdown', (event: PIXI.InteractionEvent) => {
+          const position = event.data.global;
           const dx = position.x - model.x;
           const dy = position.y - model.y;
 
@@ -218,9 +218,9 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         character.filters = [glowFilter];
 
         // 添加交互
-        app.stage.eventMode = 'static';
-        app.stage.on('pointerdown', (event: PIXI.FederatedPointerEvent) => {
-          const position = event.global;
+        app.stage.interactive = true;
+        app.stage.on('pointerdown', (event: PIXI.InteractionEvent) => {
+          const position = event.data.global;
           const dx = position.x - 200;
           const dy = position.y - 180;
 

@@ -94,9 +94,9 @@ const PlaceholderModel: React.FC<PlaceholderModelProps> = ({
       character.filters = [glowFilter];
 
       // 添加交互
-      app.stage.eventMode = 'static';
-      app.stage.on('pointerdown', (event: PIXI.FederatedPointerEvent) => {
-        const position = event.global;
+      app.stage.interactive = true;
+      app.stage.on('pointerdown', (event: PIXI.InteractionEvent) => {
+        const position = event.data.global;
         const dx = position.x - 200;
         const dy = position.y - 180;
 
