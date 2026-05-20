@@ -1,0 +1,81 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "e:\\Project\\Github\\AIPET"],
+      "env": {}
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": ""
+      }
+    },
+    "sqlite": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sqlite", "e:\\Project\\Github\\AIPET\\data\\chat.db"],
+      "env": {}
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"],
+      "env": {}
+    }
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npx *)",
+      "Bash(yarn *)",
+      "Bash(node *)",
+      "Bash(curl *)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "Glob(*)",
+      "Grep(*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "分析文件路径 $ARGUMENTS.tool_input.file_path，判断应该由哪个角色处理：\n- 前端开发 (src/renderer/, public/): React, TypeScript, Vite, Live2D\n- 后端开发 (src/main/, src/agents/): Electron, Node.js, Express\n- 测试 (src/agents/test-*, *.test.*): 单元测试, 集成测试\n- 部署 (package.json, vite.config.ts): 构建, 打包\n\n返回 JSON: {\"role\": \"角色名称\", \"reason\": \"判断原因\"}"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "分析命令 $ARGUMENTS.tool_input.command，判断应该由哪个角色处理：\n- 前端开发: yarn dev:vite, npx vite\n- 后端开发: yarn dev:electron, node src/\n- 测试: yarn test, npx jest\n- 部署: yarn build, npx electron-builder\n\n返回 JSON: {\"role\": \"角色名称\", \"reason\": \"判断原因\"}"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"分工规则: 文件 $ARGUMENTS.tool_input.file_path 已由前端开发角色处理\" >> .claude/division-log.txt 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"分工规则: 命令已执行\" >> .claude/division-log.txt 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

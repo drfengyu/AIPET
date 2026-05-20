@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live2D Test</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #0a0a0f;
+      font-family: 'Courier New', monospace;
+      color: #00ffff;
+    }
+    #canvas {
+      border: 1px solid #00ffff;
+      margin: 20px 0;
+    }
+    .info {
+      margin: 10px 0;
+      padding: 10px;
+      background: rgba(0, 255, 255, 0.1);
+      border: 1px solid rgba(0, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <h1>Live2D Model Test</h1>
+  <div class="info">
+    <p>Model URL: /models/live2d-model.json</p>
+    <p>Status: <span id="status">Loading...</span></p>
+    <p>Error: <span id="error">None</span></p>
+  </div>
+  <div id="canvas"></div>
+  <div class="info">
+    <p>Controls:</p>
+    <ul>
+      <li>Click on the character to trigger animations</li>
+      <li>Check browser console for logs</li>
+    </ul>
+  </div>
+
+  <script src="/live2d.min.js"></script>
+  <script type="module">
+    import * as PIXI from '/node_modules/.vite/deps/pixi.js?v=317f4272';
+    import { Live2DModel } from '/node_modules/.vite/deps/pixi-live2d-display/cubism4.js?v=317f4272';
+
+    async function init() {
+      const statusEl = document.getElementById('status');
+      const errorEl = document.getElementById('error');
+      const canvasEl = document.getElementById('canvas');
+
+      try {
+        statusEl.textContent = 'Creating PIXI application...';
+
+        const app = new PIXI.Application({
+          width: 400,
+          height: 500,
+          backgroundColor: 0x0a0a12,
+          antialias: true,
+        });
+
+        canvasEl.appendChild(app.view);
+
+        statusEl.textContent = 'Loading Live2D model...';
+
+        const model = await Live2DModel.from('/models/live2d-model.json', {
+          scale: 0.25,
+        });
+
+        console.log('Model loaded:', model);
+        console.log('Model size:', model.width, 'x', model.height);
+
+        model.x = app.screen.width / 2;
+        model.y = app.screen.height / 2;
+        model.anchor.set(0.5, 0.5);
+
+        app.stage.addChild(model);
+
+        model.interactive = true;
+        model.on('pointerdown', (event) => {
+          const position = event.data.global;
+          const dx = position.x - model.x;
+          const dy = position.y - model.y;
+
+          if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
+            console.log('Click on head');
+            try {
+              model.motion('tap_head');
+            } catch (e) {
+              console.log('tap_head motion not available:', e);
+            }
+          } else if (Math.abs(dx) < 80 && (dy > 50 && dy < 200)) {
+            console.log('Click on body');
+            try {
+              model.motion('tap_body');
+            } catch (e) {
+              console.log('tap_body motion not available:', e);
+            }
+          }
+        });
+
+        statusEl.textContent = 'Model loaded successfully!';
+        statusEl.style.color = '#00ff00';
+
+      } catch (err) {
+        console.error('Failed to load model:', err);
+        statusEl.textContent = 'Failed to load model';
+        statusEl.style.color = '#ff0000';
+        errorEl.textContent = err.message || String(err);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
