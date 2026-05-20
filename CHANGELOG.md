@@ -21,6 +21,11 @@
 - **测试页面兼容性**
   - 修复测试页面引用 Cubism 2 运行时的问题
   - 将测试脚本移到独立文件 `test-live2d.js`
+- **模型加载问题**
+  - 注册 Pixi Ticker 以支持 Live2D 模型
+  - 调整模型缩放比例 (0.08) 以适应大尺寸模型
+  - 修复 TypeScript 类型错误
+  - 修正模型配置使用 Cubism 4 标准格式 (FileReferences)
 
 ### 📦 变更
 
