@@ -8,7 +8,7 @@
     "dev:vite": "vite",
     "dev:electron": "wait-on tcp:5187 && electron .",
     "build": "vite build && npm run build:main",
-    "build:main": "tsc src/main/*.ts --outDir dist/main --skipLibCheck",
+    "build:main": "tsc src/main/index.ts src/main/preload.ts --outDir dist/main --skipLibCheck",
     "test": "jest",
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write \"src/**/*.{ts,tsx}\""

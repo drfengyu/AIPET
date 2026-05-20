@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import { Live2DModel } from 'pixi-live2d-display/cubism4';
 
+// 注册 Pixi Ticker (必须在使用 Live2DModel 之前调用)
+Live2DModel.registerTicker(PIXI.Ticker);
+
 interface Live2DViewerProps {
   modelUrl?: string;
   scale?: number;
@@ -10,7 +13,7 @@ interface Live2DViewerProps {
 
 const Live2DViewer: React.FC<Live2DViewerProps> = ({
   modelUrl = '/models/live2d-model.json',
-  scale = 0.25,
+  scale = 0.08, // 调整缩放比例以适应大尺寸模型
   onMotion
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -32,22 +35,23 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
     let app: PIXI.Application | null = null;
 
     const initCharacter = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      // 创建PIXI应用
+      app = new PIXI.Application({
+        width: 400,
+        height: 500,
+        backgroundColor: 0x0a0a12,
+        antialias: true,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true,
+      });
+
+      // 添加到DOM
+      containerRef.current?.appendChild(app.view as unknown as Node);
+
       try {
-        setIsLoading(true);
-        setError(null);
-
-        // 创建PIXI应用
-        app = new PIXI.Application({
-          width: 400,
-          height: 500,
-          backgroundColor: 0x0a0a12,
-          antialias: true,
-          resolution: window.devicePixelRatio || 1,
-          autoDensity: true,
-        });
-
-        // 添加到DOM
-        containerRef.current?.appendChild(app.view);
 
         // 加载真实的Live2D模型
         console.log('Loading Live2D model from:', modelUrl);
@@ -76,8 +80,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         // 添加到舞台
         app.stage.addChild(model);
 
-        // 添加交互
-        model.interactive = true;
+        // 添加交互 (使用 eventMode 替代 deprecated interactive)
+        model.eventMode = 'static';
         model.on('pointerdown', (event: PIXI.InteractionEvent) => {
           const position = event.data.global;
           const dx = position.x - model.x;
@@ -94,11 +98,11 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
           } else if (Math.abs(dx) < 80 && (dy > 50 && dy < 200)) {
             // 点击身体 - 触发动画
             try {
-              model.motion('Idle');
+              model.motion('TapBody');
             } catch (e) {
-              console.log('Idle motion not available');
+              console.log('TapBody motion not available');
             }
-            onMotion?.('Idle');
+            onMotion?.('TapBody');
           }
         });
 
@@ -178,7 +182,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         character.filters = [glowFilter];
 
         // 添加交互
-        app.stage.interactive = true;
+        app.stage.eventMode = 'static';
         app.stage.on('pointerdown', (event: PIXI.InteractionEvent) => {
           const position = event.data.global;
           const dx = position.x - 200;
@@ -200,7 +204,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         // 添加环境光效
         const ambientLight = new PIXI.Graphics();
         ambientLight.beginFill(0x00ffff, 0.1);
-        ambientLight.drawCircle(200, 250, 150);
+        ambientLight.drawCircle(app.screen.width / 2, app.screen.height / 2, 150);
         ambientLight.endFill();
         app.stage.addChildAt(ambientLight, 0);
 

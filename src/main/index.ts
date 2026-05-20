@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
-import path from 'path';
+import * as path from 'path';
 
 // 保持全局引用，防止窗口被垃圾回收时自动关闭
 let mainWindow: BrowserWindow | null = null;
