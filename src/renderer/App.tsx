@@ -55,28 +55,28 @@ function App() {
               onClick={() => setSelectedModel('/models/live2d-model.json')}
             >
               <span style={styles.btnIndicator} />
-              UNIT-01
+              Haru
             </button>
             <button
               style={selectedModel === '/models/live2d-model2.json' ? styles.modelBtnActive : styles.modelBtn}
               onClick={() => setSelectedModel('/models/live2d-model2.json')}
             >
               <span style={styles.btnIndicator} />
-              UNIT-02
+              Hiyori
             </button>
             <button
               style={selectedModel === '/models/live2d-model3.json' ? styles.modelBtnActive : styles.modelBtn}
               onClick={() => setSelectedModel('/models/live2d-model3.json')}
             >
               <span style={styles.btnIndicator} />
-              UNIT-03
+              Mao
             </button>
             <button
               style={selectedModel === '/models/live2d-model4.json' ? styles.modelBtnActive : styles.modelBtn}
               onClick={() => setSelectedModel('/models/live2d-model4.json')}
             >
               <span style={styles.btnIndicator} />
-              UNIT-04
+              Mark
             </button>
           </div>
         </div>

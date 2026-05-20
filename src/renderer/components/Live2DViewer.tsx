@@ -18,12 +18,12 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [characterName, setCharacterName] = useState(() => {
     const modelMap: { [key: string]: string } = {
-      '/models/live2d-model.json': 'UNIT-01',
-      '/models/live2d-model2.json': 'UNIT-02',
-      '/models/live2d-model3.json': 'UNIT-03',
-      '/models/live2d-model4.json': 'UNIT-04',
+      '/models/live2d-model.json': 'Haru',
+      '/models/live2d-model2.json': 'Hiyori',
+      '/models/live2d-model3.json': 'Mao',
+      '/models/live2d-model4.json': 'Mark',
     };
-    return modelMap[modelUrl] || 'UNIT-01';
+    return modelMap[modelUrl] || 'Haru';
   });
 
   useEffect(() => {
@@ -54,12 +54,12 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
         // 更新角色名称
         const modelMap: { [key: string]: string } = {
-          '/models/live2d-model.json': 'UNIT-01',
-          '/models/live2d-model2.json': 'UNIT-02',
-          '/models/live2d-model3.json': 'UNIT-03',
-          '/models/live2d-model4.json': 'UNIT-04',
+          '/models/live2d-model.json': 'Haru',
+          '/models/live2d-model2.json': 'Hiyori',
+          '/models/live2d-model3.json': 'Mao',
+          '/models/live2d-model4.json': 'Mark',
         };
-        setCharacterName(modelMap[modelUrl] || 'UNIT-01');
+        setCharacterName(modelMap[modelUrl] || 'Haru');
 
         const model = await Live2DModel.from(modelUrl, {
           scale: scale,

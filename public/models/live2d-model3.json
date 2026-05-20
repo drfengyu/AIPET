@@ -1,15 +1,15 @@
 {
   "Version": 3,
   "FileReferences": {
-    "Moc": "moc/moc3/Wanko.moc3",
+    "Moc": "Mao/Mao.moc3",
     "Textures": [
-      "textures/texture_00.png"
+      "Mao/Mao.2048/texture_00.png"
     ],
-    "Physics": "physics/Wanko.physics3.json",
+    "Physics": "Mao/Mao.physics3.json",
     "Motions": {
       "Idle": [
         {
-          "File": "motions/idle.motion3.json"
+          "File": "Mao/motions/idle.motion3.json"
         }
       ]
     }

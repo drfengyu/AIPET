@@ -1,15 +1,15 @@
 {
   "Version": 3,
   "FileReferences": {
-    "Moc": "moc/moc3/Wanko.moc3",
+    "Moc": "Haru/Haru.moc3",
     "Textures": [
-      "textures/texture_00.png"
+      "Haru/Haru.2048/texture_00.png"
     ],
-    "Physics": "physics/Wanko.physics3.json",
+    "Physics": "Haru/Haru.physics3.json",
     "Motions": {
       "Idle": [
         {
-          "File": "motions/idle.motion3.json"
+          "File": "Haru/motions/idle.motion3.json"
         }
       ]
     }
