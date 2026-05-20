@@ -131,6 +131,14 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         console.error('Failed to init character:', err);
         console.log('Using placeholder model instead');
 
+        // 确保 app 存在
+        if (!app) {
+          console.error('App is null, cannot create placeholder');
+          setIsLoading(false);
+          setError('无法初始化模型');
+          return;
+        }
+
         // 使用占位符模型
         const character = new PIXI.Graphics();
 
@@ -220,7 +228,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         ambientLight.endFill();
         app.stage.addChildAt(ambientLight, 0);
 
-        setError('使用占位符模型 - 请下载真实 Live2D 模型');
+        setError('使用占位符模型 - 请检查模型文件');
         setIsLoading(false);
       }
     };
