@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { getAIResponse } from '../services/aiService';
 
 interface Message {
   id: string;
@@ -9,9 +10,10 @@ interface Message {
 
 interface ChatWindowProps {
   onSendMessage?: (message: string) => void;
+  onAIResponse?: (emotion: string) => void;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -49,16 +51,38 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage }) => {
 
     onSendMessage?.(inputValue);
 
-    setTimeout(() => {
+    try {
+      // 调用真实 AI 服务
+      const aiResponse = await getAIResponse(inputValue);
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: getAIResponse(inputValue),
+        text: aiResponse.text,
         sender: 'ai',
         timestamp: new Date()
       };
+
       setMessages(prev => [...prev, aiMessage]);
+
+      // 通知父组件情绪变化
+      if (aiResponse.emotion) {
+        onAIResponse?.(aiResponse.emotion);
+      }
+    } catch (error) {
+      console.error('AI response error:', error);
+
+      // 错误时显示默认回复
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: '抱歉，暂时无法连接AI服务。请稍后再试。',
+        sender: 'ai',
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 800 + Math.random() * 600);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -68,16 +92,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage }) => {
     }
   };
 
-  const getAIResponse = (userMessage: string): string => {
-    const responses = [
-      "DATA RECEIVED. PROCESSING NEURAL INPUT...",
-      "ANALYZING PATTERN. GENERATING RESPONSE...",
-      "QUERY LOGGED. INITIATING COGNITIVE SEQUENCE...",
-      "INPUT ACCEPTED. OUTPUT CALCULATED.",
-      "NEURAL NETWORK ACTIVE. RESPONSE READY."
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
 
   const styles: { [key: string]: React.CSSProperties } = {
     chatWindow: {

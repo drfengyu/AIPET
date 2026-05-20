@@ -1,12 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Live2DViewer from './components/Live2DViewer';
 import ChatWindow from './components/ChatWindow';
 import SettingsPanel from './components/SettingsPanel';
+import { getExpressionForEmotion } from './services/aiService';
+
+interface Settings {
+  aiModel: string;
+  aiTemperature: number;
+  useMockAI: boolean;
+  modelScale: number;
+  autoScale: boolean;
+  expressionEnabled: boolean;
+  ttsEnabled: boolean;
+  ttsVoice: string;
+  ttsRate: number;
+  fontSize: number;
+  messageHistory: number;
+  autoReply: boolean;
+  theme: string;
+  soundEnabled: boolean;
+  debugMode: boolean;
+}
 
 function App() {
-  const [selectedModel, setSelectedModel] = useState('/models/live2d-model.json');
+  const [selectedModel, setSelectedModel] = useState('/models/Haru/Haru.model3.json');
   const [chatHistory, setChatHistory] = useState<string[]>([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [currentExpression, setCurrentExpression] = useState('F01');
+  const [settings, setSettings] = useState<Settings | null>(null);
+
+  // 从 localStorage 加载设置
+  useEffect(() => {
+    const saved = localStorage.getItem('aipet-settings');
+    if (saved) {
+      setSettings(JSON.parse(saved));
+    }
+  }, []);
 
   const handleSendMessage = (message: string) => {
     console.log('发送消息:', message);
@@ -15,6 +44,17 @@ function App() {
 
   const handleMotion = (motion: string) => {
     console.log('Live2D动作:', motion);
+  };
+
+  const handleAIResponse = (emotion: string) => {
+    const expression = getExpressionForEmotion(emotion);
+    setCurrentExpression(expression);
+    console.log('AI emotion:', emotion, '-> Expression:', expression);
+  };
+
+  const handleSettingsChange = (newSettings: Settings) => {
+    setSettings(newSettings);
+    console.log('设置已更新:', newSettings);
   };
 
   return (
@@ -45,44 +85,73 @@ function App() {
           <div style={styles.viewerFrame}>
             <Live2DViewer
               modelUrl={selectedModel}
-              scale={0.25}
+              scale={settings?.modelScale || 1.0}
               onMotion={handleMotion}
+              expression={settings?.expressionEnabled ? currentExpression : undefined}
             />
           </div>
           <div style={styles.modelSelector}>
             <button
-              style={selectedModel === '/models/live2d-model.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/live2d-model.json')}
+              style={selectedModel === '/models/Haru/Haru.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('/models/Haru/Haru.model3.json')}
             >
               <span style={styles.btnIndicator} />
               Haru
             </button>
             <button
-              style={selectedModel === '/models/live2d-model2.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/live2d-model2.json')}
+              style={selectedModel === '/models/Hiyori/Hiyori.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('/models/Hiyori/Hiyori.model3.json')}
             >
               <span style={styles.btnIndicator} />
               Hiyori
             </button>
             <button
-              style={selectedModel === '/models/live2d-model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/live2d-model3.json')}
+              style={selectedModel === '/models/Mao/Mao.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('/models/Mao/Mao.model3.json')}
             >
               <span style={styles.btnIndicator} />
               Mao
             </button>
             <button
-              style={selectedModel === '/models/live2d-model4.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/live2d-model4.json')}
+              style={selectedModel === '/models/Mark/Mark.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('/models/Mark/Mark.model3.json')}
             >
               <span style={styles.btnIndicator} />
               Mark
+            </button>
+            <button
+              style={selectedModel === '/models/Natori/Natori.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('/models/Natori/Natori.model3.json')}
+            >
+              <span style={styles.btnIndicator} />
+              Natori
+            </button>
+            <button
+              style={selectedModel === '/models/Ren/Ren.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('/models/Ren/Ren.model3.json')}
+            >
+              <span style={styles.btnIndicator} />
+              Ren
+            </button>
+            <button
+              style={selectedModel === '/models/Rice/Rice.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('/models/Rice/Rice.model3.json')}
+            >
+              <span style={styles.btnIndicator} />
+              Rice
+            </button>
+            <button
+              style={selectedModel === '/models/Wanko/Wanko.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('/models/Wanko/Wanko.model3.json')}
+            >
+              <span style={styles.btnIndicator} />
+              Wanko
             </button>
           </div>
         </div>
 
         <div style={styles.chatSection}>
-          <ChatWindow onSendMessage={handleSendMessage} />
+          <ChatWindow onSendMessage={handleSendMessage} onAIResponse={handleAIResponse} />
         </div>
       </main>
 
@@ -93,7 +162,12 @@ function App() {
         </p>
       </footer>
 
-      {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+      {showSettings && (
+        <SettingsPanel
+          onClose={() => setShowSettings(false)}
+          onSettingsChange={handleSettingsChange}
+        />
+      )}
     </div>
   );
 }

@@ -2,35 +2,95 @@ import React, { useState } from 'react';
 
 interface SettingsPanelProps {
   onClose: () => void;
+  onSettingsChange?: (settings: Settings) => void;
 }
 
 interface Settings {
+  // AI 服务设置
+  aiModel: string;
+  aiTemperature: number;
+  useMockAI: boolean;
+
+  // Live2D 设置
+  modelScale: number;
+  autoScale: boolean;
+  expressionEnabled: boolean;
+
+  // 语音合成设置
+  ttsEnabled: boolean;
+  ttsVoice: string;
+  ttsRate: number;
+
+  // 聊天设置
+  fontSize: number;
+  messageHistory: number;
+  autoReply: boolean;
+
+  // 外观设置
   theme: string;
   soundEnabled: boolean;
-  autoReply: boolean;
-  fontSize: number;
-  language: string;
+
+  // 开发者选项
+  debugMode: boolean;
 }
 
-const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
-  const [settings, setSettings] = useState<Settings>({
-    theme: 'cyberpunk',
-    soundEnabled: true,
-    autoReply: true,
-    fontSize: 14,
-    language: 'zh-CN',
+const DEFAULT_SETTINGS: Settings = {
+  // AI 服务设置
+  aiModel: '@cf/meta/llama-2-7b-chat-int8',
+  aiTemperature: 0.7,
+  useMockAI: false,
+
+  // Live2D 设置
+  modelScale: 1.0,
+  autoScale: true,
+  expressionEnabled: true,
+
+  // 语音合成设置
+  ttsEnabled: false,
+  ttsVoice: 'zh-CN',
+  ttsRate: 1.0,
+
+  // 聊天设置
+  fontSize: 14,
+  messageHistory: 50,
+  autoReply: true,
+
+  // 外观设置
+  theme: 'cyberpunk',
+  soundEnabled: true,
+
+  // 开发者选项
+  debugMode: false,
+};
+
+const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSettingsChange }) => {
+  const [settings, setSettings] = useState<Settings>(() => {
+    // 从 localStorage 加载保存的设置
+    const saved = localStorage.getItem('aipet-settings');
+    return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
   });
 
   const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    const newSettings = { ...settings, [key]: value };
+    setSettings(newSettings);
+    localStorage.setItem('aipet-settings', JSON.stringify(newSettings));
+    onSettingsChange?.(newSettings);
   };
+
+  // 重置为默认设置
+  const resetSettings = () => {
+    setSettings(DEFAULT_SETTINGS);
+    localStorage.setItem('aipet-settings', JSON.stringify(DEFAULT_SETTINGS));
+    onSettingsChange?.(DEFAULT_SETTINGS);
+  };
+
 
   const styles: { [key: string]: React.CSSProperties } = {
     panel: {
       position: 'fixed',
       top: 0,
       right: 0,
-      width: '320px',
+      width: '360px',
       height: '100vh',
       background: 'linear-gradient(180deg, rgba(10, 10, 20, 0.98) 0%, rgba(20, 10, 30, 0.98) 100%)',
       borderLeft: '1px solid rgba(0, 255, 255, 0.3)',
@@ -85,6 +145,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
       color: '#ccc',
       letterSpacing: '1px',
     },
+    settingValue: {
+      fontSize: '11px',
+      color: '#00ffff',
+      marginLeft: '8px',
+    },
     toggle: {
       position: 'relative',
       width: '44px',
@@ -125,6 +190,18 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
       fontFamily: '"Share Tech Mono", monospace',
       cursor: 'pointer',
       outline: 'none',
+      minWidth: '120px',
+    },
+    input: {
+      width: '80px',
+      padding: '6px 10px',
+      background: 'rgba(0, 0, 0, 0.5)',
+      border: '1px solid rgba(0, 255, 255, 0.4)',
+      color: '#00ffff',
+      fontSize: '12px',
+      fontFamily: '"Share Tech Mono", monospace',
+      textAlign: 'center',
+      outline: 'none',
     },
     slider: {
       width: '100%',
@@ -134,6 +211,23 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
       borderRadius: '2px',
       outline: 'none',
       cursor: 'pointer',
+    },
+    sliderContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+    },
+    resetButton: {
+      width: '100%',
+      padding: '10px',
+      background: 'rgba(255, 0, 100, 0.2)',
+      border: '1px solid rgba(255, 0, 100, 0.5)',
+      color: '#ff0066',
+      fontSize: '11px',
+      letterSpacing: '2px',
+      cursor: 'pointer',
+      marginTop: '20px',
+      transition: 'all 0.2s ease',
     },
     versionInfo: {
       marginTop: '32px',
@@ -149,46 +243,189 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
   return (
     <div style={styles.panel}>
       <div style={styles.header}>
-        <h3 style={styles.title}>SETTINGS</h3>
+        <h3 style={styles.title}>设置</h3>
         <button style={styles.closeButton} onClick={onClose}>
-          CLOSE
+          关闭
         </button>
       </div>
 
+      {/* AI 服务设置 */}
       <div style={styles.section}>
-        <h4 style={styles.sectionTitle}>Appearance</h4>
+        <h4 style={styles.sectionTitle}>AI 服务</h4>
         <div style={styles.settingRow}>
-          <span style={styles.settingLabel}>Theme</span>
+          <span style={styles.settingLabel}>AI 模型</span>
+          <select
+            style={styles.select}
+            value={settings.aiModel}
+            onChange={(e) => updateSetting('aiModel', e.target.value)}
+          >
+            <option value="@cf/meta/llama-2-7b-chat-int8">Llama 2 7B</option>
+            <option value="@cf/mistral/mistral-7b-instruct-v0.1">Mistral 7B</option>
+            <option value="@cf/thebloke/discolm-german-7b-v0.1-wizard">Discolm German</option>
+          </select>
+        </div>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>创意度</span>
+          <div style={styles.sliderContainer}>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={settings.aiTemperature}
+              onChange={(e) => updateSetting('aiTemperature', parseFloat(e.target.value))}
+              style={{ ...styles.slider, width: '100px' }}
+            />
+            <span style={styles.settingValue}>{settings.aiTemperature.toFixed(1)}</span>
+          </div>
+        </div>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>模拟模式 (开发)</span>
+          <div
+            style={{ ...styles.toggle, ...(settings.useMockAI ? styles.toggleActive : {}) }}
+            onClick={() => updateSetting('useMockAI', !settings.useMockAI)}
+          >
+            <div style={{ ...styles.toggleKnob, ...(settings.useMockAI ? styles.toggleKnobActive : {}) }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Live2D 设置 */}
+      <div style={styles.section}>
+        <h4 style={styles.sectionTitle}>Live2D 设置</h4>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>模型缩放</span>
+          <div style={styles.sliderContainer}>
+            <input
+              type="range"
+              min="0.5"
+              max="2"
+              step="0.1"
+              value={settings.modelScale}
+              onChange={(e) => updateSetting('modelScale', parseFloat(e.target.value))}
+              style={{ ...styles.slider, width: '100px' }}
+            />
+            <span style={styles.settingValue}>{settings.modelScale.toFixed(1)}x</span>
+          </div>
+        </div>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>自动缩放</span>
+          <div
+            style={{ ...styles.toggle, ...(settings.autoScale ? styles.toggleActive : {}) }}
+            onClick={() => updateSetting('autoScale', !settings.autoScale)}
+          >
+            <div style={{ ...styles.toggleKnob, ...(settings.autoScale ? styles.toggleKnobActive : {}) }} />
+          </div>
+        </div>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>表情切换</span>
+          <div
+            style={{ ...styles.toggle, ...(settings.expressionEnabled ? styles.toggleActive : {}) }}
+            onClick={() => updateSetting('expressionEnabled', !settings.expressionEnabled)}
+          >
+            <div style={{ ...styles.toggleKnob, ...(settings.expressionEnabled ? styles.toggleKnobActive : {}) }} />
+          </div>
+        </div>
+      </div>
+
+      {/* 语音合成设置 */}
+      <div style={styles.section}>
+        <h4 style={styles.sectionTitle}>语音合成</h4>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>启用 TTS</span>
+          <div
+            style={{ ...styles.toggle, ...(settings.ttsEnabled ? styles.toggleActive : {}) }}
+            onClick={() => updateSetting('ttsEnabled', !settings.ttsEnabled)}
+          >
+            <div style={{ ...styles.toggleKnob, ...(settings.ttsEnabled ? styles.toggleKnobActive : {}) }} />
+          </div>
+        </div>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>语音</span>
+          <select
+            style={styles.select}
+            value={settings.ttsVoice}
+            onChange={(e) => updateSetting('ttsVoice', e.target.value)}
+          >
+            <option value="zh-CN">中文 (普通话)</option>
+            <option value="zh-TW">中文 (台湾)</option>
+            <option value="en-US">English (US)</option>
+            <option value="ja-JP">日本語</option>
+          </select>
+        </div>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>语速</span>
+          <div style={styles.sliderContainer}>
+            <input
+              type="range"
+              min="0.5"
+              max="2"
+              step="0.1"
+              value={settings.ttsRate}
+              onChange={(e) => updateSetting('ttsRate', parseFloat(e.target.value))}
+              style={{ ...styles.slider, width: '100px' }}
+            />
+            <span style={styles.settingValue}>{settings.ttsRate.toFixed(1)}x</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 聊天设置 */}
+      <div style={styles.section}>
+        <h4 style={styles.sectionTitle}>聊天设置</h4>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>字体大小</span>
+          <div style={styles.sliderContainer}>
+            <input
+              type="range"
+              min="10"
+              max="20"
+              value={settings.fontSize}
+              onChange={(e) => updateSetting('fontSize', parseInt(e.target.value))}
+              style={{ ...styles.slider, width: '100px' }}
+            />
+            <span style={styles.settingValue}>{settings.fontSize}px</span>
+          </div>
+        </div>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>消息历史</span>
+          <input
+            type="number"
+            style={styles.input}
+            value={settings.messageHistory}
+            onChange={(e) => updateSetting('messageHistory', parseInt(e.target.value) || 50)}
+            min="10"
+            max="500"
+          />
+        </div>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>自动回复</span>
+          <div
+            style={{ ...styles.toggle, ...(settings.autoReply ? styles.toggleActive : {}) }}
+            onClick={() => updateSetting('autoReply', !settings.autoReply)}
+          >
+            <div style={{ ...styles.toggleKnob, ...(settings.autoReply ? styles.toggleKnobActive : {}) }} />
+          </div>
+        </div>
+      </div>
+
+      {/* 外观设置 */}
+      <div style={styles.section}>
+        <h4 style={styles.sectionTitle}>外观设置</h4>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>主题</span>
           <select
             style={styles.select}
             value={settings.theme}
             onChange={(e) => updateSetting('theme', e.target.value)}
           >
-            <option value="cyberpunk">Cyberpunk</option>
-            <option value="minimal">Minimal</option>
-            <option value="dark">Dark</option>
+            <option value="cyberpunk">赛博朋克</option>
+            <option value="minimal">简约</option>
+            <option value="dark">暗黑</option>
           </select>
         </div>
         <div style={styles.settingRow}>
-          <span style={styles.settingLabel}>Font Size</span>
-          <span style={{ ...styles.settingLabel, color: '#00ffff' }}>
-            {settings.fontSize}px
-          </span>
-        </div>
-        <input
-          type="range"
-          min="12"
-          max="18"
-          value={settings.fontSize}
-          onChange={(e) => updateSetting('fontSize', parseInt(e.target.value))}
-          style={styles.slider}
-        />
-      </div>
-
-      <div style={styles.section}>
-        <h4 style={styles.sectionTitle}>Audio</h4>
-        <div style={styles.settingRow}>
-          <span style={styles.settingLabel}>Sound Effects</span>
+          <span style={styles.settingLabel}>音效</span>
           <div
             style={{ ...styles.toggle, ...(settings.soundEnabled ? styles.toggleActive : {}) }}
             onClick={() => updateSetting('soundEnabled', !settings.soundEnabled)}
@@ -198,33 +435,27 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
         </div>
       </div>
 
+      {/* 开发者选项 */}
       <div style={styles.section}>
-        <h4 style={styles.sectionTitle}>Chat</h4>
+        <h4 style={styles.sectionTitle}>开发者选项</h4>
         <div style={styles.settingRow}>
-          <span style={styles.settingLabel}>Auto Reply</span>
+          <span style={styles.settingLabel}>调试模式</span>
           <div
-            style={{ ...styles.toggle, ...(settings.autoReply ? styles.toggleActive : {}) }}
-            onClick={() => updateSetting('autoReply', !settings.autoReply)}
+            style={{ ...styles.toggle, ...(settings.debugMode ? styles.toggleActive : {}) }}
+            onClick={() => updateSetting('debugMode', !settings.debugMode)}
           >
-            <div style={{ ...styles.toggleKnob, ...(settings.autoReply ? styles.toggleKnobActive : {}) }} />
+            <div style={{ ...styles.toggleKnob, ...(settings.debugMode ? styles.toggleKnobActive : {}) }} />
           </div>
-        </div>
-        <div style={styles.settingRow}>
-          <span style={styles.settingLabel}>Language</span>
-          <select
-            style={styles.select}
-            value={settings.language}
-            onChange={(e) => updateSetting('language', e.target.value)}
-          >
-            <option value="zh-CN">中文</option>
-            <option value="en-US">English</option>
-            <option value="ja-JP">日本語</option>
-          </select>
         </div>
       </div>
 
+      {/* 重置按钮 */}
+      <button style={styles.resetButton} onClick={resetSettings}>
+        重置为默认值
+      </button>
+
       <div style={styles.versionInfo}>
-        AIPET v1.0.0 // LIVE2D CHAT INTERFACE
+        AIPET v1.0.0 // LIVE2D 聊天界面
       </div>
     </div>
   );

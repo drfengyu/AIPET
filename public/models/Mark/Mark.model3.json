@@ -19,12 +19,16 @@
 					"File": "motions/mark_m02.motion3.json",
 					"FadeInTime": 0.5,
 					"FadeOutTime": 0.5
-				},
+				}
+			],
+			"TapHead": [
 				{
 					"File": "motions/mark_m03.motion3.json",
-					"FadeInTime": 0.5,
-					"FadeOutTime": 0.5
-				},
+					"FadeInTime": 0.3,
+					"FadeOutTime": 0.3
+				}
+			],
+			"TapBody": [
 				{
 					"File": "motions/mark_m04.motion3.json",
 					"FadeInTime": 0.5,
@@ -34,7 +38,9 @@
 					"File": "motions/mark_m05.motion3.json",
 					"FadeInTime": 0.5,
 					"FadeOutTime": 0.5
-				},
+				}
+			],
+			"Special": [
 				{
 					"File": "motions/mark_m06.motion3.json",
 					"FadeInTime": 0.5,

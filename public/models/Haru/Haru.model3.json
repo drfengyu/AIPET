@@ -56,6 +56,18 @@
 					"FadeOutTime": 0.5
 				}
 			],
+			"TapHead": [
+				{
+					"File": "motions/haru_g_m01.motion3.json",
+					"FadeInTime": 0.3,
+					"FadeOutTime": 0.3
+				},
+				{
+					"File": "motions/haru_g_m02.motion3.json",
+					"FadeInTime": 0.3,
+					"FadeOutTime": 0.3
+				}
+			],
 			"TapBody": [
 				{
 					"File": "motions/haru_g_m26.motion3.json",
@@ -80,6 +92,18 @@
 					"FadeInTime": 0.5,
 					"FadeOutTime": 0.5,
 					"Sound": "sounds/haru_Info_04.wav"
+				}
+			],
+			"Special": [
+				{
+					"File": "motions/haru_g_m10.motion3.json",
+					"FadeInTime": 0.5,
+					"FadeOutTime": 0.5
+				},
+				{
+					"File": "motions/haru_g_m11.motion3.json",
+					"FadeInTime": 0.5,
+					"FadeOutTime": 0.5
 				}
 			]
 		},

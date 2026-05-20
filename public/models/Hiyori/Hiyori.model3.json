@@ -21,14 +21,23 @@
 					"File": "motions/Hiyori_m02.motion3.json",
 					"FadeInTime": 0.5,
 					"FadeOutTime": 0.5
-				},
+				}
+			],
+			"TapHead": [
 				{
 					"File": "motions/Hiyori_m03.motion3.json",
-					"FadeInTime": 0.5,
-					"FadeOutTime": 0.5
+					"FadeInTime": 0.3,
+					"FadeOutTime": 0.3
 				},
 				{
 					"File": "motions/Hiyori_m05.motion3.json",
+					"FadeInTime": 0.3,
+					"FadeOutTime": 0.3
+				}
+			],
+			"TapBody": [
+				{
+					"File": "motions/Hiyori_m04.motion3.json",
 					"FadeInTime": 0.5,
 					"FadeOutTime": 0.5
 				},
@@ -46,7 +55,9 @@
 					"File": "motions/Hiyori_m08.motion3.json",
 					"FadeInTime": 0.5,
 					"FadeOutTime": 0.5
-				},
+				}
+			],
+			"Special": [
 				{
 					"File": "motions/Hiyori_m09.motion3.json",
 					"FadeInTime": 0.5,
@@ -54,13 +65,6 @@
 				},
 				{
 					"File": "motions/Hiyori_m10.motion3.json",
-					"FadeInTime": 0.5,
-					"FadeOutTime": 0.5
-				}
-			],
-			"TapBody": [
-				{
-					"File": "motions/Hiyori_m04.motion3.json",
 					"FadeInTime": 0.5,
 					"FadeOutTime": 0.5
 				}

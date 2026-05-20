@@ -10,21 +10,65 @@
 		"Motions": {
 			"Idle": [
 				{
-					"File": "motions/idle_01.motion3.json"
+					"File": "motions/idle_01.motion3.json",
+					"FadeInTime": 0.5,
+					"FadeOutTime": 0.5
 				},
 				{
-					"File": "motions/idle_03.motion3.json"
+					"File": "motions/idle_03.motion3.json",
+					"FadeInTime": 0.5,
+					"FadeOutTime": 0.5
 				},
 				{
-					"File": "motions/idle_04.motion3.json"
+					"File": "motions/idle_04.motion3.json",
+					"FadeInTime": 0.5,
+					"FadeOutTime": 0.5
+				}
+			],
+			"TapHead": [
+				{
+					"File": "motions/shake_01.motion3.json",
+					"FadeInTime": 0.3,
+					"FadeOutTime": 0.3
+				},
+				{
+					"File": "motions/shake_02.motion3.json",
+					"FadeInTime": 0.3,
+					"FadeOutTime": 0.3
 				}
 			],
 			"TapBody": [
 				{
-					"File": "motions/touch_02.motion3.json"
+					"File": "motions/touch_01.motion3.json",
+					"FadeInTime": 0.5,
+					"FadeOutTime": 0.5
 				},
 				{
-					"File": "motions/touch_04.motion3.json"
+					"File": "motions/touch_02.motion3.json",
+					"FadeInTime": 0.5,
+					"FadeOutTime": 0.5
+				},
+				{
+					"File": "motions/touch_03.motion3.json",
+					"FadeInTime": 0.5,
+					"FadeOutTime": 0.5
+				},
+				{
+					"File": "motions/touch_04.motion3.json",
+					"FadeInTime": 0.5,
+					"FadeOutTime": 0.5
+				}
+			],
+			"Special": [
+				{
+					"File": "motions/touch_05.motion3.json",
+					"FadeInTime": 0.5,
+					"FadeOutTime": 0.5
+				},
+				{
+					"File": "motions/touch_06.motion3.json",
+					"FadeInTime": 0.5,
+					"FadeOutTime": 0.5
 				}
 			]
 		}

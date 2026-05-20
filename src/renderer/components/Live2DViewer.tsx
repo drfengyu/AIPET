@@ -9,22 +9,29 @@ interface Live2DViewerProps {
   modelUrl?: string;
   scale?: number;
   onMotion?: (motion: string) => void;
+  expression?: string; // 表情名称 (如 'F01', 'F02' 等)
 }
 
 const Live2DViewer: React.FC<Live2DViewerProps> = ({
-  modelUrl = '/models/live2d-model.json',
+  modelUrl = '/models/Haru/Haru.model3.json',
   scale = 0.08, // 调整缩放比例以适应大尺寸模型
-  onMotion
+  onMotion,
+  expression
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const modelRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [characterName, setCharacterName] = useState(() => {
     const modelMap: { [key: string]: string } = {
-      '/models/live2d-model.json': 'Haru',
-      '/models/live2d-model2.json': 'Hiyori',
-      '/models/live2d-model3.json': 'Mao',
-      '/models/live2d-model4.json': 'Mark',
+      '/models/Haru/Haru.model3.json': 'Haru',
+      '/models/Hiyori/Hiyori.model3.json': 'Hiyori',
+      '/models/Mao/Mao.model3.json': 'Mao',
+      '/models/Mark/Mark.model3.json': 'Mark',
+      '/models/Natori/Natori.model3.json': 'Natori',
+      '/models/Ren/Ren.model3.json': 'Ren',
+      '/models/Rice/Rice.model3.json': 'Rice',
+      '/models/Wanko/Wanko.model3.json': 'Wanko',
     };
     return modelMap[modelUrl] || 'Haru';
   });
@@ -61,10 +68,14 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
         // 更新角色名称
         const modelMap: { [key: string]: string } = {
-          '/models/live2d-model.json': 'Haru',
-          '/models/live2d-model2.json': 'Hiyori',
-          '/models/live2d-model3.json': 'Mao',
-          '/models/live2d-model4.json': 'Mark',
+          '/models/Haru/Haru.model3.json': 'Haru',
+          '/models/Hiyori/Hiyori.model3.json': 'Hiyori',
+          '/models/Mao/Mao.model3.json': 'Mao',
+          '/models/Mark/Mark.model3.json': 'Mark',
+          '/models/Natori/Natori.model3.json': 'Natori',
+          '/models/Ren/Ren.model3.json': 'Ren',
+          '/models/Rice/Rice.model3.json': 'Rice',
+          '/models/Wanko/Wanko.model3.json': 'Wanko',
         };
         setCharacterName(modelMap[modelUrl] || 'Haru');
 
@@ -108,6 +119,9 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         // 添加到舞台
         app.stage.addChild(model);
 
+        // 保存模型引用
+        modelRef.current = model;
+
         // 添加交互
         model.interactive = true;
         model.on('pointerdown', (event: PIXI.InteractionEvent) => {
@@ -115,16 +129,37 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
           const dx = position.x - model.x;
           const dy = position.y - model.y;
 
-          if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
-            // 点击头部 - 触发动画
+          // 检测双击
+          const currentTime = Date.now();
+          const lastClick = (model as any)._lastClickTime || 0;
+          (model as any)._lastClickTime = currentTime;
+
+          if (currentTime - lastClick < 300) {
+            // 双击 - 触发 Special 动画
             try {
-              model.motion('Idle');
+              model.motion('Special');
             } catch (e) {
-              console.log('Idle motion not available');
+              console.log('Special motion not available');
             }
-            onMotion?.('Idle');
+            onMotion?.('Special');
+            return;
+          }
+
+          if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
+            // 点击头部 - 触发 TapHead 动画
+            try {
+              model.motion('TapHead');
+            } catch (e) {
+              console.log('TapHead motion not available, trying Idle');
+              try {
+                model.motion('Idle');
+              } catch (e2) {
+                console.log('Idle motion not available');
+              }
+            }
+            onMotion?.('TapHead');
           } else if (Math.abs(dx) < 80 && (dy > 50 && dy < 200)) {
-            // 点击身体 - 触发动画
+            // 点击身体 - 触发 TapBody 动画
             try {
               model.motion('TapBody');
             } catch (e) {
@@ -259,6 +294,18 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       }
     };
   }, [modelUrl, scale, onMotion]);
+
+  // 处理表情变化
+  useEffect(() => {
+    if (modelRef.current && expression) {
+      try {
+        modelRef.current.expression(expression);
+        console.log('Expression changed to:', expression);
+      } catch (e) {
+        console.log('Expression not available:', expression);
+      }
+    }
+  }, [expression]);
 
   const styles: { [key: string]: React.CSSProperties } = {
     viewer: {
