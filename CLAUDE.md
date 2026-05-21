@@ -38,6 +38,22 @@ yarn dev:electron
 yarn build
 ```
 
+## 打包命令
+
+```bash
+# 构建应用
+yarn build
+
+# 打包 Windows 目录版（测试用）
+npx electron-builder --win --dir
+
+# 打包 Windows 安装版（需要网络连接）
+npx electron-builder --win
+
+# 打包 Windows 便携版（需要网络连接）
+npx electron-builder --win --portable
+```
+
 ## 访问地址
 
 - **本地**: http://localhost:5174/
