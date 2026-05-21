@@ -24,7 +24,6 @@ interface Settings {
 
 function App() {
   const [selectedModel, setSelectedModel] = useState('/models/Haru/Haru.model3.json');
-  const [chatHistory, setChatHistory] = useState<string[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [currentExpression, setCurrentExpression] = useState('F01');
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -33,17 +32,16 @@ function App() {
   useEffect(() => {
     const saved = localStorage.getItem('aipet-settings');
     if (saved) {
-      setSettings(JSON.parse(saved));
+      try { setSettings(JSON.parse(saved)); } catch { /* ignore */ }
     }
   }, []);
 
-  const handleSendMessage = (message: string) => {
-    console.log('发送消息:', message);
-    setChatHistory(prev => [...prev, message]);
+  const handleSendMessage = (_message: string) => {
+    // ChatWindow handles its own state; this is for future extensibility
   };
 
-  const handleMotion = (motion: string) => {
-    console.log('Live2D动作:', motion);
+  const handleMotion = (_motion: string) => {
+    // 由 Live2DViewer 内部处理
   };
 
   const handleAIResponse = (emotion: string) => {
@@ -152,27 +150,6 @@ function App() {
               <span style={styles.btnIndicator} />
               Natori
             </button>
-            <button
-              style={selectedModel === '/models/Ren/Ren.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/Ren/Ren.model3.json')}
-            >
-              <span style={styles.btnIndicator} />
-              Ren
-            </button>
-            <button
-              style={selectedModel === '/models/Rice/Rice.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/Rice/Rice.model3.json')}
-            >
-              <span style={styles.btnIndicator} />
-              Rice
-            </button>
-            <button
-              style={selectedModel === '/models/Wanko/Wanko.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/Wanko/Wanko.model3.json')}
-            >
-              <span style={styles.btnIndicator} />
-              Wanko
-            </button>
           </div>
         </div>
 
@@ -181,6 +158,9 @@ function App() {
             onSendMessage={handleSendMessage}
             onAIResponse={handleAIResponse}
             ttsEnabled={settings?.ttsEnabled || false}
+            useMockAI={settings?.useMockAI ?? true}
+            fontSize={settings?.fontSize || 13}
+            messageHistory={settings?.messageHistory || 10}
           />
         </div>
       </main>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PIXI Test</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #1a1a2e;
+      font-family: monospace;
+    }
+    #container {
+      width: 400px;
+      height: 500px;
+      border: 2px solid #00ff00;
+      position: relative;
+    }
+    #debug {
+      color: #00ffff;
+      margin-top: 20px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="color: #00ffff;">PIXI.js Test</h1>
+  <div id="container"></div>
+  <div id="debug"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+  <script>
+    const container = document.getElementById('container');
+    const debug = document.getElementById('debug');
+
+    try {
+      // Create PIXI application
+      const app = new PIXI.Application({
+        width: 400,
+        height: 500,
+        backgroundColor: 0x0a0a12,
+        antialias: true,
+      });
+
+      // Add to DOM
+      container.appendChild(app.view);
+      const canvas = app.view;
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.display = 'block';
+
+      debug.innerHTML = `
+        Canvas created: ${canvas.width}x${canvas.height}<br>
+        Container: ${container.clientWidth}x${container.clientHeight}<br>
+        Canvas style: ${canvas.style.cssText}<br>
+        Success: PIXI application is running!
+      `;
+
+      // Add a simple graphic to verify rendering
+      const graphics = new PIXI.Graphics();
+      graphics.beginFill(0x00ffff);
+      graphics.drawCircle(200, 250, 50);
+      graphics.endFill();
+      app.stage.addChild(graphics);
+
+      debug.innerHTML += '<br>Added cyan circle to stage';
+
+    } catch (error) {
+      debug.innerHTML = `Error: ${error.message}<br>${error.stack}`;
+    }
+  </script>
+</body>
+</html>

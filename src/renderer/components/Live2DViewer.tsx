@@ -22,6 +22,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   const modelRef = useRef<Live2DModel | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const idleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [characterName, setCharacterName] = useState(() => {
     const modelMap: { [key: string]: string } = {
       '/models/Haru/Haru.model3.json': 'Haru',
@@ -29,9 +30,6 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       '/models/Mao/Mao.model3.json': 'Mao',
       '/models/Mark/Mark.model3.json': 'Mark',
       '/models/Natori/Natori.model3.json': 'Natori',
-      '/models/Ren/Ren.model3.json': 'Ren',
-      '/models/Rice/Rice.model3.json': 'Rice',
-      '/models/Wanko/Wanko.model3.json': 'Wanko',
     };
     return modelMap[modelUrl] || 'Haru';
   });
@@ -86,16 +84,12 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         console.log('Loading Live2D model from:', modelUrl);
         console.log('PIXI app created, stage children:', app.stage.children.length);
 
-        // 更新角色名称
         const modelMap: { [key: string]: string } = {
           '/models/Haru/Haru.model3.json': 'Haru',
           '/models/Hiyori/Hiyori.model3.json': 'Hiyori',
           '/models/Mao/Mao.model3.json': 'Mao',
           '/models/Mark/Mark.model3.json': 'Mark',
           '/models/Natori/Natori.model3.json': 'Natori',
-          '/models/Ren/Ren.model3.json': 'Ren',
-          '/models/Rice/Rice.model3.json': 'Rice',
-          '/models/Wanko/Wanko.model3.json': 'Wanko',
         };
         setCharacterName(modelMap[modelUrl] || 'Haru');
 
@@ -203,6 +197,15 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         ambientLight.drawCircle(screenWidth / 2, screenHeight / 2, 150);
         ambientLight.endFill();
         app.stage.addChildAt(ambientLight, 0);
+
+        // 空闲动画循环 - 每8-12秒播放一次随机动作
+        const idleMotions = ['Idle', 'TapBody', 'TapHead'];
+        idleTimerRef.current = setInterval(() => {
+          if (modelRef.current) {
+            const randomMotion = idleMotions[Math.floor(Math.random() * idleMotions.length)];
+            try { modelRef.current.motion(randomMotion); } catch { /* ignore */ }
+          }
+        }, 8000 + Math.random() * 4000);
 
         setIsLoading(false);
 
@@ -320,9 +323,26 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
     initCharacter();
 
+    // 窗口大小变化时自动缩放
+    const handleResize = () => {
+      if (!app || !modelRef.current || !containerRef.current) return;
+      const w = containerRef.current.clientWidth;
+      const h = containerRef.current.clientHeight;
+      app.renderer.resize(w, h);
+      const scaleX = (w * 0.95) / modelRef.current.width;
+      const scaleY = (h * 0.95) / modelRef.current.height;
+      const newScale = Math.min(scaleX, scaleY, scale);
+      modelRef.current.scale.set(newScale, newScale);
+      modelRef.current.x = w / 2;
+      modelRef.current.y = h / 2;
+    };
+    window.addEventListener('resize', handleResize);
+
     // 清理函数
     return () => {
       isMounted = false;
+      if (idleTimerRef.current) clearInterval(idleTimerRef.current);
+      window.removeEventListener('resize', handleResize);
       if (app) {
         app.destroy(true, { children: true, texture: true, baseTexture: true });
       }

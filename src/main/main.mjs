@@ -142,7 +142,7 @@ ipcMain.handle('get-system-theme', () => {
 });
 
 // AI 聊天 - 通过主进程直接调用 Cloudflare API (无 CORS 问题，不需要额外代理服务器)
-ipcMain.handle('ai-chat', async (event, message) => {
+ipcMain.handle('ai-chat', async (event, { message, history = [] }) => {
   try {
     const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID;
     const apiToken = process.env.VITE_CLOUDFLARE_API_TOKEN;
@@ -150,6 +150,22 @@ ipcMain.handle('ai-chat', async (event, message) => {
     if (!accountId || !apiToken) {
       return { error: 'Cloudflare credentials not configured' };
     }
+
+    // 构建消息历史
+    const messages = [
+      {
+        role: 'system',
+        content: '你是一个友善的AI助手，运行在赛博朋克风格的Live2D桌面应用中。你的名字是AIPET。请始终用中文回复，语气亲切友好，可以带一些科技感和幽默感。回复要简洁自然，像是朋友间的对话。'
+      },
+      ...history.map((msg: any) => ({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      })),
+      {
+        role: 'user',
+        content: message
+      }
+    ];
 
     const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-3.1-8b-instruct`,
@@ -159,18 +175,7 @@ ipcMain.handle('ai-chat', async (event, message) => {
           'Authorization': `Bearer ${apiToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: '你是一个友善的AI助手，运行在赛博朋克风格的Live2D桌面应用中。你的名字是AIPET。请始终用中文回复，语气亲切友好，可以带一些科技感和幽默感。回复要简洁自然，像是朋友间的对话。'
-            },
-            {
-              role: 'user',
-              content: message
-            }
-          ]
-        })
+        body: JSON.stringify({ messages })
       }
     );
 

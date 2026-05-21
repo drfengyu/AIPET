@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getAIResponse } from '../services/aiService';
+import { getAIResponse, type ChatMessage } from '../services/aiService';
 import { speak, stop, isSupported } from '../services/ttsService';
 
-interface Message {
+export interface Message {
   id: string;
   text: string;
   sender: 'user' | 'ai';
@@ -13,9 +13,12 @@ interface ChatWindowProps {
   onSendMessage?: (message: string) => void;
   onAIResponse?: (emotion: string) => void;
   ttsEnabled?: boolean;
+  useMockAI?: boolean;
+  fontSize?: number;
+  messageHistory?: number; // max history messages to send as context
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, ttsEnabled = false }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, ttsEnabled = false, useMockAI = false, fontSize = 13, messageHistory = 10 }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -57,8 +60,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
     onSendMessage?.(inputValue);
 
     try {
-      // 调用真实 AI 服务
-      const aiResponse = await getAIResponse(inputValue);
+      // 构建消息历史用于上下文（限制条数）
+      const historyMessages = messages
+        .filter(m => m.text.length > 0)
+        .slice(-messageHistory);
+      const history: ChatMessage[] = historyMessages.map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.text
+      }));
+
+      // 调用 AI 服务（含上下文）
+      const aiResponse = await getAIResponse(inputValue, history, useMockAI);
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -260,7 +272,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
             key={message.id}
             style={message.sender === 'user' ? styles.messageUser : styles.messageAI}
           >
-            <div style={message.sender === 'user' ? styles.messageBubbleUser : styles.messageBubbleAI}>
+            <div style={{
+              ...(message.sender === 'user' ? styles.messageBubbleUser : styles.messageBubbleAI),
+              fontSize: fontSize + 'px',
+            }}>
               {message.text}
             </div>
             <div style={styles.messageTime}>

@@ -1,46 +1,69 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live2D Test</title>
+  <title>Test Live2D Loading</title>
   <style>
     body {
       margin: 0;
       padding: 20px;
       background: #0a0a0f;
-      font-family: 'Courier New', monospace;
+      font-family: 'Share Tech Mono', monospace;
       color: #00ffff;
     }
-    #canvas {
-      border: 1px solid #00ffff;
-      margin: 20px 0;
+    #debug {
+      font-size: 12px;
+      line-height: 1.6;
     }
-    .info {
-      margin: 10px 0;
-      padding: 10px;
-      background: rgba(0, 255, 255, 0.1);
-      border: 1px solid rgba(0, 255, 255, 0.3);
-    }
+    .success { color: #00ff00; }
+    .error { color: #ff0066; }
+    .info { color: #00ffff; }
   </style>
 </head>
 <body>
-  <h1>Live2D Model Test</h1>
-  <div class="info">
-    <p>Model URL: /models/live2d-model.json</p>
-    <p>Status: <span id="status">Loading...</span></p>
-    <p>Error: <span id="error">None</span></p>
-  </div>
-  <div id="canvas"></div>
-  <div class="info">
-    <p>Controls:</p>
-    <ul>
-      <li>Click on the character to trigger animations</li>
-      <li>Check browser console for logs</li>
-    </ul>
-  </div>
+  <h1>Live2D Model Loading Test</h1>
+  <div id="debug"></div>
 
-  <script src="/live2dcubismcore.js"></script>
-  <script type="module" src="/test-live2d.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/pixi-live2d-display.min.js"></script>
+  <script>
+    const debug = document.getElementById('debug');
+
+    async function testLive2D() {
+      try {
+        debug.innerHTML += '<p class="info">Starting Live2D test...</p>';
+
+        // Test 1: Check if PIXI is loaded
+        debug.innerHTML += '<p class="info">Test 1: PIXI.js version: ' + PIXI.VERSION + '</p>';
+
+        // Test 2: Check if Live2DModel is available
+        if (typeof Live2DModel !== 'undefined') {
+          debug.innerHTML += '<p class="success">Test 2: Live2DModel is available</p>';
+        } else {
+          debug.innerHTML += '<p class="error">Test 2: Live2DModel is NOT available</p>';
+          return;
+        }
+
+        // Test 3: Try to load a model
+        debug.innerHTML += '<p class="info">Test 3: Attempting to load model...</p>';
+
+        try {
+          const model = await Live2DModel.from('/models/Haru/Haru.model3.json');
+          debug.innerHTML += '<p class="success">Test 3: Model loaded successfully!</p>';
+          debug.innerHTML += '<p class="info">Model dimensions: ' + model.width + 'x' + model.height + '</p>';
+        } catch (err) {
+          debug.innerHTML += '<p class="error">Test 3: Failed to load model: ' + err.message + '</p>';
+          debug.innerHTML += '<p class="info">This might be expected if running from file:// protocol</p>';
+        }
+
+        debug.innerHTML += '<p class="success">Test completed!</p>';
+
+      } catch (error) {
+        debug.innerHTML += '<p class="error">Error: ' + error.message + '</p>';
+        debug.innerHTML += '<p class="error">Stack: ' + error.stack + '</p>';
+      }
+    }
+
+    testLive2D();
+  </script>
 </body>
 </html>

@@ -9,8 +9,16 @@ interface AIResponse {
   emotion?: string;
 }
 
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 // 检查是否在 Electron 环境 (有 IPC 桥接)
-const isElectron = typeof window !== 'undefined' && (window as any).electronAPI?.chatWithAI;
+let isElectron = false;
+try {
+  isElectron = typeof window !== 'undefined' && !!(window as any).electronAPI?.chatWithAI;
+} catch { /* ignore */ }
 
 /**
  * 获取 AI 回复
@@ -19,11 +27,20 @@ const isElectron = typeof window !== 'undefined' && (window as any).electronAPI?
  *   浏览器   → HTTP 代理服务器 (开发模式)
  *   都失败   → 模拟回复
  */
-export async function getAIResponse(message: string): Promise<AIResponse> {
+export async function getAIResponse(
+  message: string,
+  history: ChatMessage[] = [],
+  useMock: boolean = false
+): Promise<AIResponse> {
+  // 如果 useMock 为 true 或消息为空，直接返回模拟回复
+  if (useMock || !message.trim()) {
+    return getMockResponse(message);
+  }
+
   // Electron 环境: 通过 IPC 调用主进程 (生产环境)
   if (isElectron) {
     try {
-      const data = await (window as any).electronAPI.chatWithAI(message);
+      const data = await (window as any).electronAPI.chatWithAI({ message, history });
       if (data.error) throw new Error(data.error);
       return {
         text: data.result?.response || '抱歉，我无法理解您的请求。',
@@ -37,10 +54,10 @@ export async function getAIResponse(message: string): Promise<AIResponse> {
 
   // 浏览器开发环境: 通过代理服务器 (绕过 CORS)
   try {
-    const response = await fetch('http://localhost:3002/api/ai/chat', {
+    const response = await fetch('http://localhost:3001/api/ai/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ message, history })
     });
 
     if (!response.ok) {
