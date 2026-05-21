@@ -55,6 +55,55 @@
 
 ---
 
+## 2026-05-21 - Windows 应用打包功能
+
+### 新增功能
+
+- ✅ **Windows 安装版打包** (NSIS)
+  - 创建开始菜单快捷方式
+  - 创建桌面快捷方式
+  - 支持自定义安装目录
+  - 支持卸载功能
+
+- ✅ **Windows 便携版打包**
+  - 单文件运行，无需安装
+  - 直接双击即可运行
+
+- ✅ **自动更新功能**
+  - 集成 electron-updater
+  - 应用启动时自动检查更新
+  - 支持从 GitHub Releases 下载更新
+  - 应用内一键安装更新
+
+- ✅ **更新检查 UI**
+  - 添加"检查更新"按钮
+  - 显示更新状态提示
+
+### 技术实现
+
+- 安装 electron-updater 依赖 (v6.8.3)
+- 创建自动更新模块 (src/main/updater.ts)
+- 配置 electron-builder 打包
+- 集成 IPC 通信通道
+
+### 输出文件
+
+- `dist/installer/AIPET Setup 0.1.0.exe` - NSIS 安装版 (299MB)
+- `dist/installer/AIPET-Portable-0.1.0.exe` - 便携版 (299MB)
+
+### 已知问题
+
+- 代码签名未启用，Windows 可能显示安全警告
+- 需要配置 GitHub Personal Access Token 才能发布更新
+
+### 下一步计划
+
+1. 配置代码签名证书
+2. 测试自动更新功能
+3. 发布正式版本到 GitHub Releases
+
+---
+
 ## 版本格式
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)：
