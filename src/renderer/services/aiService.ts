@@ -54,7 +54,7 @@ export async function getAIResponse(
 
   // 浏览器开发环境: 通过代理服务器 (绕过 CORS)
   try {
-    const response = await fetch('http://localhost:3001/api/ai/chat', {
+    const response = await fetch('http://localhost:3002/api/ai/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, history })
