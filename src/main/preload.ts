@@ -6,5 +6,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getLive2dModels: () => ipcRenderer.invoke('get-live2d-models'),
   onMessage: (callback: (event: Electron.IpcRendererEvent, message: string) => void) => {
     ipcRenderer.on('message', callback);
-  }
+  },
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
 });

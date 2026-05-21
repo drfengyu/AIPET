@@ -57,6 +57,26 @@ function App() {
     console.log('设置已更新:', newSettings);
   };
 
+  const checkUpdate = async () => {
+    try {
+      const result = await (window as any).electronAPI.checkForUpdates();
+      if (result.updateAvailable) {
+        alert('发现新版本，正在下载...');
+        const download = await (window as any).electronAPI.downloadUpdate();
+        if (download.success) {
+          if (confirm('更新已下载，是否立即安装？')) {
+            (window as any).electronAPI.installUpdate();
+          }
+        }
+      } else {
+        alert('当前已是最新版本');
+      }
+    } catch (error) {
+      console.error('检查更新失败:', error);
+      alert('检查更新失败: ' + error.message);
+    }
+  };
+
   return (
     <div style={styles.app}>
       {/* Grid overlay for cyberpunk aesthetic */}
@@ -77,6 +97,12 @@ function App() {
           onClick={() => setShowSettings(true)}
         >
           ⚙ SETTINGS
+        </button>
+        <button
+          style={styles.updateButton}
+          onClick={checkUpdate}
+        >
+          🔄 检查更新
         </button>
       </header>
 
@@ -372,6 +398,21 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'transparent',
     border: '1px solid rgba(0, 255, 255, 0.4)',
     color: '#00ffff',
+    fontSize: '11px',
+    letterSpacing: '2px',
+    cursor: 'pointer',
+    fontFamily: '"Share Tech Mono", monospace',
+    transition: 'all 0.2s ease',
+  },
+  updateButton: {
+    position: 'absolute',
+    right: '120px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    padding: '8px 16px',
+    background: 'transparent',
+    border: '1px solid rgba(255, 0, 255, 0.4)',
+    color: '#ff00ff',
     fontSize: '11px',
     letterSpacing: '2px',
     cursor: 'pointer',
