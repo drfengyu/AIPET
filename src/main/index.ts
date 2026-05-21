@@ -1,5 +1,6 @@
 import * as path from 'path';
 import { app, BrowserWindow, ipcMain } from 'electron';
+import { setupAutoUpdater } from './updater';
 
 // 保持全局引用，防止窗口被垃圾回收时自动关闭
 let mainWindow: BrowserWindow | null = null;
@@ -34,6 +35,7 @@ function createWindow() {
 
 // 当应用准备好时创建窗口
 app.whenReady().then(() => {
+  setupAutoUpdater();
   createWindow();
 
   // 在macOS上，即使没有窗口打开，也要保持应用活跃
