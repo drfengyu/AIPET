@@ -1,0 +1,62 @@
+{
+  "pipeline": {
+    "name": "AIPET Automation Pipeline",
+    "version": "1.0.0",
+    "stages": [
+      {
+        "name": "development",
+        "commands": ["yarn dev:vite", "yarn dev:electron"],
+        "watch": ["src/renderer/**/*", "src/main/**/*"],
+        "auto_trigger": "test"
+      },
+      {
+        "name": "testing",
+        "commands": ["yarn test --verbose", "npx jest --coverage"],
+        "required_to_pass": false,
+        "auto_trigger": "build"
+      },
+      {
+        "name": "building",
+        "commands": ["yarn build"],
+        "required_to_pass": true,
+        "auto_trigger": "package"
+      },
+      {
+        "name": "packaging",
+        "commands": ["npx electron-builder --win --dir"],
+        "required_to_pass": false,
+        "auto_trigger": "release"
+      },
+      {
+        "name": "release",
+        "commands": ["gh release create"],
+        "required_to_pass": false,
+        "auto_trigger": null
+      }
+    ]
+  },
+  "agents": {
+    "orchestrator": "ProjectManagerAgent",
+    "frontend": "FrontendAgent",
+    "backend": "BackendAgent",
+    "tester": "TestAgent",
+    "deployer": "DeployAgent"
+  },
+  "automation": {
+    "skip_confirmation": true,
+    "auto_commit": true,
+    "auto_test_on_change": true,
+    "auto_build_on_commit": true,
+    "parallel_stages": false
+  },
+  "hooks": {
+    "on_file_change": {
+      "src/renderer/**/*": "yarn lint",
+      "src/main/**/*": "yarn lint",
+      "src/agents/**/*": "npx tsc --noEmit",
+      "**/*.test.*": "yarn test -- --findRelatedTests"
+    },
+    "on_git_commit": "bash scripts/pipeline.sh build",
+    "on_git_push_master": "bash scripts/pipeline.sh all"
+  }
+}

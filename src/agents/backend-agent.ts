@@ -1,39 +1,64 @@
-// Backend Agent
-// 使用 Superpowers 和 Hermes 技能进行后端开发
+import { Agent } from '@cloudflare/agents';
+import type { AgentEnv } from './worker';
 
-import { Agent, AgentOptions } from 'agents';
-
-export interface AIModelConfig {
-  name: string;
-  provider: string;
-  model: string;
-  config: Record<string, unknown>;
+export interface BackendState {
+  servicesBuilt: string[];
+  currentTask: string | null;
+  proxyRunning: boolean;
+  electronReady: boolean;
 }
 
-export class BackendAgent extends Agent {
-  constructor(env: AgentOptions, name: string) {
-    super(env, name);
+export class BackendAgent extends Agent<AgentEnv, BackendState> {
+  async onStart() {
+    if (!this.state) {
+      await this.setState({
+        servicesBuilt: [],
+        currentTask: null,
+        proxyRunning: false,
+        electronReady: false,
+      });
+    }
   }
 
-  // 创建 AI 对话服务
-  async createChatService(): Promise<{ message: string }> {
-    return {
-      message: 'AI 对话服务创建完成'
-    };
+  async registerService(name: string) {
+    await this.onStart();
+    const state = this.state!;
+    state.servicesBuilt.push(name);
+    await this.setState(state);
+    return { ok: true, service: name };
   }
 
-  // 创建语音合成服务
-  async createSpeechService(): Promise<{ message: string }> {
-    return {
-      message: '语音合成服务创建完成'
-    };
+  async getServices() {
+    await this.onStart();
+    return this.state!.servicesBuilt;
   }
 
-  // 集成 AI 模型
-  async integrateAIModel(config: AIModelConfig): Promise<{ message: string; config: AIModelConfig }> {
+  async setProxyRunning(running: boolean) {
+    await this.onStart();
+    this.state!.proxyRunning = running;
+    await this.setState(this.state!);
+    return { ok: true };
+  }
+
+  async setElectronReady(ready: boolean) {
+    await this.onStart();
+    this.state!.electronReady = ready;
+    await this.setState(this.state!);
+    return { ok: true };
+  }
+
+  async getStatus() {
+    await this.onStart();
+    return this.state!;
+  }
+
+  async startBackend() {
     return {
-      message: `AI 模型 ${config.name} 集成完成`,
-      config
+      commands: [
+        { cmd: 'node src/main/ai-proxy.cjs', description: 'Start AI proxy', background: true },
+        { cmd: 'yarn dev:electron', description: 'Start Electron app', background: true },
+      ],
+      waitFor: ['tcp:5187', 'tcp:5174'],
     };
   }
 }

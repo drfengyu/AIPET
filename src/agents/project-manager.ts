@@ -1,64 +1,108 @@
-// Project Manager Agent
-// 使用 Superpowers 和 Hermes 技能进行项目管理
+import { Agent } from '@cloudflare/agents';
+import type { AgentEnv } from './worker';
 
-import { Agent, AgentOptions } from 'agents';
-
-export interface AgentRegistration {
-  name: string;
-  type: string;
-  status: string;
+export interface ProjectState {
+  phase: 'development' | 'testing' | 'building' | 'deploying' | 'done';
+  currentTask: string | null;
+  taskQueue: string[];
+  completedTasks: string[];
+  version: string;
+  lastBuildTime: string | null;
+  lastDeployTime: string | null;
+  errors: string[];
 }
 
-export interface Task {
-  taskId: string;
-  type: string;
-  name: string;
-  description: string;
-  status: string;
-}
-
-export interface Workflow {
-  workflowId: string;
-  name: string;
-  steps: string[];
-}
-
-export class ProjectManagerAgent extends Agent {
-  constructor(env: AgentOptions, name: string) {
-    super(env, name);
+export class ProjectManagerAgent extends Agent<AgentEnv, ProjectState> {
+  async onStart() {
+    if (!this.state) {
+      await this.setState({
+        phase: 'development',
+        currentTask: null,
+        taskQueue: [],
+        completedTasks: [],
+        version: '0.1.0',
+        lastBuildTime: null,
+        lastDeployTime: null,
+        errors: [],
+      });
+    }
   }
 
-  // 注册代理
-  async registerAgent(registration: AgentRegistration): Promise<void> {
-    // 注册代理逻辑
-    void registration;
+  async registerTask(task: string) {
+    await this.onStart();
+    const state = this.state!;
+    state.taskQueue.push(task);
+    await this.setState(state);
+    return { ok: true, task };
   }
 
-  // 创建任务
-  async createTask(task: Omit<Task, 'taskId' | 'status'>): Promise<Task> {
-    return {
-      ...task,
-      taskId: `task-${Date.now()}`,
-      status: 'pending'
-    };
+  async startNextTask() {
+    await this.onStart();
+    const state = this.state!;
+    if (state.taskQueue.length === 0) {
+      return { ok: false, reason: 'no tasks in queue' };
+    }
+    const task = state.taskQueue.shift()!;
+    state.currentTask = task;
+    await this.setState(state);
+    return { ok: true, task };
   }
 
-  // 开始工作流
-  async startWorkflow(name: string, config: Record<string, unknown>): Promise<Workflow> {
-    void config;
-    return {
-      workflowId: `workflow-${Date.now()}`,
-      name,
-      steps: ['初始化', '任务分配', '执行', '测试', '部署']
-    };
+  async completeTask(task: string) {
+    await this.onStart();
+    const state = this.state!;
+    state.completedTasks.push(task);
+    if (state.currentTask === task) state.currentTask = null;
+    await this.setState(state);
+    return { ok: true, task };
   }
 
-  // 获取项目状态
-  async getProjectStatus(): Promise<{ status: string; tasks: Task[]; agents: AgentRegistration[] }> {
-    return {
-      status: 'active',
-      tasks: [],
-      agents: []
-    };
+  async reportError(error: string) {
+    await this.onStart();
+    const state = this.state!;
+    state.errors.push(`[${new Date().toISOString()}] ${error}`);
+    await this.setState(state);
+    return { ok: true };
+  }
+
+  async getStatus() {
+    await this.onStart();
+    return this.state!;
+  }
+
+  async setPhase(phase: ProjectState['phase']) {
+    await this.onStart();
+    const state = this.state!;
+    state.phase = phase;
+    await this.setState(state);
+    return { ok: true, phase };
+  }
+
+  async getNextAction(): Promise<string | null> {
+    await this.onStart();
+    const state = this.state!;
+    if (state.taskQueue.length > 0 || state.currentTask) return 'continue';
+    switch (state.phase) {
+      case 'development': return 'test';
+      case 'testing': return 'build';
+      case 'building': return 'deploy';
+      case 'deploying': return 'release';
+      case 'done': return null;
+      default: return null;
+    }
+  }
+
+  async reset() {
+    await this.setState({
+      phase: 'development',
+      currentTask: null,
+      taskQueue: [],
+      completedTasks: [],
+      version: '0.1.0',
+      lastBuildTime: null,
+      lastDeployTime: null,
+      errors: [],
+    });
+    return { ok: true };
   }
 }

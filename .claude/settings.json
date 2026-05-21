@@ -9,7 +9,7 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
-        "GITHUB_TOKEN": ""
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
       }
     },
     "sqlite": {
@@ -21,58 +21,72 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-fetch"],
       "env": {}
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-playwright"],
+      "env": {}
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {}
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {}
     }
   },
   "permissions": {
     "allow": [
-      "Bash(npx *)",
-      "Bash(yarn *)",
-      "Bash(node *)",
-      "Bash(curl *)",
+      "Bash(*)",
       "Read(*)",
       "Write(*)",
       "Edit(*)",
       "Glob(*)",
-      "Grep(*)"
+      "Grep(*)",
+      "WebSearch",
+      "WebFetch"
     ]
   },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "分析文件路径 $ARGUMENTS.tool_input.file_path，判断应该由哪个角色处理：\n- 前端开发 (src/renderer/, public/): React, TypeScript, Vite, Live2D\n- 后端开发 (src/main/, src/agents/): Electron, Node.js, Express\n- 测试 (src/agents/test-*, *.test.*): 单元测试, 集成测试\n- 部署 (package.json, vite.config.ts): 构建, 打包\n\n返回 JSON: {\"role\": \"角色名称\", \"reason\": \"判断原因\"}"
-          }
-        ]
-      },
-      {
         "matcher": "Bash",
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "分析命令 $ARGUMENTS.tool_input.command，判断应该由哪个角色处理：\n- 前端开发: yarn dev:vite, npx vite\n- 后端开发: yarn dev:electron, node src/\n- 测试: yarn test, npx jest\n- 部署: yarn build, npx electron-builder\n\n返回 JSON: {\"role\": \"角色名称\", \"reason\": \"判断原因\"}"
+            "prompt": "## 自动化工作流引擎 - 命令路由分析\n\n分析即将执行的命令: $ARGUMENTS.tool_input.command\n\n### 工作流分类规则\n\n按以下优先级判断当前命令属于哪个工作流阶段：\n\n1. **前端开发 (frontend)**: `yarn dev:vite`, `vite`, `npx vite`, `tsx`, 涉及 `src/renderer/`, `public/` 的操作\n2. **后端开发 (backend)**: `yarn dev:electron`, `electron`, 涉及 `src/main/` 的操作\n3. **代理开发 (agents)**: `wrangler`, `yarn build:agents`, 涉及 `src/agents/` 的操作\n4. **测试 (test)**: `yarn test`, `jest`, `npx jest`, `npx playwright`\n5. **构建/打包 (build)**: `yarn build`, `electron-builder`, `npx electron-builder`\n6. **版本控制 (git)**: `git add`, `git commit`, `git push`, `git status`, `git diff`\n7. **依赖管理 (deps)**: `yarn install`, `npm install`, `yarn add`, `npm add`\n8. **其他**: 以上都不匹配时\n\n### 输出规则\n返回 JSON 格式 (不要带markdown代码块标记):\n{\n  \"phase\": \"阶段标识\",\n  \"role\": \"负责角色\",\n  \"next_action\": \"执行完成后应该自动触发的下一个动作（如: 'test', 'build', 'commit'）或 null\",\n  \"auto_mode\": true\n}\n\n当 auto_mode 为 true 时，命令执行后自动进入下一阶段工作流，不需要用户确认。"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "## 自动化工作流引擎 - 文件变更分析\n\n变更文件: $ARGUMENTS.tool_input.file_path\n\n### 文件类型与触发规则\n\n| 文件路径模式 | 触发动作 |\n|---|---|\n| src/renderer/**/* | 前端代码 → lint → 自动检查编译 |\n| src/main/**/* | 后端代码 → lint → 检查 |\n| src/agents/**/* | Agent代码 → 验证 |\n| **/*.test.* | 测试文件 → 自动运行该测试 |\n| package.json | 依赖变更 → 检查安装 |\n| vite.config.ts | 构建配置 → 验证构建 |\n\n### 输出规则\n返回 JSON 格式 (不要带markdown代码块标记):\n{\n  \"type\": \"文件类型标识\",\n  \"role\": \"负责角色\",\n  \"auto_trigger\": \"自动触发的命令或 null\",\n  \"requires_review\": false,\n  \"skip_confirmation\": true\n}"
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo \"分工规则: 文件 $ARGUMENTS.tool_input.file_path 已由前端开发角色处理\" >> .claude/division-log.txt 2>/dev/null || true"
-          }
-        ]
-      },
-      {
         "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "echo \"分工规则: 命令已执行\" >> .claude/division-log.txt 2>/dev/null || true"
+            "command": "echo \"[$(date '+%Y-%m-%d %H:%M:%S')] CMD_EXECUTED: $ARGUMENTS.tool_input.command\" >> .claude/division-log.txt"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date '+%Y-%m-%d %H:%M:%S')] FILE_CHANGED: $ARGUMENTS.tool_input.file_path\" >> .claude/division-log.txt"
           }
         ]
       }

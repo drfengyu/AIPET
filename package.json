@@ -6,15 +6,21 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:proxy\" \"npm run dev:vite\" \"npm run dev:electron\"",
-    "dev:proxy": "node src/main/ai-proxy.js",
+    "dev:proxy": "node src/main/ai-proxy.cjs",
     "dev:vite": "vite",
     "dev:electron": "wait-on tcp:5187 && electron .",
     "build": "vite build && npm run build:main",
-    "build:main": "cp src/main/main.mjs dist/main/ && cp src/main/preload.cjs dist/main/",
+    "build:main": "cp src/main/main.mjs dist/main/ && cp src/main/preload.cjs dist/main/ && cp src/main/updater.js dist/main/",
     "build:agents": "wrangler deploy",
     "test": "jest",
     "lint": "eslint src --ext .ts,.tsx",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\""
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "pipeline": "bash scripts/pipeline.sh",
+    "pipeline:dev": "bash scripts/pipeline.sh dev",
+    "pipeline:build": "bash scripts/pipeline.sh build",
+    "pipeline:package": "bash scripts/pipeline.sh package",
+    "pipeline:release": "bash scripts/pipeline.sh release",
+    "pipeline:full": "bash scripts/pipeline.sh all"
   },
   "keywords": [
     "live2d",
@@ -28,7 +34,6 @@
   "dependencies": {
     "@cloudflare/agents": "^0.0.16",
     "agents": "^0.13.1",
-    "agents-sdk": "^1.0.0",
     "cors": "^2.8.5",
     "electron-updater": "^6.8.3",
     "express": "^4.18.2",
@@ -64,6 +69,13 @@
     "vite": "^5.0.0",
     "wait-on": "^9.0.10"
   },
+  "jest": {
+    "testEnvironment": "node",
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$",
+    "moduleFileExtensions": ["js", "ts", "tsx", "json"],
+    "testPathIgnorePatterns": ["/node_modules/", "/dist/"],
+    "verbose": true
+  },
   "build": {
     "appId": "com.live2d.chat",
     "productName": "AIPET",
@@ -71,8 +83,15 @@
       "output": "dist/installer"
     },
     "files": [
-      "dist/**/*",
+      "dist/main/**/*",
+      "dist/renderer/**/*",
       "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": ".env",
+        "to": ".env"
+      }
     ],
     "win": {
       "target": [

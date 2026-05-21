@@ -6,7 +6,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 // 安全地暴露 IPC 方法到渲染进程
-contextBridge.exposeInMainWorld('electron', {
+contextBridge.exposeInMainWorld('electronAPI', {
   // 获取应用版本
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
 
@@ -28,6 +28,9 @@ contextBridge.exposeInMainWorld('electron', {
   sendEvent: (channel, ...args) => {
     ipcRenderer.send(channel, ...args);
   },
+
+  // AI 聊天 - 通过主进程调用 Cloudflare API (生产环境使用)
+  chatWithAI: (message) => ipcRenderer.invoke('ai-chat', message),
 });
 
 // 暴露一个用于调试的 API（仅开发环境）

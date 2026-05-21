@@ -73,7 +73,7 @@ function App() {
       }
     } catch (error) {
       console.error('检查更新失败:', error);
-      alert('检查更新失败: ' + error.message);
+      alert('检查更新失败: ' + (error instanceof Error ? error.message : String(error)));
     }
   };
 

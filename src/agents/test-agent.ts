@@ -1,81 +1,95 @@
-// Test Agent
-// 使用 Superpowers 和 Hermes 技能进行测试
+import { Agent } from '@cloudflare/agents';
+import type { AgentEnv } from './worker';
 
-import { Agent, AgentOptions } from 'agents';
-
-export interface TestCase {
-  name: string;
-  type: string;
-  description: string;
+export interface TestState {
+  results: TestResult[];
+  coverage: number | null;
+  passed: number;
+  failed: number;
+  lastRun: string | null;
 }
 
 export interface TestResult {
-  success: boolean;
-  message: string;
+  name: string;
+  passed: boolean;
+  duration: string;
+  error?: string;
 }
 
-export interface PerformanceResult {
-  success: boolean;
-  metrics: Record<string, unknown>;
-}
-
-export interface TestReport {
-  report: {
-    summary: {
-      coverage: number;
-      passed: number;
-      failed: number;
-    };
-  };
-}
-
-export class TestAgent extends Agent {
-  constructor(env: AgentOptions, name: string) {
-    super(env, name);
+export class TestAgent extends Agent<AgentEnv, TestState> {
+  async onStart() {
+    if (!this.state) {
+      await this.setState({
+        results: [],
+        coverage: null,
+        passed: 0,
+        failed: 0,
+        lastRun: null,
+      });
+    }
   }
 
-  // 添加测试用例
-  async addTestCase(testCase: TestCase): Promise<void> {
-    // 添加测试用例逻辑
-    void testCase;
+  async recordResult(result: TestResult) {
+    await this.onStart();
+    const state = this.state!;
+    state.results.push(result);
+    if (result.passed) state.passed++;
+    else state.failed++;
+    state.lastRun = new Date().toISOString();
+    await this.setState(state);
+    return { ok: true };
   }
 
-  // 运行单元测试
-  async runUnitTests(): Promise<TestResult[]> {
-    return [
-      { success: true, message: 'Live2D组件渲染测试通过' },
-      { success: true, message: 'AI对话API测试通过' }
-    ];
+  async recordCoverage(coverage: number) {
+    await this.onStart();
+    this.state!.coverage = coverage;
+    await this.setState(this.state!);
+    return { ok: true };
   }
 
-  // 运行集成测试
-  async runIntegrationTests(): Promise<TestResult[]> {
-    return [
-      { success: true, message: '完整工作流测试通过' }
-    ];
-  }
-
-  // 性能测试
-  async performanceTest(): Promise<PerformanceResult> {
+  async getSummary() {
+    await this.onStart();
+    const state = this.state!;
     return {
-      success: true,
-      metrics: {
-        loadTime: '2s',
-        memoryUsage: '128MB'
-      }
+      total: state.passed + state.failed,
+      passed: state.passed,
+      failed: state.failed,
+      coverage: state.coverage,
+      lastRun: state.lastRun,
+      passRate: state.passed + state.failed > 0
+        ? Math.round((state.passed / (state.passed + state.failed)) * 100)
+        : 0,
     };
   }
 
-  // 生成测试报告
-  async generateReport(): Promise<TestReport> {
+  async getFailedTests() {
+    await this.onStart();
+    return this.state!.results.filter(r => !r.passed);
+  }
+
+  async getStatus() {
+    await this.onStart();
+    return this.state!;
+  }
+
+  async runAllTests() {
     return {
-      report: {
-        summary: {
-          coverage: 85,
-          passed: 15,
-          failed: 0
-        }
-      }
+      commands: [
+        'yarn test --verbose',
+        'npx jest --coverage',
+      ],
+      expectedToPass: true,
     };
+  }
+
+  async clearResults() {
+    await this.setState({
+      results: [],
+      coverage: null,
+      passed: 0,
+      failed: 0,
+      lastRun: null,
+    });
+    return { ok: true };
   }
 }

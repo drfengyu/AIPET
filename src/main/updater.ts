@@ -6,10 +6,11 @@ export function setupAutoUpdater() {
   ipcMain.handle('check-for-updates', async () => {
     try {
       const result = await autoUpdater.checkForUpdates();
+      if (!result) return { updateAvailable: false };
       return { updateAvailable: result.updateInfo.version !== autoUpdater.currentVersion.version };
     } catch (error) {
       console.error('检查更新失败:', error);
-      return { updateAvailable: false, error: error.message };
+      return { updateAvailable: false, error: error instanceof Error ? error.message : String(error) };
     }
   });
 
@@ -20,7 +21,7 @@ export function setupAutoUpdater() {
       return { success: true };
     } catch (error) {
       console.error('下载更新失败:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : String(error) };
     }
   });
 

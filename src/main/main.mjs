@@ -5,7 +5,43 @@
 
 import electron from 'electron';
 import * as path from 'path';
+import * as fs from 'fs';
 import { fileURLToPath } from 'url';
+
+// 加载 .env 配置文件 (支持打包后的应用)
+function loadEnv() {
+  const envPaths = [
+    path.join(__dirname, '../../.env'),      // 开发环境: 项目根目录
+    path.join(process.resourcesPath, '.env'), // 打包后: resources 目录
+    path.join(process.cwd(), '.env'),         // 备用: 当前工作目录
+  ];
+
+  for (const envPath of envPaths) {
+    try {
+      if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, 'utf-8');
+        for (const line of content.split('\n')) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith('#')) continue;
+          const eqIndex = trimmed.indexOf('=');
+          if (eqIndex === -1) continue;
+          const key = trimmed.slice(0, eqIndex).trim();
+          const value = trimmed.slice(eqIndex + 1).trim();
+          if (!process.env[key]) {
+            process.env[key] = value;
+          }
+        }
+        console.log('Loaded env from:', envPath);
+        return;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+  console.warn('No .env file found');
+}
+
+loadEnv();
 
 const { app, BrowserWindow, ipcMain, nativeTheme } = electron;
 const __filename = fileURLToPath(import.meta.url);
@@ -103,4 +139,50 @@ ipcMain.handle('get-live2d-models', async () => {
 
 ipcMain.handle('get-system-theme', () => {
   return nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+});
+
+// AI 聊天 - 通过主进程直接调用 Cloudflare API (无 CORS 问题，不需要额外代理服务器)
+ipcMain.handle('ai-chat', async (event, message) => {
+  try {
+    const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID;
+    const apiToken = process.env.VITE_CLOUDFLARE_API_TOKEN;
+
+    if (!accountId || !apiToken) {
+      return { error: 'Cloudflare credentials not configured' };
+    }
+
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-3.1-8b-instruct`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content: '你是一个友善的AI助手，运行在赛博朋克风格的Live2D桌面应用中。你的名字是AIPET。请始终用中文回复，语气亲切友好，可以带一些科技感和幽默感。回复要简洁自然，像是朋友间的对话。'
+            },
+            {
+              role: 'user',
+              content: message
+            }
+          ]
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return { error: `Cloudflare API error: ${response.status} - ${errorText}` };
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('AI chat error:', error);
+    return { error: error.message };
+  }
 });
