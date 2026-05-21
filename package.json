@@ -137,7 +137,7 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "ShallowDream",
+      "owner": "drfengyu",
       "repo": "AIPET"
     }
   }
