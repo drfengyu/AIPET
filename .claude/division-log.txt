@@ -1040,3 +1040,99 @@
 [2026-05-21 14:51:01] CMD_EXECUTED: .tool_input.command
 [2026-05-21 14:51:38] CMD_EXECUTED: .tool_input.command
 [2026-05-21 14:51:57] CMD_EXECUTED: .tool_input.command
+[2026-05-21 14:52:37] CMD_EXECUTED: .tool_input.command
+[2026-05-21 14:53:27] PRE_COMMIT: OK - 6 files checked
+[2026-05-21 14:53:27] POST_COMMIT: 90e4e70 - feat: implement AI conversation context, Live2D idle animation, and comprehensive tests
+[2026-05-21 14:53:33] CMD_EXECUTED: .tool_input.command
+[2026-05-21 14:53:56] CMD_EXECUTED: .tool_input.command
+[2026-05-21 14:55:06] CMD_EXECUTED: .tool_input.command
+[2026-05-21 14:55:48] CMD_EXECUTED: .tool_input.command
+[2026-05-21 14:56:11] CMD_EXECUTED: .tool_input.command
+[2026-05-21 14:56:33] CMD_EXECUTED: .tool_input.command
+[2026-05-21 14:57:52] CMD_EXECUTED: .tool_input.command
+[2026-05-21 14:59:05] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:00:30] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:01:14] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:02:31] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:03:14] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:03:31] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:04:57] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:05:23] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:06:04] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:06:16] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:06:54] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:07:18] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:07:35] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:07:54] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:08:17] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:09:05] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:09:26] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:09:50] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:11:00] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:11:29] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:12:05] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:12:30] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:13:06] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:13:30] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:14:13] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:14:50] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:15:23] POST_COMMIT: e3b790c - fix: Electron main process syntax and __dirname initialization
+[2026-05-21 15:15:23] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:17:42] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:18:27] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:19:05] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:19:36] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:19:54] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:20:35] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:20:57] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:21:46] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:22:01] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:22:20] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:23:00] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:23:41] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:24:11] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:24:33] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:25:12] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:25:35] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:26:12] PRE_COMMIT: OK - 2 files checked
+[2026-05-21 15:26:12] POST_COMMIT: aae9b79 - fix: AI proxy auto-loads .env, port consistency, default mock mode off
+[2026-05-21 15:26:12] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:27:35] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:27:46] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:27:56] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:28:27] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:29:08] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:32:39] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:33:15] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:33:52] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:34:21] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:34:39] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:35:05] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:35:31] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:35:53] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:36:26] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:37:06] PRE_COMMIT: OK - 1 files checked
+[2026-05-21 15:37:06] POST_COMMIT: 8760736 - fix: header button layout with flex, graceful update check in browser
+[2026-05-21 15:37:06] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:38:21] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:39:02] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:39:44] POST_COMMIT: 2421a78 - ci: add GitHub Actions release workflow
+[2026-05-21 15:39:44] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:40:54] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:41:25] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:42:03] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:43:59] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:44:34] FILE_CHANGED: .tool_input.file_path
+[2026-05-21 15:44:53] POST_COMMIT: 7f26ebd - chore: update publish owner to drfengyu
+[2026-05-21 15:44:54] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:45:23] PRE_PUSH: OK - master
+[2026-05-21 15:46:09] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:50:08] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:50:52] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:51:10] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:51:37] CMD_EXECUTED: .tool_input.command
+[2026-05-21 15:55:52] PRE_PUSH: OK - master
+[2026-05-21 15:57:38] CMD_EXECUTED: .tool_input.command
+[2026-05-21 16:00:15] CMD_EXECUTED: .tool_input.command
+[2026-05-21 16:02:52] CMD_EXECUTED: .tool_input.command
+[2026-05-21 16:05:04] CMD_EXECUTED: .tool_input.command
