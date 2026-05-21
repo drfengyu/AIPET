@@ -56,14 +56,19 @@ function App() {
   };
 
   const checkUpdate = async () => {
+    const api = (window as any).electronAPI;
+    if (!api?.checkForUpdates) {
+      alert('更新检查仅在桌面版可用。\n请在 Electron 环境中运行此应用。');
+      return;
+    }
     try {
-      const result = await (window as any).electronAPI.checkForUpdates();
-      if (result.updateAvailable) {
+      const result = await api.checkForUpdates();
+      if (result?.updateAvailable) {
         alert('发现新版本，正在下载...');
-        const download = await (window as any).electronAPI.downloadUpdate();
-        if (download.success) {
+        const download = await api.downloadUpdate();
+        if (download?.success) {
           if (confirm('更新已下载，是否立即安装？')) {
-            (window as any).electronAPI.installUpdate();
+            api.installUpdate();
           }
         }
       } else {
@@ -90,18 +95,20 @@ function App() {
           <span style={styles.titleSuffix}>_AI</span>
         </h1>
         <p style={styles.subtitle}>NEURAL CHAT INTERFACE v2.0</p>
-        <button
-          style={styles.settingsButton}
-          onClick={() => setShowSettings(true)}
-        >
-          ⚙ SETTINGS
-        </button>
-        <button
-          style={styles.updateButton}
-          onClick={checkUpdate}
-        >
-          🔄 检查更新
-        </button>
+        <div style={styles.headerButtons}>
+          <button
+            style={styles.settingsButton}
+            onClick={() => setShowSettings(true)}
+          >
+            ⚙ SETTINGS
+          </button>
+          <button
+            style={styles.updateButton}
+            onClick={checkUpdate}
+          >
+            🔄 UPDATE
+          </button>
+        </div>
       </header>
 
       <main style={styles.appMain}>
@@ -237,6 +244,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderBottom: '1px solid rgba(0, 255, 255, 0.3)',
     zIndex: 10,
   },
+  headerButtons: {
+    position: 'absolute',
+    right: '20px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    display: 'flex',
+    gap: '8px',
+  },
   headerGlow: {
     position: 'absolute',
     top: 0,
@@ -370,10 +385,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     textShadow: '0 0 10px rgba(255, 0, 255, 0.5)',
   },
   settingsButton: {
-    position: 'absolute',
-    right: '20px',
-    top: '50%',
-    transform: 'translateY(-50%)',
     padding: '8px 16px',
     background: 'transparent',
     border: '1px solid rgba(0, 255, 255, 0.4)',
@@ -385,10 +396,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     transition: 'all 0.2s ease',
   },
   updateButton: {
-    position: 'absolute',
-    right: '120px',
-    top: '50%',
-    transform: 'translateY(-50%)',
     padding: '8px 16px',
     background: 'transparent',
     border: '1px solid rgba(255, 0, 255, 0.4)',
