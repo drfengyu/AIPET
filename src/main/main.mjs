@@ -41,11 +41,11 @@ function loadEnv() {
   console.warn('No .env file found');
 }
 
-loadEnv();
-
 const { app, BrowserWindow, ipcMain, nativeTheme } = electron;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+loadEnv();
 
 // 保持全局引用，防止窗口被垃圾回收时自动关闭
 let mainWindow = null;
@@ -157,7 +157,7 @@ ipcMain.handle('ai-chat', async (event, { message, history = [] }) => {
         role: 'system',
         content: '你是一个友善的AI助手，运行在赛博朋克风格的Live2D桌面应用中。你的名字是AIPET。请始终用中文回复，语气亲切友好，可以带一些科技感和幽默感。回复要简洁自然，像是朋友间的对话。'
       },
-      ...history.map((msg: any) => ({
+      ...history.map((msg) => ({
         role: msg.role === 'user' ? 'user' : 'assistant',
         content: msg.content
       })),
