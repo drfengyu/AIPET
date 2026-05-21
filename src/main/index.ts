@@ -1,5 +1,5 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
+import { app, BrowserWindow, ipcMain } from 'electron';
 
 // 保持全局引用，防止窗口被垃圾回收时自动关闭
 let mainWindow: BrowserWindow | null = null;
@@ -20,7 +20,7 @@ function createWindow() {
   // 在开发环境中，我们使用Vite dev server
   // 在生产环境中，我们加载构建好的HTML文件
   if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.loadURL('http://localhost:5174');
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));

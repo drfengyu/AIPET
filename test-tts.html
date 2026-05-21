@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS 测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+        h1 {
+            color: #00ffff;
+            text-align: center;
+        }
+        .test-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+        .test-section h3 {
+            color: #ff00ff;
+            margin-top: 0;
+        }
+        button {
+            background: linear-gradient(90deg, rgba(0, 255, 255, 0.2), rgba(255, 0, 255, 0.2));
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 2px;
+            font-family: 'Courier New', monospace;
+        }
+        button:hover {
+            background: linear-gradient(90deg, rgba(0, 255, 255, 0.4), rgba(255, 0, 255, 0.4));
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+        }
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+        select, input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            color: #00ffff;
+            padding: 8px;
+            margin: 5px;
+            font-family: 'Courier New', monospace;
+        }
+        .voice-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        .voice-item {
+            padding: 5px;
+            margin: 2px 0;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+        .voice-item:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+        .voice-item.selected {
+            background: rgba(255, 0, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔊 TTS 语音合成测试</h1>
+
+    <div class="test-section">
+        <h3>✅ 测试 1: 浏览器支持检查</h3>
+        <div id="support-status" class="status">检查中...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>✅ 测试 2: 可用语音列表</h3>
+        <div id="voice-list" class="voice-list">加载中...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>✅ 测试 3: 语音播放</h3>
+        <div>
+            <input type="text" id="test-text" value="你好！我是你的AI助手。" style="width: 300px;">
+            <button onclick="testSpeak()">播放语音</button>
+            <button onclick="stopSpeak()">停止播放</button>
+        </div>
+        <div id="speak-status" class="status" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>✅ 测试 4: 不同语言测试</h3>
+        <div>
+            <button onclick="testChinese()">中文</button>
+            <button onclick="testEnglish()">English</button>
+            <button onclick="testJapanese()">日本語</button>
+        </div>
+    </div>
+
+    <script>
+        // 检查浏览器支持
+        function checkSupport() {
+            const statusEl = document.getElementById('support-status');
+            if ('speechSynthesis' in window) {
+                statusEl.textContent = '✅ 浏览器支持语音合成';
+                statusEl.className = 'status';
+            } else {
+                statusEl.textContent = '❌ 浏览器不支持语音合成';
+                statusEl.className = 'status error';
+            }
+        }
+
+        // 获取并显示可用语音
+        function loadVoices() {
+            const voiceListEl = document.getElementById('voice-list');
+            const voices = window.speechSynthesis.getVoices();
+
+            if (voices.length === 0) {
+                voiceListEl.textContent = '暂无可用语音，可能需要等待加载...';
+                return;
+            }
+
+            voiceListEl.innerHTML = '';
+            voices.forEach((voice, index) => {
+                const div = document.createElement('div');
+                div.className = 'voice-item';
+                div.textContent = `${voice.name} (${voice.lang})`;
+                div.onclick = () => selectVoice(voice);
+                voiceListEl.appendChild(div);
+            });
+        }
+
+        let selectedVoice = null;
+
+        function selectVoice(voice) {
+            selectedVoice = voice;
+            document.querySelectorAll('.voice-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            console.log('Selected voice:', voice.name, voice.lang);
+        }
+
+        // 播放语音
+        function testSpeak() {
+            const text = document.getElementById('test-text').value;
+            const statusEl = document.getElementById('speak-status');
+
+            if (!text.trim()) {
+                statusEl.textContent = '请输入要播放的文本';
+                statusEl.className = 'status error';
+                statusEl.style.display = 'block';
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+
+            utterance.onstart = () => {
+                statusEl.textContent = '正在播放...';
+                statusEl.className = 'status';
+                statusEl.style.display = 'block';
+            };
+
+            utterance.onend = () => {
+                statusEl.textContent = '播放完成';
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 2000);
+            };
+
+            utterance.onerror = (event) => {
+                statusEl.textContent = '播放错误: ' + event.error;
+                statusEl.className = 'status error';
+                statusEl.style.display = 'block';
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // 停止播放
+        function stopSpeak() {
+            window.speechSynthesis.cancel();
+            const statusEl = document.getElementById('speak-status');
+            statusEl.textContent = '已停止播放';
+            statusEl.className = 'status';
+            statusEl.style.display = 'block';
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 1000);
+        }
+
+        // 测试不同语言
+        function testChinese() {
+            document.getElementById('test-text').value = '你好！我是你的AI助手。很高兴认识你！';
+            testSpeak();
+        }
+
+        function testEnglish() {
+            document.getElementById('test-text').value = 'Hello! I am your AI assistant. Nice to meet you!';
+            testSpeak();
+        }
+
+        function testJapanese() {
+            document.getElementById('test-text').value = 'こんにちは！私はあなたのAIアシスタントです。';
+            testSpeak();
+        }
+
+        // 初始化
+        window.onload = function() {
+            checkSupport();
+
+            // 语音列表可能需要稍等才能加载
+            if (window.speechSynthesis.getVoices().length > 0) {
+                loadVoices();
+            } else {
+                window.speechSynthesis.onvoiceschanged = loadVoices;
+                setTimeout(loadVoices, 1000);
+            }
+        };
+    </script>
+</body>
+</html>

@@ -19,7 +19,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   expression
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const modelRef = useRef<any>(null);
+  const modelRef = useRef<Live2DModel | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [characterName, setCharacterName] = useState(() => {
@@ -131,8 +131,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
           // 检测双击
           const currentTime = Date.now();
-          const lastClick = (model as any)._lastClickTime || 0;
-          (model as any)._lastClickTime = currentTime;
+          const lastClick = (model as unknown as { _lastClickTime?: number })._lastClickTime || 0;
+          (model as unknown as { _lastClickTime: number })._lastClickTime = currentTime;
 
           if (currentTime - lastClick < 300) {
             // 双击 - 触发 Special 动画

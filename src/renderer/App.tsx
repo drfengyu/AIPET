@@ -151,7 +151,11 @@ function App() {
         </div>
 
         <div style={styles.chatSection}>
-          <ChatWindow onSendMessage={handleSendMessage} onAIResponse={handleAIResponse} />
+          <ChatWindow
+            onSendMessage={handleSendMessage}
+            onAIResponse={handleAIResponse}
+            ttsEnabled={settings?.ttsEnabled || false}
+          />
         </div>
       </main>
 

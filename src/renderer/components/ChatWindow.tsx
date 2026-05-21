@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { getAIResponse } from '../services/aiService';
+import { speak, stop, isSupported } from '../services/ttsService';
 
 interface Message {
   id: string;
@@ -11,9 +12,10 @@ interface Message {
 interface ChatWindowProps {
   onSendMessage?: (message: string) => void;
   onAIResponse?: (emotion: string) => void;
+  ttsEnabled?: boolean;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, ttsEnabled = false }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -37,6 +39,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse }) 
 
   const handleSend = async () => {
     if (!inputValue.trim()) return;
+
+    // 停止当前的语音播放
+    stop();
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -67,6 +72,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse }) 
       // 通知父组件情绪变化
       if (aiResponse.emotion) {
         onAIResponse?.(aiResponse.emotion);
+      }
+
+      // 语音合成
+      if (ttsEnabled && isSupported()) {
+        speak(aiResponse.text).catch(() => {
+          console.log('TTS playback failed');
+        });
       }
     } catch (error) {
       console.error('AI response error:', error);
