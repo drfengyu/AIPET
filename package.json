@@ -66,24 +66,42 @@
   },
   "build": {
     "appId": "com.live2d.chat",
-    "productName": "Live2D Chat App",
+    "productName": "AIPET",
     "directories": {
-      "output": "dist"
+      "output": "dist/installer"
     },
     "files": [
       "dist/**/*",
       "node_modules/**/*"
     ],
     "win": {
-      "target": "nsis",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
       "icon": "build/icon.ico"
     },
-    "mac": {
-      "target": "dmg",
-      "icon": "build/icon.icns"
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AIPET",
+      "uninstallDisplayName": "AIPET"
     },
-    "linux": {
-      "target": "AppImage"
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "ShallowDream",
+      "repo": "AIPET"
     }
   }
 }
