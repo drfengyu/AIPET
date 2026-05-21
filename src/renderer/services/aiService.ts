@@ -1,6 +1,6 @@
 /**
  * AI 服务模块
- * 集成 Cloudflare Workers AI 或其他 AI 服务
+ * 集成 Cloudflare Workers AI
  */
 
 interface AIResponse {
@@ -9,38 +9,38 @@ interface AIResponse {
   emotion?: string;
 }
 
-/**
- * AI 服务配置
- */
-const AI_CONFIG = {
-  // 代理服务器端点 (绕过 CORS 限制)
-  PROXY_ENDPOINT: 'http://localhost:3002/api/ai/chat',
-
-  // 备用本地模拟模式 (开发环境)
-  USE_MOCK: import.meta.env.VITE_USE_MOCK_AI === 'true',
-};
+// 检查是否在 Electron 环境 (有 IPC 桥接)
+const isElectron = typeof window !== 'undefined' && (window as any).electronAPI?.chatWithAI;
 
 /**
  * 获取 AI 回复
- * @param message 用户消息
- * @returns AI 回复
+ * 自动选择通信方式:
+ *   Electron → IPC (主进程直调 Cloudflare API，无 CORS，不需要额外服务器)
+ *   浏览器   → HTTP 代理服务器 (开发模式)
+ *   都失败   → 模拟回复
  */
 export async function getAIResponse(message: string): Promise<AIResponse> {
-  // 开发环境使用模拟回复
-  if (AI_CONFIG.USE_MOCK) {
-    return getMockResponse(message);
+  // Electron 环境: 通过 IPC 调用主进程 (生产环境)
+  if (isElectron) {
+    try {
+      const data = await (window as any).electronAPI.chatWithAI(message);
+      if (data.error) throw new Error(data.error);
+      return {
+        text: data.result?.response || '抱歉，我无法理解您的请求。',
+        emotion: detectEmotion(message)
+      };
+    } catch (error) {
+      console.error('AI IPC error:', error);
+      return getMockResponse(message);
+    }
   }
 
-  // 生产环境调用真实 AI API (通过代理服务器绕过 CORS)
+  // 浏览器开发环境: 通过代理服务器 (绕过 CORS)
   try {
-    const response = await fetch(AI_CONFIG.PROXY_ENDPOINT, {
+    const response = await fetch('http://localhost:3002/api/ai/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: message
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message })
     });
 
     if (!response.ok) {
@@ -49,12 +49,11 @@ export async function getAIResponse(message: string): Promise<AIResponse> {
 
     const data = await response.json();
     return {
-      text: data.result?.response || data.result || '抱歉，我无法理解您的请求。',
+      text: data.result?.response || '抱歉，我无法理解您的请求。',
       emotion: detectEmotion(message)
     };
   } catch (error) {
     console.error('AI API error:', error);
-    // 降级到模拟回复
     return getMockResponse(message);
   }
 }

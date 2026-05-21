@@ -48,10 +48,16 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       setIsLoading(true);
       setError(null);
 
-      // 创建PIXI应用
+      // 获取容器尺寸
+      const containerWidth = containerRef.current?.clientWidth || 400;
+      const containerHeight = containerRef.current?.clientHeight || 500;
+
+      console.log('Container dimensions:', containerWidth, 'x', containerHeight);
+
+      // 创建PIXI应用 - 使用容器尺寸
       app = new PIXI.Application({
-        width: 400,
-        height: 500,
+        width: containerWidth,
+        height: containerHeight,
         backgroundColor: 0x0a0a12,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
@@ -59,12 +65,26 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       });
 
       // 添加到DOM
-      containerRef.current?.appendChild(app.view as unknown as Node);
+      if (containerRef.current) {
+        containerRef.current.appendChild(app.view as unknown as Node);
+        // 设置 canvas 样式 - 填充容器
+        const canvas = app.view as HTMLCanvasElement;
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.display = 'block';
+        console.log('Canvas created:', canvas.width, 'x', canvas.height);
+        console.log('Container:', containerRef.current.clientWidth, 'x', containerRef.current.clientHeight);
+        console.log('Canvas style:', canvas.style.cssText);
+        console.log('Container style:', containerRef.current.style.cssText);
+      } else {
+        console.error('Container ref is null!');
+      }
 
       try {
 
         // 加载真实的Live2D模型
         console.log('Loading Live2D model from:', modelUrl);
+        console.log('PIXI app created, stage children:', app.stage.children.length);
 
         // 更新角色名称
         const modelMap: { [key: string]: string } = {
@@ -95,14 +115,21 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         }
 
         // 计算自适应缩放比例
-        const containerWidth = app.screen.width;
-        const containerHeight = app.screen.height;
+        const screenWidth = app.screen.width;
+        const screenHeight = app.screen.height;
         const modelWidth = model.width;
         const modelHeight = model.height;
 
+        console.log('Screen dimensions:', screenWidth, 'x', screenHeight);
+        console.log('Model dimensions:', modelWidth, 'x', modelHeight);
+
+        // 保存屏幕尺寸供后续使用
+        (app as any)._screenWidth = screenWidth;
+        (app as any)._screenHeight = screenHeight;
+
         // 计算适合容器的缩放比例（留出少量边距）
-        const scaleX = (containerWidth * 0.95) / modelWidth;
-        const scaleY = (containerHeight * 0.95) / modelHeight;
+        const scaleX = (screenWidth * 0.95) / modelWidth;
+        const scaleY = (screenHeight * 0.95) / modelHeight;
         const autoScale = Math.min(scaleX, scaleY, scale); // 使用最小值，但不超过指定的最大缩放
 
         model.scale.set(autoScale, autoScale);
@@ -110,10 +137,11 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         console.log('Model loaded successfully:', model);
         console.log('Model size:', model.width, 'x', model.height);
         console.log('Auto scale:', autoScale);
+        console.log('Stage children after model added:', app.stage.children.length);
 
         // 居中模型
-        model.x = containerWidth / 2;
-        model.y = containerHeight / 2;
+        model.x = screenWidth / 2;
+        model.y = screenHeight / 2;
         model.anchor.set(0.5, 0.5);
 
         // 添加到舞台
@@ -172,7 +200,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         // 添加环境光效
         const ambientLight = new PIXI.Graphics();
         ambientLight.beginFill(0x00ffff, 0.1);
-        ambientLight.drawCircle(app.screen.width / 2, app.screen.height / 2, 150);
+        ambientLight.drawCircle(screenWidth / 2, screenHeight / 2, 150);
         ambientLight.endFill();
         app.stage.addChildAt(ambientLight, 0);
 
@@ -181,6 +209,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       } catch (err) {
         console.error('Failed to init character:', err);
         console.log('Using placeholder model instead');
+        console.log('Error details:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
 
         // 确保 app 存在
         if (!app) {
@@ -190,59 +219,63 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
           return;
         }
 
-        // 使用占位符模型
+        // 使用占位符模型 - 居中显示
+        const screenWidth = (app as any)._screenWidth || app.screen.width;
+        const screenHeight = (app as any)._screenHeight || app.screen.height;
+        const centerX = screenWidth / 2;
+        const centerY = screenHeight / 2;
         const character = new PIXI.Graphics();
 
         // 身体 - 深色科技风格
         character.beginFill(0x1a1a2e);
-        character.drawEllipse(200, 320, 60, 100);
+        character.drawEllipse(centerX, centerY + 140, 60, 100);
         character.endFill();
         character.lineStyle(2, 0x00ffff, 0.8);
-        character.drawEllipse(200, 320, 60, 100);
+        character.drawEllipse(centerX, centerY + 140, 60, 100);
 
         // 头部 - 带有发光效果
         character.beginFill(0x2a2a4e);
-        character.drawCircle(200, 180, 65);
+        character.drawCircle(centerX, centerY - 20, 65);
         character.endFill();
         character.lineStyle(2, 0xff00ff, 0.6);
-        character.drawCircle(200, 180, 65);
+        character.drawCircle(centerX, centerY - 20, 65);
 
         // 眼睛 - 霓虹发光
         character.beginFill(0x00ffff);
-        character.drawCircle(175, 170, 12);
-        character.drawCircle(225, 170, 12);
+        character.drawCircle(centerX - 25, centerY - 30, 12);
+        character.drawCircle(centerX + 25, centerY - 30, 12);
         character.endFill();
 
         // 瞳孔
         character.beginFill(0x000033);
-        character.drawCircle(175, 170, 6);
-        character.drawCircle(225, 170, 6);
+        character.drawCircle(centerX - 25, centerY - 30, 6);
+        character.drawCircle(centerX + 25, centerY - 30, 6);
         character.endFill();
 
         // 眼睛高光
         character.beginFill(0xffffff);
-        character.drawCircle(173, 168, 3);
-        character.drawCircle(223, 168, 3);
+        character.drawCircle(centerX - 27, centerY - 32, 3);
+        character.drawCircle(centerX + 23, centerY - 32, 3);
         character.endFill();
 
         // 嘴巴
         character.beginFill(0xff6699);
-        character.drawEllipse(200, 205, 12, 6);
+        character.drawEllipse(centerX, centerY - 5, 12, 6);
         character.endFill();
 
         // 头发 - 科技风格
         character.beginFill(0x1a1a3e);
-        character.drawEllipse(200, 110, 85, 55);
+        character.drawEllipse(centerX, centerY - 110, 85, 55);
         character.endFill();
         character.lineStyle(2, 0x00ffff, 0.4);
-        character.drawEllipse(200, 110, 85, 55);
+        character.drawEllipse(centerX, centerY - 110, 85, 55);
 
         // 发光线条装饰
         character.lineStyle(1, 0xff00ff, 0.5);
-        character.moveTo(150, 150);
-        character.lineTo(130, 120);
-        character.moveTo(250, 150);
-        character.lineTo(270, 120);
+        character.moveTo(centerX - 50, centerY - 70);
+        character.lineTo(centerX - 70, centerY - 100);
+        character.moveTo(centerX + 50, centerY - 70);
+        character.lineTo(centerX + 70, centerY - 100);
 
         // 添加到舞台
         app.stage.addChild(character);
@@ -256,8 +289,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         app.stage.interactive = true;
         app.stage.on('pointerdown', (event: PIXI.InteractionEvent) => {
           const position = event.data.global;
-          const dx = position.x - 200;
-          const dy = position.y - 180;
+          const dx = position.x - centerX;
+          const dy = position.y - (centerY - 20);
 
           if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
             // 点击头部 - 放大效果
@@ -275,12 +308,13 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         // 添加环境光效
         const ambientLight = new PIXI.Graphics();
         ambientLight.beginFill(0x00ffff, 0.1);
-        ambientLight.drawCircle(app.screen.width / 2, app.screen.height / 2, 150);
+        ambientLight.drawCircle(screenWidth / 2, screenHeight / 2, 150);
         ambientLight.endFill();
         app.stage.addChildAt(ambientLight, 0);
 
         setError('使用占位符模型 - 请检查模型文件');
         setIsLoading(false);
+        console.log('Placeholder model added to stage, children:', app.stage.children.length);
       }
     };
 
@@ -312,11 +346,11 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       position: 'relative',
       width: '100%',
       height: '100%',
-      minHeight: '400px',
       background: 'linear-gradient(180deg, #0a0a12 0%, #151525 100%)',
       overflow: 'hidden',
       margin: '0',
       padding: '0',
+      border: '2px solid #00ff00', // Debug: green border to see if container is visible
     },
     canvas: {
       width: '100%',
@@ -332,8 +366,9 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'rgba(10, 10, 20, 0.9)',
+      background: 'rgba(10, 10, 20, 0.95)',
       color: '#00ffff',
+      zIndex: 100,
     },
     spinner: {
       width: '40px',
@@ -390,15 +425,21 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       {isLoading && (
         <div style={styles.overlay}>
           <div style={styles.spinner} />
-          <p style={{ marginTop: '12px', fontSize: '11px', letterSpacing: '2px' }}>
+          <p style={{ marginTop: '12px', fontSize: '11px', letterSpacing: '2px', color: '#00ffff' }}>
             INITIALIZING CHARACTER...
+          </p>
+          <p style={{ marginTop: '8px', fontSize: '10px', color: '#00ff00', textAlign: 'center' }}>
+            Debug: Loading model from {modelUrl}
           </p>
         </div>
       )}
       {error && (
         <div style={styles.errorOverlay}>
-          <p style={{ fontSize: '12px', letterSpacing: '1px', marginBottom: '8px' }}>
+          <p style={{ fontSize: '12px', letterSpacing: '1px', marginBottom: '8px', color: '#ff0066' }}>
             {error}
+          </p>
+          <p style={{ fontSize: '10px', color: '#ff00ff', marginBottom: '12px' }}>
+            Debug: Check console for details
           </p>
           <button
             style={styles.retryButton}
