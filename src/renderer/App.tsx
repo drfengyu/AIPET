@@ -23,7 +23,7 @@ interface Settings {
 }
 
 function App() {
-  const [selectedModel, setSelectedModel] = useState('/models/Haru/Haru.model3.json');
+  const [selectedModel, setSelectedModel] = useState('./models/Haru/Haru.model3.json');
   const [showSettings, setShowSettings] = useState(false);
   const [currentExpression, setCurrentExpression] = useState('F01');
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -123,36 +123,36 @@ function App() {
           </div>
           <div style={styles.modelSelector}>
             <button
-              style={selectedModel === '/models/Haru/Haru.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/Haru/Haru.model3.json')}
+              style={selectedModel === './models/Haru/Haru.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('./models/Haru/Haru.model3.json')}
             >
               <span style={styles.btnIndicator} />
               Haru
             </button>
             <button
-              style={selectedModel === '/models/Hiyori/Hiyori.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/Hiyori/Hiyori.model3.json')}
+              style={selectedModel === './models/Hiyori/Hiyori.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('./models/Hiyori/Hiyori.model3.json')}
             >
               <span style={styles.btnIndicator} />
               Hiyori
             </button>
             <button
-              style={selectedModel === '/models/Mao/Mao.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/Mao/Mao.model3.json')}
+              style={selectedModel === './models/Mao/Mao.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('./models/Mao/Mao.model3.json')}
             >
               <span style={styles.btnIndicator} />
               Mao
             </button>
             <button
-              style={selectedModel === '/models/Mark/Mark.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/Mark/Mark.model3.json')}
+              style={selectedModel === './models/Mark/Mark.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('./models/Mark/Mark.model3.json')}
             >
               <span style={styles.btnIndicator} />
               Mark
             </button>
             <button
-              style={selectedModel === '/models/Natori/Natori.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('/models/Natori/Natori.model3.json')}
+              style={selectedModel === './models/Natori/Natori.model3.json' ? styles.modelBtnActive : styles.modelBtn}
+              onClick={() => setSelectedModel('./models/Natori/Natori.model3.json')}
             >
               <span style={styles.btnIndicator} />
               Natori

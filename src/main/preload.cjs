@@ -5,8 +5,16 @@
 
 const { contextBridge, ipcRenderer } = require('electron');
 
+// 判断是否为生产环境
+const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV?.startsWith('dev');
+
 // 安全地暴露 IPC 方法到渲染进程
 contextBridge.exposeInMainWorld('electronAPI', {
+  // 环境信息
+  isElectron: true,
+  isDev,
+  baseUrl: isDev ? '' : 'aipet://dist/renderer/',
+
   // 获取应用版本
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
 
@@ -20,7 +28,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onEvent: (channel, callback) => {
     const handler = (event, ...args) => callback(...args);
     ipcRenderer.on(channel, handler);
-    // 返回取消监听的函数
     return () => ipcRenderer.removeListener(channel, handler);
   },
 
@@ -29,7 +36,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.send(channel, ...args);
   },
 
-  // AI 聊天 - 通过主进程调用 Cloudflare API (生产环境使用)
+  // AI 聊天 - 通过主进程调用 Cloudflare API
   chatWithAI: (message) => ipcRenderer.invoke('ai-chat', message),
 });
 

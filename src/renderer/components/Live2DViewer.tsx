@@ -13,7 +13,7 @@ interface Live2DViewerProps {
 }
 
 const Live2DViewer: React.FC<Live2DViewerProps> = ({
-  modelUrl = '/models/Haru/Haru.model3.json',
+  modelUrl = './models/Haru/Haru.model3.json',
   scale = 0.08, // 调整缩放比例以适应大尺寸模型
   onMotion,
   expression
@@ -25,7 +25,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   const idleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [characterName, setCharacterName] = useState(() => {
     const modelMap: { [key: string]: string } = {
-      '/models/Haru/Haru.model3.json': 'Haru',
+      './models/Haru/Haru.model3.json': 'Haru',
       '/models/Hiyori/Hiyori.model3.json': 'Hiyori',
       '/models/Mao/Mao.model3.json': 'Mao',
       '/models/Mark/Mark.model3.json': 'Mark',
@@ -85,7 +85,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         console.log('PIXI app created, stage children:', app.stage.children.length);
 
         const modelMap: { [key: string]: string } = {
-          '/models/Haru/Haru.model3.json': 'Haru',
+          './models/Haru/Haru.model3.json': 'Haru',
           '/models/Hiyori/Hiyori.model3.json': 'Hiyori',
           '/models/Mao/Mao.model3.json': 'Mao',
           '/models/Mark/Mark.model3.json': 'Mark',

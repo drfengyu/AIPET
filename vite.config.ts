@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
+  base: './',  // Use relative paths for Electron file:// protocol
   plugins: [
     react({
       jsxRuntime: 'automatic',
@@ -25,7 +26,6 @@ export default defineConfig({
   build: {
     outDir: 'dist/renderer',
     emptyOutDir: true,
-    base: '',  // Use relative paths for Electron file:// protocol
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html'),

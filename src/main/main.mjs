@@ -8,6 +8,13 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 
+const { app, BrowserWindow, ipcMain, nativeTheme, protocol, net } = electron;
+
+// 注册自定义协议（必须在 app.whenReady 之前）
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'aipet', privileges: { standard: true, secure: true, supportFetchAPI: true, bypassCSP: true } },
+]);
+
 // 加载 .env 配置文件 (支持打包后的应用)
 function loadEnv() {
   const envPaths = [
@@ -41,7 +48,6 @@ function loadEnv() {
   console.warn('No .env file found');
 }
 
-const { app, BrowserWindow, ipcMain, nativeTheme } = electron;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -81,8 +87,9 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:5174');
     mainWindow.webContents.openDevTools();
   } else {
-    // 生产环境：加载构建好的 HTML 文件
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    // 生产环境：通过自定义协议加载，确保 asar.unpacked 资源可访问
+    const rendererPath = path.join(__dirname, '../renderer/index.html');
+    mainWindow.loadURL('aipet://dist/renderer/index.html');
   }
 
   // 窗口事件处理
@@ -93,7 +100,7 @@ function createWindow() {
   // 阻止导航到外部 URL
   mainWindow.webContents.on('will-navigate', (event) => {
     const url = new URL(event.url);
-    if (url.origin !== 'http://localhost:5174' && url.protocol !== 'file:') {
+    if (url.protocol !== 'aipet:' && url.protocol !== 'file:') {
       event.preventDefault();
     }
   });
@@ -107,6 +114,16 @@ function createWindow() {
 
 // 应用准备好时创建窗口
 app.whenReady().then(() => {
+  // 生产环境注册 aipet:// 协议
+  if (process.env.NODE_ENV !== 'development') {
+    const resourcesPath = process.resourcesPath || path.join(__dirname, '..');
+    protocol.handle('aipet', (request) => {
+      const url = new URL(request.url);
+      const filePath = path.join(resourcesPath, url.pathname);
+      return net.fetch(path.resolve(filePath));
+    });
+  }
+
   createWindow();
 
   // macOS：即使没有窗口打开，也要保持应用活跃
