@@ -13,7 +13,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 环境信息
   isElectron: true,
   isDev,
-  baseUrl: isDev ? '' : 'aipet://dist/renderer/',
 
   // 获取应用版本
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),

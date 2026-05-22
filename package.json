@@ -96,14 +96,11 @@
     "directories": {
       "output": "dist/installer"
     },
+    "asar": false,
     "files": [
       "dist/main/**/*",
       "dist/renderer/**/*",
       "node_modules/**/*"
-    ],
-    "asarUnpack": [
-      "dist/renderer/models/**",
-      "dist/renderer/live2dcubismcore.*"
     ],
     "extraResources": [
       {

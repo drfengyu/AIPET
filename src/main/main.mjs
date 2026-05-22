@@ -7,13 +7,49 @@ import electron from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
-const { app, BrowserWindow, ipcMain, nativeTheme, protocol, net } = electron;
+const { app, BrowserWindow, ipcMain, nativeTheme } = electron;
+const require = createRequire(import.meta.url);
 
-// 注册自定义协议（必须在 app.whenReady 之前）
-protocol.registerSchemesAsPrivileged([
-  { scheme: 'aipet', privileges: { standard: true, secure: true, supportFetchAPI: true, bypassCSP: true } },
-]);
+// 启动调试日志——写入固定路径，可以追踪闪退前执行到哪一步
+const __debugLogFile = path.join(process.env.USERPROFILE || 'C:\\Users\\Administrator', 'aipet-debug.log');
+const PHASE_LOG = path.join(process.env.USERPROFILE || 'C:\\Users\\Administrator', 'aipet-phase.log');
+function debugLog(msg) {
+  try {
+    fs.appendFileSync(__debugLogFile, new Date().toISOString() + ' ' + msg + '\n');
+  } catch (_) {}
+}
+function phaseLog(msg) {
+  try {
+    fs.appendFileSync(PHASE_LOG, new Date().toISOString() + ' ' + msg + '\n');
+  } catch (_) {}
+}
+
+debugLog('STARTUP: module loading begins');
+phaseLog('start');
+
+// 全局未捕获异常处理
+process.on('uncaughtException', (err) => {
+  debugLog('UNCAUGHT EXCEPTION: ' + (err?.stack || err?.message || err));
+  phaseLog('UNCAUGHT: ' + (err?.message || 'unknown'));
+  try {
+    const userDataPath = app.getPath('userData');
+    fs.appendFileSync(path.join(userDataPath, 'crash.log'), new Date().toISOString() + ' ' + (err?.stack || err?.message || err) + '\n');
+  } catch (_) {}
+});
+
+process.on('unhandledRejection', (reason) => {
+  debugLog('UNHANDLED REJECTION: ' + (reason?.stack || reason));
+  phaseLog('UNHANDLED_REJ: ' + (reason?.message || 'unknown'));
+});
+
+// 禁用 GPU 加速——便携版经常因 GPU 驱动问题闪退
+app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-software-rasterizer');
+
+debugLog('imports done, loading .env');
+phaseLog('imports_done');
 
 // 加载 .env 配置文件 (支持打包后的应用)
 function loadEnv() {
@@ -38,33 +74,42 @@ function loadEnv() {
             process.env[key] = value;
           }
         }
-        console.log('Loaded env from:', envPath);
+        debugLog('Loaded env from: ' + envPath);
         return;
       }
     } catch (e) {
       // ignore
     }
   }
-  console.warn('No .env file found');
+  debugLog('No .env file found');
 }
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 loadEnv();
+debugLog('__dirname: ' + __dirname);
+debugLog('resourcesPath: ' + (process.resourcesPath || 'undefined'));
+phaseLog('env_loaded');
 
 // 保持全局引用，防止窗口被垃圾回收时自动关闭
 let mainWindow = null;
 
-// 安全配置
+// 安全配置（sandbox=false 以支持 Live2D Cubism WASM 渲染）
 const SECURITY_CONFIG = {
   contextIsolation: true,
-  sandbox: true,
+  sandbox: false,
   nodeIntegration: false,
-  webSecurity: true,
+  webSecurity: false,     // file:// 下 Live2D 需要此设置来加载模型资源
 };
 
+debugLog('SECURITY_CONFIG defined');
+phaseLog('security_config');
+
 function createWindow() {
+  debugLog('createWindow() called');
+  phaseLog('createWindow_in');
+
   // 创建浏览器窗口
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -78,53 +123,107 @@ function createWindow() {
     // 窗口外观
     titleBarStyle: 'default',
     backgroundColor: '#0a0a0f',
-    icon: path.join(__dirname, '../../public/favicon.ico'),
+    show: true,
   });
+
+  debugLog('BrowserWindow created');
+  phaseLog('bw_created');
 
   // 加载应用的入口文件
   if (process.env.NODE_ENV === 'development') {
     // 开发环境：加载 Vite dev server
     mainWindow.loadURL('http://localhost:5174');
     mainWindow.webContents.openDevTools();
+    debugLog('Development mode: loadURL http://localhost:5174');
   } else {
-    // 生产环境：通过自定义协议加载，确保 asar.unpacked 资源可访问
-    const rendererPath = path.join(__dirname, '../renderer/index.html');
-    mainWindow.loadURL('aipet://dist/renderer/index.html');
+    // 生产环境：加载构建好的 HTML 文件
+    const htmlPath = path.join(__dirname, '../renderer/index.html');
+    debugLog('Production mode: loadFile ' + htmlPath);
+    phaseLog('loadFile_called');
+
+    // 使用 async loadFile 并捕获错误
+    mainWindow.loadFile(htmlPath).then(() => {
+      debugLog('loadFile resolved successfully');
+      phaseLog('loadFile_done');
+    }).catch((err) => {
+      debugLog('loadFile rejected: ' + (err?.message || err));
+      phaseLog('loadFile_rej:' + (err?.message || 'err'));
+    });
+
+    debugLog('loadFile call returned (async)');
+    phaseLog('loadFile_async');
   }
+
+  debugLog('createWindow() returning - event loop should run now');
+  phaseLog('createWindow_exit');
+
+  // 快速诊断定时器
+  const intervals = [2, 5, 10, 20];
+  intervals.forEach(sec => {
+    setTimeout(() => {
+      phaseLog('alive_' + sec + 's');
+      debugLog('>>> ALIVE CHECK at ' + sec + 's');
+      try {
+        if (mainWindow && mainWindow.webContents) {
+          const wc = mainWindow.webContents;
+          debugLog('>>> IsLoading:' + wc.isLoading() + ' IsCrashed:' + wc.isCrashed() + ' IsDestroyed:' + wc.isDestroyed());
+        }
+      } catch (e) {
+        debugLog('>>> alive check err: ' + e?.message);
+      }
+    }, sec * 1000);
+  });
 
   // 窗口事件处理
   mainWindow.on('closed', () => {
+    debugLog('Window closed');
+    phaseLog('win_closed');
     mainWindow = null;
+  });
+
+  mainWindow.on('ready-to-show', () => {
+    debugLog('Window ready-to-show');
+    phaseLog('win_ready');
+  });
+
+  // 监听渲染进程崩溃
+  mainWindow.webContents.on('crashed', (event, killed) => {
+    debugLog('Renderer crashed! killed=' + killed);
+    phaseLog('renderer_crashed:' + killed);
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    debugLog('Page did-finish-load');
+    phaseLog('page_loaded');
+  });
+
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+    debugLog('Page did-fail-load: errorCode=' + errorCode + ' desc=' + errorDescription);
+    phaseLog('page_fail:' + errorCode);
   });
 
   // 阻止导航到外部 URL
   mainWindow.webContents.on('will-navigate', (event) => {
     const url = new URL(event.url);
-    if (url.protocol !== 'aipet:' && url.protocol !== 'file:') {
+    if (url.protocol !== 'file:') {
       event.preventDefault();
     }
   });
 
   // 阻止新窗口打开
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    console.log('Blocked window open:', url);
+    debugLog('Blocked window open: ' + url);
     return { action: 'deny' };
   });
 }
 
 // 应用准备好时创建窗口
 app.whenReady().then(() => {
-  // 生产环境注册 aipet:// 协议
-  if (process.env.NODE_ENV !== 'development') {
-    const resourcesPath = process.resourcesPath || path.join(__dirname, '..');
-    protocol.handle('aipet', (request) => {
-      const url = new URL(request.url);
-      const filePath = path.join(resourcesPath, url.pathname);
-      return net.fetch(path.resolve(filePath));
-    });
-  }
-
+  debugLog('app.whenReady() fired');
+  phaseLog('whenReady');
   createWindow();
+  debugLog('after createWindow() - handlers registered, event loop running');
+  phaseLog('after_createWindow');
 
   // macOS：即使没有窗口打开，也要保持应用活跃
   app.on('activate', () => {
@@ -136,9 +235,16 @@ app.whenReady().then(() => {
 
 // 当所有窗口关闭时退出应用（macOS除外）
 app.on('window-all-closed', () => {
+  debugLog('window-all-closed fired');
+  phaseLog('win_all_closed');
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('will-quit', () => {
+  debugLog('will-quit fired');
+  phaseLog('will_quit');
 });
 
 // IPC 通信处理
@@ -184,27 +290,27 @@ ipcMain.handle('ai-chat', async (event, { message, history = [] }) => {
       }
     ];
 
+    // 使用 Cloudflare Workers AI REST API 进行对话
     const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-3.1-8b-instruct`,
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-2-7b-chat-fp16`,
       {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ messages })
+        body: JSON.stringify({ messages }),
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      return { error: `Cloudflare API error: ${response.status} - ${errorText}` };
+      return { error: `API request failed: ${response.status} ${errorText}` };
     }
 
     const data = await response.json();
-    return data;
+    return { response: data.result.response };
   } catch (error) {
-    console.error('AI chat error:', error);
     return { error: error.message };
   }
 });
