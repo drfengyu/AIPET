@@ -25,7 +25,7 @@ interface ChatWindowProps {
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
-  onSendMessage, onAIResponse,
+  onSendMessage, onAIResponse, onSpeakingChange,
   ttsEnabled = false, ttsVoice = 'zh-CN', ttsRate = 1.0,
   useMockAI = false, aiModel, fontSize = 13, messageHistory = 10,
   memoryTags = [],
