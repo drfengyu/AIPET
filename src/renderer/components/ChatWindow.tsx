@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { getAIResponse, type ChatMessage } from '../services/aiService';
 import { speak, stop, isSupported } from '../services/ttsService';
 import { loadFacts, extractFacts, addFact, getRelevantFacts, formatFactsForContext } from '../services/memoryService';
+import { loadFacts, extractFacts, addFact, getRelevantFacts, formatFactsForContext } from '../services/memoryService';
 
 export interface Message {
   id: string;

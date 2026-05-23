@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Live2DViewer from './components/Live2DViewer';
-import ChatWindow from './components/ChatWindow';
+import ChatWindow, { type Message } from './components/ChatWindow';
 import SettingsPanel from './components/SettingsPanel';
 import MemoryPanel from './components/MemoryPanel';
 import AudioVisualizer from './components/AudioVisualizer';
 import { getExpressionForEmotion } from './services/aiService';
 import { loadFacts, getMemoryStats } from './services/memoryService';
+import { loadConfig, saveConfig, IdleTimer, getProactiveMessage, type ProactiveConfig } from './services/proactiveService';
 
 interface Settings {
   aiModel: string;
@@ -41,7 +42,40 @@ function App() {
   const [showMemory, setShowMemory] = useState(false);
   const [latency] = useState(42);
 
-  // HUD state — updated by AI interactions
+  // 主动对话
+  const [proactiveConfig, setProactiveConfig] = useState<ProactiveConfig>(loadConfig);
+  const [lastActivity, setLastActivity] = useState(Date.now());
+  const [proactiveMessages, setProactiveMessages] = useState<Message[]>([]);
+  const idleTimerRef = useRef<IdleTimer | null>(null);
+
+  // 初始化闲置计时器
+  useEffect(() => {
+    const timer = new IdleTimer(() => {
+      // 触发主动消息
+      const msg = getProactiveMessage();
+      setProactiveMessages(prev => [...prev, {
+        id: 'proactive-' + Date.now(),
+        text: msg,
+        sender: 'ai' as const,
+        timestamp: new Date(),
+        isProactive: true,
+      }]);
+      // 更新 HUD
+      setMood(m => Math.min(100, m + 2));
+    }, proactiveConfig.intervalMinutes);
+    idleTimerRef.current = timer;
+    if (proactiveConfig.enabled) timer.start();
+    return () => timer.stop();
+  }, [proactiveConfig.intervalMinutes]);
+
+  // 用户活动时重置计时器
+  const handleActivity = useCallback(() => {
+    setLastActivity(Date.now());
+    if (proactiveConfig.enabled && idleTimerRef.current) {
+      idleTimerRef.current.reset();
+    }
+  }, [proactiveConfig.enabled]);
+
   const [mood, setMood] = useState(78);
   const [energy, setEnergy] = useState(65);
   const [memory, setMemory] = useState(45);
@@ -73,6 +107,8 @@ function App() {
   const handleSendMessage = (_message: string) => {
     // 用户发送消息时能量略微下降
     setEnergy(e => Math.max(20, e - 2));
+    // 重置闲置计时器
+    handleActivity();
   };
 
   const handleMotion = useCallback((_motion: string) => {}, []);
@@ -251,6 +287,8 @@ function App() {
             onSpeakingChange={setIsSpeaking}
             onMemoryChange={handleMemoryChange}
             onOpenMemory={() => setShowMemory(true)}
+            proactiveMessages={proactiveMessages}
+            onResetProactive={() => setProactiveMessages([])}
             ttsEnabled={settings?.ttsEnabled || false}
             ttsVoice={settings?.ttsVoice || 'zh-CN'}
             ttsRate={settings?.ttsRate || 1.0}

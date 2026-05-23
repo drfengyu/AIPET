@@ -1318,3 +1318,5 @@
 [2026-05-23 16:54:49] POST_COMMIT: 93c78ef - fix: pet日志始终写入phase.log, 增加全局onerror捕获未处理异常
 [2026-05-23 17:08:24] PRE_COMMIT: OK - 4 files checked
 [2026-05-23 17:08:25] POST_COMMIT: 4c0a784 - feat: 记忆2.0 - 事实提取/持久化/记忆面板/上下文注入
+[2026-05-23 17:09:34] PRE_COMMIT: OK - 1 files checked
+[2026-05-23 17:09:34] POST_COMMIT: f3541c9 - chore: 修复 lint 错误(无用转义/引号)
