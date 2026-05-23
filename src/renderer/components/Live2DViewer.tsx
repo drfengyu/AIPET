@@ -22,6 +22,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   const modelRef = useRef<Live2DModel | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadingStage, setLoadingStage] = useState('INITIALIZING...');
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const idleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [characterName, setCharacterName] = useState(() => {
     const modelMap: { [key: string]: string } = {
@@ -45,14 +47,16 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
       setIsLoading(true);
       setError(null);
+      setLoadingStage('INITIALIZING RENDERER...');
+      setLoadingProgress(5);
 
       // 获取容器尺寸
       const containerWidth = containerRef.current?.clientWidth || 400;
       const containerHeight = containerRef.current?.clientHeight || 500;
 
-      console.log('Container dimensions:', containerWidth, 'x', containerHeight);
-
       // 创建PIXI应用 - 使用容器尺寸
+      setLoadingStage('SETTING UP GRAPHICS...');
+      setLoadingProgress(15);
       app = new PIXI.Application({
         width: containerWidth,
         height: containerHeight,
@@ -80,7 +84,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
       try {
 
-        // 加载真实的Live2D模型
+        setLoadingStage('LOADING MODEL DATA...');
+        setLoadingProgress(35);
         console.log('Loading Live2D model from:', modelUrl);
         console.log('PIXI app created, stage children:', app.stage.children.length);
 
@@ -93,9 +98,12 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         };
         setCharacterName(modelMap[modelUrl] || 'Haru');
 
+        setLoadingStage('DECODING TEXTURES...');
+        setLoadingProgress(50);
         const model = await Live2DModel.from(modelUrl);
 
-        // 检查组件是否仍然挂载
+        setLoadingStage('RENDERING CHARACTER...');
+        setLoadingProgress(70);
         if (!isMounted) return;
 
         // 检查模型是否成功加载
@@ -140,6 +148,9 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
         // 添加到舞台
         app.stage.addChild(model);
+
+        setLoadingStage('INITIALIZING ANIMATIONS...');
+        setLoadingProgress(85);
 
         // 保存模型引用
         modelRef.current = model;
@@ -207,7 +218,10 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
           }
         }, 8000 + Math.random() * 4000);
 
-        setIsLoading(false);
+        setLoadingStage('READY');
+        setLoadingProgress(100);
+        // 短暂延迟让用户看到 100%
+        setTimeout(() => setIsLoading(false), 300);
 
       } catch (err) {
         console.error('Failed to init character:', err);
@@ -390,6 +404,61 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       color: '#00ffff',
       zIndex: 100,
     },
+    loadingContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '16px',
+    },
+    loadingRing: {
+      width: '48px',
+      height: '48px',
+      border: '2px solid rgba(0, 255, 255, 0.15)',
+      borderRadius: '50%',
+      position: 'relative',
+      animation: 'pulse-ring 2s ease-in-out infinite',
+    },
+    loadingRingInner: {
+      position: 'absolute',
+      top: '4px',
+      left: '4px',
+      right: '4px',
+      bottom: '4px',
+      border: '2px solid transparent',
+      borderTopColor: '#00ffff',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+    },
+    loadingStage: {
+      margin: 0,
+      fontSize: '11px',
+      letterSpacing: '3px',
+      color: '#00ffff',
+      textShadow: '0 0 10px rgba(0, 255, 255, 0.5)',
+      fontFamily: '"Share Tech Mono", monospace',
+    },
+    progressTrack: {
+      width: '200px',
+      height: '4px',
+      background: 'rgba(0, 255, 255, 0.1)',
+      border: '1px solid rgba(0, 255, 255, 0.2)',
+      borderRadius: '2px',
+      overflow: 'hidden',
+    },
+    progressBar: {
+      height: '100%',
+      background: 'linear-gradient(90deg, #00ffff, #ff00ff)',
+      borderRadius: '2px',
+      boxShadow: '0 0 8px rgba(0, 255, 255, 0.6), 0 0 16px rgba(255, 0, 255, 0.3)',
+    },
+    progressText: {
+      margin: 0,
+      fontSize: '10px',
+      letterSpacing: '2px',
+      color: '#888',
+      fontFamily: '"Share Tech Mono", monospace',
+    },
     spinner: {
       width: '40px',
       height: '40px',
@@ -444,13 +513,25 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       <div ref={containerRef} style={styles.canvas} />
       {isLoading && (
         <div style={styles.overlay}>
-          <div style={styles.spinner} />
-          <p style={{ marginTop: '12px', fontSize: '11px', letterSpacing: '2px', color: '#00ffff' }}>
-            INITIALIZING CHARACTER...
-          </p>
-          <p style={{ marginTop: '8px', fontSize: '10px', color: '#00ff00', textAlign: 'center' }}>
-            Debug: Loading model from {modelUrl}
-          </p>
+          <div style={styles.loadingContainer}>
+            {/* 脉冲圆环 */}
+            <div style={styles.loadingRing}>
+              <div style={styles.loadingRingInner} />
+            </div>
+            {/* 阶段文字 */}
+            <p style={styles.loadingStage}>{loadingStage}</p>
+            {/* 进度条 */}
+            <div style={styles.progressTrack}>
+              <div
+                style={{
+                  ...styles.progressBar,
+                  width: `${loadingProgress}%`,
+                  transition: 'width 0.4s ease',
+                }}
+              />
+            </div>
+            <p style={styles.progressText}>{loadingProgress}%</p>
+          </div>
         </div>
       )}
       {error && (
