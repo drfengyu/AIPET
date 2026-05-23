@@ -1316,3 +1316,5 @@
 [2026-05-23 16:45:46] POST_COMMIT: f615110 - fix: pixi-live2d-display 挂载在 PIXI.live2d 下, 修正 Live2DModel 引用路径
 [2026-05-23 16:51:32] POST_COMMIT: 1b73644 - fix: 改用 cubism4.min.js(不检查Cubism2), 增加pet窗口日志
 [2026-05-23 16:54:49] POST_COMMIT: 93c78ef - fix: pet日志始终写入phase.log, 增加全局onerror捕获未处理异常
+[2026-05-23 17:08:24] PRE_COMMIT: OK - 4 files checked
+[2026-05-23 17:08:25] POST_COMMIT: 4c0a784 - feat: 记忆2.0 - 事实提取/持久化/记忆面板/上下文注入

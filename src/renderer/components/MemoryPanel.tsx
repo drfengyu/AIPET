@@ -111,7 +111,7 @@ const MemoryPanel: React.FC<MemoryPanelProps> = ({ onClose }) => {
         <div style={s.list}>
           {filtered.length === 0 ? (
             <div style={s.empty}>
-              {search ? '没有匹配的记忆' : '还没有记住任何信息\n和我聊天吧，我会慢慢了解你'}
+              {search ? '没有匹配的记忆' : `还没有记住任何信息\n和我聊天吧，我会慢慢了解你`}
             </div>
           ) : filtered.map(fact => (
             <div key={fact.id} style={s.factCard}>
