@@ -18,6 +18,7 @@ const __dirname = path.dirname(__filename);
 // 保持全局引用，防止窗口被垃圾回收时自动关闭
 let mainWindow = null;
 let tray = null;
+let petWindow = null;
 
 // ============================================
 // 内存优化配置
@@ -451,6 +452,58 @@ ipcMain.handle('get-mini-mode', () => {
     const b = mainWindow.getBounds();
     return b.width < 500 && b.height < 600;
   } catch { return false; }
+});
+
+// ========== 桌宠悬浮模式 ==========
+
+ipcMain.handle('open-pet-mode', (event, modelUrl) => {
+  if (petWindow) return true; // already open
+  try {
+    // 隐藏主窗口
+    if (mainWindow) mainWindow.hide();
+
+    // 创建桌宠窗口
+    const petPath = path.join(__dirname, '../renderer/pet.html');
+    petWindow = new BrowserWindow({
+      width: 320,
+      height: 420,
+      transparent: true,
+      frame: false,
+      resizable: false,
+      alwaysOnTop: true,
+      skipTaskbar: true,
+      hasShadow: false,
+      webPreferences: {
+        contextIsolation: false,
+        nodeIntegration: false,
+        sandbox: false,
+      },
+    });
+
+    petWindow.loadFile(petPath, { query: { model: modelUrl || './models/Haru/Haru.model3.json' } });
+    petWindow.setIgnoreMouseEvents(false);
+
+    petWindow.on('closed', () => {
+      petWindow = null;
+      // 关闭桌宠时恢复主窗口
+      if (mainWindow) mainWindow.show();
+    });
+
+    debugLog('Pet window opened');
+    return true;
+  } catch (e) {
+    debugLog('open-pet-mode error: ' + e.message);
+    return false;
+  }
+});
+
+ipcMain.handle('close-pet-mode', () => {
+  if (petWindow) {
+    petWindow.close();
+    petWindow = null;
+  }
+  if (mainWindow) mainWindow.show();
+  return true;
 });
 
 ipcMain.handle('set-transparent-mode', (event, enabled) => {

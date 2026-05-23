@@ -44,14 +44,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // ========== v0.3.0 ==========
 
-  // 迷你紧凑模式
-  setMiniMode: (enabled) => ipcRenderer.invoke('set-mini-mode', enabled),
-  getMiniMode: () => ipcRenderer.invoke('get-mini-mode'),
-  onMiniModeChanged: (callback) => {
-    const handler = (event, value) => callback(value);
-    ipcRenderer.on('mini-mode-changed', handler);
-    return () => ipcRenderer.removeListener('mini-mode-changed', handler);
-  },
+  // 桌宠悬浮模式
+  openPetMode: (modelUrl) => ipcRenderer.invoke('open-pet-mode', modelUrl),
+  closePetMode: () => ipcRenderer.invoke('close-pet-mode'),
 
   // 窗口拖拽
   dragWindow: (deltaX, deltaY) => ipcRenderer.invoke('drag-window', { deltaX, deltaY }),

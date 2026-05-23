@@ -40,15 +40,7 @@ function App() {
   const [memory, setMemory] = useState(45);
   const [currentEmotion, setCurrentEmotion] = useState('HAPPY');
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [miniMode, setMiniMode] = useState(false);
-
-  // 监听迷你模式变化
-  useEffect(() => {
-    const cleanup = (window as any).electronAPI?.onMiniModeChanged?.((enabled: boolean) => {
-      setMiniMode(enabled);
-    });
-    return () => cleanup?.();
-  }, []);
+  const [petMode, setPetMode] = useState(false);
 
   // 从 localStorage 加载设置
   useEffect(() => {
@@ -143,18 +135,20 @@ function App() {
           }}>
             📌 固定
           </button>
-          <button className="top-btn" onClick={() => {
+          <button className="top-btn" onClick={async () => {
             const api = (window as any).electronAPI;
-            if (api?.setMiniMode) {
-              const newVal = !miniMode;
-              api.setMiniMode(newVal);
-              setMiniMode(newVal);
+            if (!petMode && api?.openPetMode) {
+              await api.openPetMode(selectedModel);
+              setPetMode(true);
+            } else if (petMode && api?.closePetMode) {
+              await api.closePetMode();
+              setPetMode(false);
             }
           }}
-            style={{ borderColor: miniMode ? 'rgba(0,255,255,0.4)' : undefined,
-                     color: miniMode ? '#00ffff' : undefined }}
+            style={{ borderColor: petMode ? 'rgba(0,255,255,0.4)' : undefined,
+                     color: petMode ? '#00ffff' : undefined }}
           >
-            📱 迷你
+            🐾 桌宠
           </button>
           <button className="top-btn" onClick={checkUpdate}>⟳ 更新</button>
           <button className="top-btn" style={{ borderColor: 'rgba(255,0,255,0.3)', color: 'rgba(255,0,255,0.6)' }} onClick={() => setShowSettings(true)}>
@@ -178,8 +172,6 @@ function App() {
               energy={energy}
               memory={memory}
               emotion={currentEmotion}
-              dragEnabled={miniMode}
-              onDrag={(dx, dy) => (window as any).electronAPI?.dragWindow?.(dx, dy)}
             />
             {/* Floating particles */}
             <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>

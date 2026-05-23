@@ -1306,3 +1306,7 @@
 [2026-05-23 15:35:29] POST_COMMIT: ebbc81e - v0.3.0 WIP: 透明浮动模式(IPC+点击穿透+拖拽)+设置面板
 [2026-05-23 15:55:04] PRE_COMMIT: OK - 1 files checked
 [2026-05-23 15:55:05] POST_COMMIT: c456c53 - fix: 透明模式改用transparent:true窗口+CSS控制, 托盘图标加入打包
+[2026-05-23 16:25:59] PRE_COMMIT: OK - 1 files checked
+[2026-05-23 16:26:00] POST_COMMIT: feb06d7 - v0.3.0 WIP: 迷你紧凑模式(IPC+窗口缩放) 替代透明模式
+[2026-05-23 16:32:38] PRE_COMMIT: OK - 1 files checked
+[2026-05-23 16:32:39] POST_COMMIT: 7eb1087 - fix: transparentMode→miniMode 遗留引用导致的崩溃
