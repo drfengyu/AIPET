@@ -15,6 +15,9 @@ interface Live2DViewerProps {
   energy?: number;
   memory?: number;
   emotion?: string;
+  // 拖拽（透明模式下移动窗口）
+  dragEnabled?: boolean;
+  onDrag?: (dx: number, dy: number) => void;
 }
 
 const Live2DViewer: React.FC<Live2DViewerProps> = ({
@@ -26,6 +29,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   energy = 65,
   memory = 45,
   emotion = 'HAPPY',
+  dragEnabled = false,
+  onDrag,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const modelRef = useRef<Live2DModel | null>(null);
@@ -44,6 +49,24 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
     };
     return modelMap[modelUrl] || 'Haru';
   });
+
+  // 拖拽状态
+  const dragState = useRef({ dragging: false, startX: 0, startY: 0, winX: 0, winY: 0 });
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!dragEnabled) return;
+    dragState.current.dragging = true;
+    dragState.current.startX = e.clientX;
+    dragState.current.startY = e.clientY;
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragState.current.dragging || !dragEnabled) return;
+    const dx = e.clientX - dragState.current.startX;
+    const dy = e.clientY - dragState.current.startY;
+    onDrag?.(dx, dy);
+  };
+  const handleMouseUp = () => {
+    dragState.current.dragging = false;
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -518,7 +541,12 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   };
 
   return (
-    <div style={styles.viewer}>
+    <div style={styles.viewer}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
       <div ref={containerRef} style={styles.canvas} />
       {/* HUD: 角色名 */}
       {!isLoading && (

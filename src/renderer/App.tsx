@@ -40,6 +40,7 @@ function App() {
   const [memory, setMemory] = useState(45);
   const [currentEmotion, setCurrentEmotion] = useState('HAPPY');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [transparentMode, setTransparentMode] = useState(false);
 
   // 从 localStorage 加载设置
   useEffect(() => {
@@ -134,6 +135,19 @@ function App() {
           }}>
             📌 固定
           </button>
+          <button className="top-btn" onClick={() => {
+            const api = (window as any).electronAPI;
+            if (api?.setTransparentMode) {
+              const newVal = !transparentMode;
+              api.setTransparentMode(newVal);
+              setTransparentMode(newVal);
+            }
+          }}
+            style={{ borderColor: transparentMode ? 'rgba(0,255,255,0.4)' : undefined,
+                     color: transparentMode ? '#00ffff' : undefined }}
+          >
+            🎯 浮动
+          </button>
           <button className="top-btn" onClick={checkUpdate}>⟳ 更新</button>
           <button className="top-btn" style={{ borderColor: 'rgba(255,0,255,0.3)', color: 'rgba(255,0,255,0.6)' }} onClick={() => setShowSettings(true)}>
             ⚙ 设置
@@ -156,6 +170,8 @@ function App() {
               energy={energy}
               memory={memory}
               emotion={currentEmotion}
+              dragEnabled={transparentMode}
+              onDrag={(dx, dy) => (window as any).electronAPI?.dragWindow?.(dx, dy)}
             />
             {/* Floating particles */}
             <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>

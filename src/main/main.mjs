@@ -418,6 +418,50 @@ ipcMain.handle('quit-app', () => {
   app.quit();
 });
 
+// ========== 透明浮动模式 ==========
+
+ipcMain.handle('set-transparent-mode', (event, enabled) => {
+  if (!mainWindow) return false;
+  try {
+    if (enabled) {
+      // 保存当前窗口状态
+      const bounds = mainWindow.getBounds();
+      global._aipet_before_transparent = bounds;
+      // 启用透明 + 点击穿透
+      mainWindow.setBackgroundColor('#00000000');
+      mainWindow.setHasShadow(false);
+      mainWindow.setIgnoreMouseEvents(true, { forward: true });
+    } else {
+      mainWindow.setBackgroundColor('#1a1a2e');
+      mainWindow.setHasShadow(true);
+      mainWindow.setIgnoreMouseEvents(false);
+      // 恢复尺寸
+      if (global._aipet_before_transparent) {
+        const b = global._aipet_before_transparent;
+        mainWindow.setBounds(b);
+      }
+    }
+    mainWindow.webContents.send('transparent-mode-changed', enabled);
+    return true;
+  } catch (e) {
+    debugLog('set-transparent-mode error: ' + e.message);
+    return false;
+  }
+});
+
+ipcMain.handle('get-transparent-mode', () => {
+  if (!mainWindow) return false;
+  try {
+    return mainWindow.isIgnoreMouseEvents();
+  } catch { return false; }
+});
+
+ipcMain.handle('drag-window', (event, { deltaX, deltaY }) => {
+  if (!mainWindow) return;
+  const [x, y] = mainWindow.getPosition();
+  mainWindow.setPosition(x + deltaX, y + deltaY);
+});
+
 // 应用准备好时创建窗口
 app.whenReady().then(async () => {
   debugLog('app.whenReady() fired');

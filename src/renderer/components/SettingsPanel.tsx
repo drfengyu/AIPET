@@ -30,6 +30,7 @@ interface Settings {
   theme: string;
   soundEnabled: boolean;
   alwaysOnTop: boolean;
+  transparentMode: boolean;
 
   // 开发者选项
   debugMode: boolean;
@@ -60,6 +61,7 @@ const DEFAULT_SETTINGS: Settings = {
   theme: 'cyberpunk',
   soundEnabled: true,
   alwaysOnTop: false,
+  transparentMode: false,
 
   // 开发者选项
   debugMode: false,
@@ -467,6 +469,21 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSettingsChange
             }}
           >
             <div style={{ ...styles.toggleKnob, ...(settings.alwaysOnTop ? styles.toggleKnobActive : {}) }} />
+          </div>
+        </div>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>浮动模式</span>
+          <div
+            style={{ ...styles.toggle, ...(settings.transparentMode ? styles.toggleActive : {}) }}
+            onClick={() => {
+              const newVal = !settings.transparentMode;
+              updateSetting('transparentMode', newVal);
+              if (window.electronAPI?.setTransparentMode) {
+                window.electronAPI.setTransparentMode(newVal);
+              }
+            }}
+          >
+            <div style={{ ...styles.toggleKnob, ...(settings.transparentMode ? styles.toggleKnobActive : {}) }} />
           </div>
         </div>
       </div>

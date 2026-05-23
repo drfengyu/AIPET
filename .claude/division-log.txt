@@ -1301,3 +1301,4 @@
 [2026-05-23 15:19:25] POST_COMMIT: 24c3789 - UI打磨: 全中文界面+视觉统一+按钮重设计+交互反馈
 [2026-05-23 15:23:32] POST_COMMIT: 3348508 - docs: 更新README/CHANGELOG/知识点总结文档
 [2026-05-23 15:25:22] POST_COMMIT: 74908ca - docs: 添加技术实现详解文档
+[2026-05-23 15:26:56] POST_COMMIT: 7967552 - docs: 按归属+更新轮次整理分类 (guide/dev/optimization/archive)

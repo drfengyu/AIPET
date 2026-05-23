@@ -42,6 +42,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 退出应用
   quitApp: () => ipcRenderer.invoke('quit-app'),
 
+  // ========== v0.3.0 ==========
+
+  // 透明浮动模式
+  setTransparentMode: (enabled) => ipcRenderer.invoke('set-transparent-mode', enabled),
+  getTransparentMode: () => ipcRenderer.invoke('get-transparent-mode'),
+  onTransparentModeChanged: (callback) => {
+    const handler = (event, value) => callback(value);
+    ipcRenderer.on('transparent-mode-changed', handler);
+    return () => ipcRenderer.removeListener('transparent-mode-changed', handler);
+  },
+
+  // 窗口拖拽（透明模式下拖角色移动窗口）
+  dragWindow: (deltaX, deltaY) => ipcRenderer.invoke('drag-window', { deltaX, deltaY }),
+
   // 检查更新
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   downloadUpdate: () => ipcRenderer.invoke('download-update'),
