@@ -1295,3 +1295,5 @@
 [2026-05-23 14:21:54] POST_COMMIT: ee009ac - 修复: public/index.html 删冗余+live2d.min.js引用错误, onSpeakingChange解构遗漏
 [2026-05-23 14:25:55] PRE_COMMIT: OK - 2 files checked
 [2026-05-23 14:25:55] POST_COMMIT: d77d1e4 - 修复: 模型频繁加载(useCallback), 字体改用Share Tech Mono+微软雅黑
+[2026-05-23 14:31:36] PRE_COMMIT: OK - 4 files checked
+[2026-05-23 14:31:37] POST_COMMIT: 7330fc8 - UI: 调亮背景+增大字号+替换记忆碎片为角色名

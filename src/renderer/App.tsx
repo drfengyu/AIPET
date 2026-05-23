@@ -110,7 +110,7 @@ function App() {
   };
 
   return (
-    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f1a' }}>
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100vh', background: '#1a1a2e' }}>
 
       {/* ===== TOP BAR ===== */}
       <header style={s.topBar}>
@@ -120,23 +120,23 @@ function App() {
           <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginLeft: 20 }}>
             <span style={s.statusItem}>
               <span style={{ ...s.statusDot, background: '#00ff88', boxShadow: '0 0 6px #00ff88' }} />
-              ONLINE
+              在线
             </span>
             <span style={s.statusItem}>⚡ {latency}ms</span>
-            <span style={s.statusItem}>MEM {memory}%</span>
+            <span style={s.statusItem}>记忆 {memory}%</span>
           </div>
         </div>
         <div style={s.topBarRight}>
-          <button style={s.topBtn} onClick={() => {
+          <button className="top-btn" onClick={() => {
             if ((window as any).electronAPI?.setAlwaysOnTop) {
               (window as any).electronAPI.setAlwaysOnTop(!settings?.alwaysOnTop);
             }
           }}>
-            📌 PIN
+            📌 固定
           </button>
-          <button style={s.topBtn} onClick={checkUpdate}>⟳ UPDATE</button>
-          <button style={{ ...s.topBtn, borderColor: 'rgba(255,0,255,0.3)', color: 'rgba(255,0,255,0.6)' }} onClick={() => setShowSettings(true)}>
-            ⚙ SETTINGS
+          <button className="top-btn" onClick={checkUpdate}>⟳ 更新</button>
+          <button className="top-btn" style={{ borderColor: 'rgba(255,0,255,0.3)', color: 'rgba(255,0,255,0.6)' }} onClick={() => setShowSettings(true)}>
+            ⚙ 设置
           </button>
         </div>
       </header>
@@ -169,9 +169,23 @@ function App() {
                 }} />
               ))}
             </div>
-            {/* Holographic rings — purely decorative CSS overlay */}
-            <div style={s.holoRing1} />
-            <div style={s.holoRing2} />
+          {/* 全息环 */}
+            <div style={{
+              position: 'absolute', width: '78%', height: '78%',
+              border: '1px solid rgba(0,255,255,0.05)',
+              borderRadius: '50%', top: '11%', left: '11%',
+              animation: 'rotate-ring 35s linear infinite',
+              pointerEvents: 'none', zIndex: 1,
+              boxShadow: '0 0 20px rgba(0,255,255,0.03), inset 0 0 20px rgba(0,255,255,0.02)',
+            }} />
+            <div style={{
+              position: 'absolute', width: '62%', height: '62%',
+              border: '1px solid rgba(255,0,255,0.04)',
+              borderRadius: '50%', top: '19%', left: '19%',
+              animation: 'rotate-ring 25s linear infinite reverse',
+              pointerEvents: 'none', zIndex: 1,
+              boxShadow: '0 0 16px rgba(255,0,255,0.02), inset 0 0 16px rgba(255,0,255,0.02)',
+            }} />
           </div>
 
           {/* Model Selector */}
@@ -185,6 +199,7 @@ function App() {
             ].map(m => (
               <button
                 key={m.id}
+                className="model-pill"
                 style={{
                   ...s.modelPill,
                   ...(selectedModel === m.id ? s.modelPillActive : {}),
@@ -194,28 +209,6 @@ function App() {
                 {m.name}
               </button>
             ))}
-          </div>
-
-          {/* 角色信息浮窗 */}
-          <div style={{
-            position: 'absolute', bottom: '24%', left: '12px',
-            zIndex: 5,
-          }}>
-            <div style={{
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 13, letterSpacing: 1,
-              color: 'rgba(255,255,255,0.6)',
-            }}>
-              Haru
-            </div>
-            <div style={{
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 10, letterSpacing: 1,
-              color: 'rgba(0,255,255,0.4)',
-              marginTop: 2,
-            }}>
-              ● ONLINE · 12h
-            </div>
           </div>
         </div>
 
@@ -239,7 +232,7 @@ function App() {
           <div style={s.statusBar}>
             <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
               <span style={{ color: 'rgba(0,255,255,0.5)', fontSize: 9, letterSpacing: 1.5 }}>
-                ⟐ ACTIVE
+                ⟐ 运行中
               </span>
               <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, letterSpacing: 1 }}>
                 ⚡ {latency}ms
@@ -248,8 +241,8 @@ function App() {
               <AudioVisualizer isSpeaking={isSpeaking} />
             </div>
             <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-              <span style={s.statusText}>SES {sessionDisplay}</span>
-              <span style={s.statusText}>MSG {msgCount}</span>
+              <span style={s.statusText}>会话 {sessionDisplay}</span>
+              <span style={s.statusText}>消息 {msgCount}</span>
               <span style={s.statusText}>v0.2.0</span>
             </div>
           </div>
@@ -273,7 +266,7 @@ const s: Record<string, React.CSSProperties> = {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: '12px 28px',
     borderBottom: '1px solid rgba(0,255,255,0.08)',
-    background: 'rgba(7,7,15,0.85)',
+    background: 'rgba(26,26,46,0.9)',
     backdropFilter: 'blur(12px)',
     position: 'relative', zIndex: 100,
   },
@@ -297,9 +290,10 @@ const s: Record<string, React.CSSProperties> = {
   statusDot: { width: 5, height: 5, borderRadius: '50%', display: 'inline-block' },
   topBarRight: { display: 'flex', gap: 6 },
   topBtn: {
-    background: 'transparent', border: '1px solid rgba(0,255,255,0.15)',
-    color: 'rgba(0,255,255,0.4)',
-    padding: '7px 14px', fontFamily: "'Share Tech Mono', monospace",
+    background: 'rgba(0,255,255,0.03)',
+    border: '1px solid rgba(0,255,255,0.1)',
+    color: 'rgba(0,255,255,0.35)',
+    padding: '6px 12px', fontFamily: "'Share Tech Mono', monospace",
     fontSize: 11, letterSpacing: 1.5, cursor: 'pointer',
     transition: 'all 0.2s',
     borderRadius: 4,
@@ -310,29 +304,15 @@ const s: Record<string, React.CSSProperties> = {
     flex: '1.1', position: 'relative', display: 'flex',
     flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
     borderRadius: 8, overflow: 'hidden',
-    background: 'rgba(255,255,255,0.01)',
-    border: '1px solid rgba(255,255,255,0.04)',
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.07)',
     minWidth: 0,
   },
   charViewport: {
     width: '92%', height: '72%', position: 'relative',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    border: '1px solid rgba(0,255,255,0.04)',
-    borderRadius: 4, overflow: 'hidden',
-  },
-  holoRing1: {
-    position: 'absolute', width: '80%', height: '80%',
-    border: '1px solid rgba(0,255,255,0.06)',
-    borderRadius: '50%', top: '10%', left: '10%',
-    animation: 'rotate-ring 30s linear infinite',
-    pointerEvents: 'none', zIndex: 1,
-  },
-  holoRing2: {
-    position: 'absolute', width: '65%', height: '65%',
-    border: '1px solid rgba(255,0,255,0.04)',
-    borderRadius: '50%', top: '17.5%', left: '17.5%',
-    animation: 'rotate-ring 20s linear infinite reverse',
-    pointerEvents: 'none', zIndex: 1,
+    border: '1px solid rgba(0,255,255,0.05)',
+    borderRadius: 6, overflow: 'hidden',
   },
   modelStrip: {
     position: 'absolute', bottom: '4%', left: '50%',
@@ -340,24 +320,25 @@ const s: Record<string, React.CSSProperties> = {
     display: 'flex', gap: 6, zIndex: 5,
   },
   modelPill: {
-    padding: '4px 12px', border: '1px solid rgba(0,255,255,0.1)',
-    background: 'transparent',
+    padding: '4px 12px',
+    border: '1px solid rgba(0,255,255,0.06)',
+    background: 'rgba(0,255,255,0.02)',
     fontFamily: "'Share Tech Mono', monospace",
-    fontSize: 9, letterSpacing: 1, color: 'rgba(0,255,255,0.3)',
-    cursor: 'pointer', transition: 'all 0.2s', borderRadius: 2,
+    fontSize: 10, letterSpacing: 1, color: 'rgba(0,255,255,0.2)',
+    cursor: 'pointer', transition: 'all 0.2s ease', borderRadius: 4,
   },
   modelPillActive: {
     borderColor: 'rgba(0,255,255,0.3)',
     color: '#00ffff',
-    background: 'rgba(0,255,255,0.06)',
-    boxShadow: '0 0 8px rgba(0,255,255,0.1)',
+    background: 'rgba(0,255,255,0.04)',
+    boxShadow: '0 0 6px rgba(0,255,255,0.06)',
   },
   // Chat Panel
   chatPanel: {
     flex: 1, display: 'flex', flexDirection: 'column',
     borderRadius: 8, overflow: 'hidden',
-    background: 'rgba(255,255,255,0.01)',
-    border: '1px solid rgba(255,255,255,0.04)',
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.07)',
     minWidth: 0,
   },
 
@@ -365,8 +346,8 @@ const s: Record<string, React.CSSProperties> = {
   statusBar: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: '6px 16px',
-    borderTop: '1px solid rgba(0,255,255,0.05)',
-    background: 'rgba(7,7,15,0.4)',
+    borderTop: '1px solid rgba(0,255,255,0.04)',
+    background: 'rgba(255,255,255,0.01)',
     fontFamily: "'Share Tech Mono', monospace",
   },
   statusText: {

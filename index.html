@@ -10,13 +10,49 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #0f0f1a;
+      background: #1a1a2e;
       font-family: 'Share Tech Mono', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
     }
     #root { width: 100%; height: 100vh; }
 
+    /* ============ Global Interactive Styles ============ */
+
+    button, select, input[type="text"] {
+      transition: all 0.2s ease !important;
+    }
+
+    button:active {
+      opacity: 0.85;
+    }
+
+    .model-pill:hover {
+      border-color: rgba(0,255,255,0.3) !important;
+      color: #00ffff !important;
+    }
+
+    .top-btn {
+      letter-spacing: 1.5px;
+    }
+    .top-btn:hover {
+      border-color: rgba(0,255,255,0.4) !important;
+      color: #00ffff !important;
+      box-shadow: 0 0 8px rgba(0,255,255,0.12) !important;
+    }
+
+    .chat-btn:hover {
+      background: rgba(255,255,255,0.05) !important;
+      color: rgba(0,255,255,0.6) !important;
+    }
+
+    .send-btn:hover {
+      background: rgba(0,204,255,0.12) !important;
+      color: rgba(0,204,255,0.7) !important;
+      border-color: rgba(0,204,255,0.25) !important;
+    }
+
+    /* ============ Animations ============ */
     @keyframes scanline {
       0% { transform: translateY(0); }
       100% { transform: translateY(100vh); }

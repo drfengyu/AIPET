@@ -31,7 +31,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   const modelRef = useRef<Live2DModel | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [loadingStage, setLoadingStage] = useState('INITIALIZING...');
+  const [loadingStage, setLoadingStage] = useState('初始化中...');
   const [loadingProgress, setLoadingProgress] = useState(0);
   const idleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [characterName, setCharacterName] = useState(() => {
@@ -56,7 +56,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
       setIsLoading(true);
       setError(null);
-      setLoadingStage('INITIALIZING RENDERER...');
+      setLoadingStage('初始化渲染器...');
       setLoadingProgress(5);
 
       // 获取容器尺寸
@@ -64,7 +64,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       const containerHeight = containerRef.current?.clientHeight || 500;
 
       // 创建PIXI应用 - 使用容器尺寸
-      setLoadingStage('SETTING UP GRAPHICS...');
+      setLoadingStage('设置图形引擎...');
       setLoadingProgress(15);
       app = new PIXI.Application({
         width: containerWidth,
@@ -93,7 +93,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
       try {
 
-        setLoadingStage('LOADING MODEL DATA...');
+        setLoadingStage('加载模型数据...');
         setLoadingProgress(35);
         console.log('Loading Live2D model from:', modelUrl);
         console.log('PIXI app created, stage children:', app.stage.children.length);
@@ -107,11 +107,11 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         };
         setCharacterName(modelMap[modelUrl] || 'Haru');
 
-        setLoadingStage('DECODING TEXTURES...');
+        setLoadingStage('解码纹理...');
         setLoadingProgress(50);
         const model = await Live2DModel.from(modelUrl);
 
-        setLoadingStage('RENDERING CHARACTER...');
+        setLoadingStage('渲染角色...');
         setLoadingProgress(70);
         if (!isMounted) return;
 
@@ -158,7 +158,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         // 添加到舞台
         app.stage.addChild(model);
 
-        setLoadingStage('INITIALIZING ANIMATIONS...');
+        setLoadingStage('初始化动画...');
         setLoadingProgress(85);
 
         // 保存模型引用
@@ -227,7 +227,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
           }
         }, 8000 + Math.random() * 4000);
 
-        setLoadingStage('READY');
+        setLoadingStage('就绪');
         setLoadingProgress(100);
         // 短暂延迟让用户看到 100%
         setTimeout(() => setIsLoading(false), 300);
@@ -520,50 +520,77 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   return (
     <div style={styles.viewer}>
       <div ref={containerRef} style={styles.canvas} />
-      {/* HUD: Emotion Badge */}
+      {/* HUD: 角色名 */}
       {!isLoading && (
         <div style={{
-          position: 'absolute', top: '12%', right: '8%',
+          position: 'absolute', bottom: '10%', left: '6%',
+          zIndex: 5,
+        }}>
+          <div style={{
+            fontFamily: '"Share Tech Mono", monospace',
+            fontSize: 14, letterSpacing: 1,
+            color: 'rgba(255,255,255,0.6)',
+          }}>
+            {characterName}
+          </div>
+          <div style={{
+            fontFamily: '"Share Tech Mono", monospace',
+            fontSize: 10, letterSpacing: 1,
+            color: 'rgba(0,255,255,0.35)',
+            marginTop: 2,
+          }}>
+            ● 在线 · {memory}h
+          </div>
+        </div>
+      )}
+      {/* HUD: 情绪徽章 */}
+      {!isLoading && (
+        <div style={{
+          position: 'absolute', top: '10%', right: '6%',
           padding: '4px 10px',
           border: '1px solid rgba(255,0,255,0.15)',
-          background: 'rgba(7,7,15,0.6)',
+          background: 'rgba(15,15,26,0.7)',
           backdropFilter: 'blur(6px)',
           fontFamily: '"Share Tech Mono", monospace',
-          fontSize: 10, letterSpacing: 2, color: '#ff00ff',
-          zIndex: 5,
+          fontSize: 11, letterSpacing: 2, color: '#ff00ff',
+          zIndex: 5, borderRadius: 3,
         }}>
           ◉ {emotion}
         </div>
       )}
-      {/* HUD: Status Bars */}
+      {/* HUD: 属性条 + 数值 */}
       {!isLoading && (
         <div style={{
-          position: 'absolute', bottom: '15%', left: '50%',
+          position: 'absolute', bottom: '18%', left: '50%',
           transform: 'translateX(-50%)',
-          display: 'flex', gap: 20, zIndex: 5,
+          display: 'flex', gap: 28, zIndex: 5,
         }}>
           {[
-            { label: 'MOOD', val: mood, color: '#00ffff' },
-            { label: 'ENERGY', val: energy, color: '#ff00ff' },
-            { label: 'MEMORY', val: memory, color: '#00ff88' },
+            { label: '心情', val: mood, color: '#00ffff' },
+            { label: '精力', val: energy, color: '#ff00ff' },
+            { label: '记忆', val: memory, color: '#00ff88' },
           ].map(h => (
-            <div key={h.label} style={{ textAlign: 'center' }}>
+            <div key={h.label} style={{ textAlign: 'center', minWidth: 64 }}>
               <div style={{
+                display: 'flex', justifyContent: 'space-between',
                 fontFamily: '"Share Tech Mono", monospace',
-                fontSize: 9, letterSpacing: 2,
-                color: 'rgba(255,255,255,0.3)', marginBottom: 4,
-              }}>{h.label}</div>
+                fontSize: 11, letterSpacing: 1,
+                color: 'rgba(255,255,255,0.25)', marginBottom: 4,
+              }}>
+                <span>{h.label}</span>
+                <span style={{ color: h.color }}>{h.val}/100</span>
+              </div>
               <div style={{
-                width: 46, height: 2,
+                width: 64, height: 3,
                 background: 'rgba(255,255,255,0.04)',
-                borderRadius: 1, overflow: 'hidden',
+                borderRadius: 2, overflow: 'hidden',
               }}>
                 <div style={{
-                  height: '100%', borderRadius: 1,
+                  height: '100%', borderRadius: 2,
                   transition: 'width 0.5s ease',
                   width: h.val + '%',
                   background: h.color,
-                  boxShadow: `0 0 6px ${h.color}`,
+                  boxShadow: `0 0 8px ${h.color}`,
                 }} />
               </div>
             </div>

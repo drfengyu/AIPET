@@ -27,7 +27,7 @@ interface ChatWindowProps {
 const ChatWindow: React.FC<ChatWindowProps> = ({
   onSendMessage, onAIResponse, onSpeakingChange,
   ttsEnabled = false, ttsVoice = 'zh-CN', ttsRate = 1.0,
-  useMockAI = false, aiModel, fontSize = 13, messageHistory = 10,
+  useMockAI = false, aiModel, fontSize = 14, messageHistory = 10,
   memoryTags = [],
   latency = 0,
 }) => {
@@ -149,16 +149,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {/* Chat Header */}
       <div style={s.chatHeader}>
-        <span style={s.chatTitle}>⟡ NEURAL CHANNEL</span>
+        <span style={s.chatTitle}>⟡ 神经通道</span>
         <div style={{ display: 'flex', gap: 4 }}>
-          <button style={s.chatIconBtn} title="Clear chat" onClick={() => {
+          <button className="chat-btn" style={s.chatIconBtn} title="Clear chat" onClick={() => {
             if (confirm('清除所有聊天记录？')) {
               setMessages([]);
               localStorage.removeItem('aipet-chat-history');
             }
           }}>✕</button>
-          <button style={s.chatIconBtn} title="Voice input">🎤</button>
-          <button style={s.chatIconBtn} title="Menu">⋯</button>
+          <button className="chat-btn" style={s.chatIconBtn} title="Voice input">🎤</button>
+          <button className="chat-btn" style={s.chatIconBtn} title="Menu">⋯</button>
         </div>
       </div>
 
@@ -166,16 +166,26 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       <div style={s.messagesContainer}>
         {messages.map((msg) => (
           <div key={msg.id} style={{
-            ...s.messageRow,
-            justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+            animation: 'msg-in 0.25s ease',
           }}>
+            {/* 发送者标签 */}
+            <div style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: 9, letterSpacing: 1,
+              color: msg.sender === 'user' ? 'rgba(0,204,255,0.2)' : 'rgba(255,255,255,0.12)',
+              marginBottom: 3, paddingLeft: 2,
+            }}>
+              {msg.sender === 'ai' ? 'AIPET' : '你'} · {formatTime(msg.timestamp)}
+            </div>
             <div style={{
               ...s.msgBubble,
               ...(msg.sender === 'user' ? s.msgBubbleUser : s.msgBubbleAI),
               fontSize: fontSize + 'px',
             }}>
               {msg.text}
-              <div style={s.msgTime}>{formatTime(msg.timestamp)}</div>
             </div>
           </div>
         ))}
@@ -219,7 +229,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           />
           <button style={s.inputBtn} title="Voice input">🎤</button>
         </div>
-        <button onClick={handleSend} style={s.sendBtn}>发送</button>
+        <button className="send-btn" onClick={handleSend} style={s.sendBtn}>发送</button>
       </div>
     </div>
   );
@@ -230,7 +240,8 @@ const s: Record<string, React.CSSProperties> = {
   chatHeader: {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     padding: '12px 16px',
-    borderBottom: '1px solid rgba(255,255,255,0.04)',
+    borderBottom: '1px solid rgba(255,255,255,0.06)',
+    background: 'rgba(255,255,255,0.02)',
   },
   chatTitle: {
     fontFamily: "'Share Tech Mono', monospace",
@@ -261,12 +272,12 @@ const s: Record<string, React.CSSProperties> = {
     position: 'relative',
   },
   msgBubbleAI: {
-    background: 'rgba(255,255,255,0.03)',
+    background: 'rgba(255,255,255,0.06)',
     borderBottomLeftRadius: 4,
     color: '#d0d0e8',
   },
   msgBubbleUser: {
-    background: 'rgba(0, 204, 255, 0.06)',
+    background: 'rgba(0, 204, 255, 0.08)',
     borderBottomRightRadius: 4,
     color: '#c0c0f0',
   },
@@ -290,7 +301,8 @@ const s: Record<string, React.CSSProperties> = {
   memoryBar: {
     display: 'flex', alignItems: 'center', gap: 8,
     padding: '6px 16px',
-    borderTop: '1px solid rgba(255,255,255,0.02)',
+    borderTop: '1px solid rgba(255,255,255,0.04)',
+    background: 'rgba(255,255,255,0.01)',
   },
   memoryLabel: {
     fontSize: 10, fontFamily: "'Share Tech Mono', monospace",
@@ -311,23 +323,24 @@ const s: Record<string, React.CSSProperties> = {
   inputArea: {
     display: 'flex', gap: 8,
     padding: '10px 16px',
-    borderTop: '1px solid rgba(255,255,255,0.04)',
+    borderTop: '1px solid rgba(255,255,255,0.06)',
+    background: 'rgba(255,255,255,0.02)',
     alignItems: 'center',
   },
   inputWrap: {
     flex: 1, display: 'flex', alignItems: 'center', gap: 2,
-    background: 'rgba(255,255,255,0.02)',
-    border: '1px solid rgba(255,255,255,0.05)',
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: 10,
     padding: '0 6px',
-    transition: 'border-color 0.2s',
+    transition: 'border-color 0.2s, background 0.2s',
   },
   chatInput: {
     flex: 1,
     background: 'transparent', border: 'none',
     padding: '9px 4px',
     fontFamily: "'Share Tech Mono', 'Microsoft YaHei', sans-serif",
-    fontSize: 12, color: '#e0e0ee',
+    fontSize: 13, color: '#e0e0ee',
     outline: 'none', fontWeight: 300,
   },
   inputBtn: {
@@ -343,8 +356,8 @@ const s: Record<string, React.CSSProperties> = {
     border: '1px solid rgba(0,204,255,0.08)',
     color: 'rgba(0,204,255,0.4)',
     padding: '7px 14px',
-    borderRadius: 8,
-    fontSize: 11, fontWeight: 400,
+    borderRadius: 6,
+    fontSize: 12, fontWeight: 400,
     cursor: 'pointer',
     fontFamily: "'Share Tech Mono', 'Microsoft YaHei', sans-serif",
     letterSpacing: 0.5,
