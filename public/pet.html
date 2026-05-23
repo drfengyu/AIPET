@@ -11,6 +11,39 @@ html, body {
   background: transparent;
   -webkit-app-region: drag;
   user-select: none;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+#loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.12);
+  font-size: 11px;
+  letter-spacing: 1px;
+  gap: 8px;
+}
+#loading .spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(0,255,255,0.08);
+  border-top-color: rgba(0,255,255,0.3);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#error {
+  display: none;
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  color: rgba(255,100,100,0.6);
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.5;
+  word-break: break-all;
 }
 #canvas-container {
   width: 100vw;
@@ -20,72 +53,109 @@ html, body {
   align-items: center;
   justify-content: center;
 }
+#model-label {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: rgba(255,255,255,0.06);
+  font-size: 9px;
+  letter-spacing: 2px;
+  pointer-events: none;
+}
 </style>
 </head>
 <body>
+<div id="loading">
+  <div class="spinner"></div>
+  <span id="loading-text">加载模型中...</span>
+</div>
 <div id="canvas-container"></div>
+<div id="model-label"></div>
+<div id="error"></div>
+
 <script src="live2dcubismcore.js"></script>
+<script src="./lib/pixi.min.js"></script>
 <script>
-// Minimal pet mode — only renders the Live2D model on transparent background
-(async function() {
+(function() {
   const params = new URLSearchParams(location.search);
   const modelUrl = params.get('model') || './models/Haru/Haru.model3.json';
+  const modelName = modelUrl.split('/').slice(-2, -1)[0] || 'Model';
+  document.getElementById('model-label').textContent = modelName;
+  document.getElementById('loading-text').textContent = '加载 ' + modelName + '...';
 
-  // Load PIXI from CDN
-  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pixi.js/6.5.8/pixi.min.js');
-  await loadScript('https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/index.min.js');
-
-  const { Live2DModel } = window;
-  Live2DModel.registerTicker(PIXI.Ticker);
-
-  const app = new PIXI.Application({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    transparent: true,
-    antialias: true,
-    resolution: window.devicePixelRatio || 1,
-    autoDensity: true,
-  });
-  document.getElementById('canvas-container').appendChild(app.view);
-
-  try {
-    const model = await Live2DModel.from(modelUrl);
-    const scale = Math.min(
-      (app.screen.width * 0.85) / model.width,
-      (app.screen.height * 0.85) / model.height,
-      0.12
-    );
-    model.scale.set(scale);
-    model.x = app.screen.width / 2;
-    model.y = app.screen.height / 2;
-    model.anchor.set(0.5, 0.5);
-    app.stage.addChild(model);
-
-    // Idle animations
-    setInterval(() => {
-      const motions = ['Idle', 'TapBody', 'TapHead'];
-      try { model.motion(motions[Math.floor(Math.random() * motions.length)]); } catch {}
-    }, 10000 + Math.random() * 5000);
-  } catch (e) {
-    console.error('Pet model load failed:', e);
+  function showError(msg) {
+    var el = document.getElementById('error');
+    el.textContent = '⚠ ' + msg;
+    el.style.display = 'block';
+    document.getElementById('loading').style.display = 'none';
   }
 
-  // Listen for model change from main process
-  window.addEventListener('message', (event) => {
-    if (event.data.type === 'change-model' && event.data.url) {
-      location.search = '?model=' + encodeURIComponent(event.data.url);
-      location.reload();
+  // 加载 pixi-live2d-display
+  var s = document.createElement('script');
+  s.src = './lib/index.min.js';
+  s.onload = function() {
+    try {
+      initPet();
+    } catch (e) {
+      showError('初始化失败: ' + (e.message || e));
     }
-  });
-})();
+  };
+  s.onerror = function() {
+    showError('无法加载 Live2D 渲染库');
+  };
+  document.head.appendChild(s);
 
-function loadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src; s.onload = resolve; s.onerror = reject;
-    document.head.appendChild(s);
-  });
-}
+  function initPet() {
+    var Live2DModel = window.Live2DModel;
+    if (!Live2DModel || !window.PIXI) {
+      showError('渲染库加载失败');
+      return;
+    }
+    Live2DModel.registerTicker(window.PIXI.Ticker);
+
+    var app = new window.PIXI.Application({
+      width: window.innerWidth,
+      height: window.innerHeight,
+      transparent: true,
+      antialias: true,
+      resolution: window.devicePixelRatio || 1,
+      autoDensity: true,
+    });
+    document.getElementById('canvas-container').appendChild(app.view);
+
+    // 加载模型
+    Live2DModel.from(modelUrl).then(function(model) {
+      var scale = Math.min(
+        (app.screen.width * 0.85) / model.width,
+        (app.screen.height * 0.85) / model.height,
+        0.12
+      );
+      model.scale.set(scale);
+      model.x = app.screen.width / 2;
+      model.y = app.screen.height / 2;
+      model.anchor.set(0.5, 0.5);
+      app.stage.addChild(model);
+
+      // 隐藏 loading
+      document.getElementById('loading').style.display = 'none';
+
+      // 空闲动画
+      var motions = ['Idle', 'TapBody', 'TapHead'];
+      setInterval(function() {
+        try { model.motion(motions[Math.floor(Math.random() * motions.length)]); } catch(e) {}
+      }, 10000 + Math.random() * 5000);
+    }).catch(function(e) {
+      showError('模型加载失败: ' + (e.message || e));
+    });
+
+    // 窗口 resize
+    window.addEventListener('resize', function() {
+      app.renderer.resize(window.innerWidth, window.innerHeight);
+    });
+  }
+})();
 </script>
 </body>
 </html>
