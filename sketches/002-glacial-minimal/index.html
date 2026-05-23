@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIPET v3.0 — Variant B: Glacial Minimal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0c0c14;
+  color: #e0e0ee;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Subtle gradient background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 20% 50%, rgba(0, 150, 255, 0.04) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 50%, rgba(255, 0, 150, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* === TOP BAR - Ultra Minimal === */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  position: relative;
+  z-index: 10;
+}
+.logo {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+}
+.logo span {
+  color: rgba(255,255,255,0.15);
+  font-weight: 300;
+}
+.top-actions {
+  display: flex;
+  gap: 6px;
+}
+.top-action {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.2);
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+.top-action:hover { color: rgba(255,255,255,0.6); }
+
+/* === MAIN LAYOUT === */
+.main {
+  display: flex;
+  height: calc(100vh - 50px);
+  position: relative;
+  z-index: 1;
+  padding: 0 24px;
+  gap: 24px;
+}
+
+/* === LEFT: CHARACTER VIEW - Clean === */
+.character-panel {
+  flex: 1.1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.char-viewport {
+  width: 90%;
+  height: 75%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.char-placeholder {
+  font-size: 120px;
+  font-weight: 200;
+  color: rgba(255,255,255,0.04);
+  letter-spacing: 8px;
+  user-select: none;
+}
+
+/* Character info - bottom left float */
+.char-info-panel {
+  position: absolute;
+  bottom: 20px;
+  left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.char-name {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.7);
+}
+.char-status {
+  font-size: 11px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Emotional state indicator - circle */
+.emotion-ring {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+}
+.emotion-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.emotion-ring .bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 2; }
+.emotion-ring .fill { fill: none; stroke: #00ccff; stroke-width: 2; stroke-dasharray: 125.6; stroke-dashoffset: 31.4; stroke-linecap: round; }
+.emotion-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.3);
+  font-weight: 300;
+}
+
+/* Model switch - pill design */
+.model-strip {
+  display: flex;
+  gap: 6px;
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.model-pill {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: 'Inter', sans-serif;
+}
+.model-pill:hover {
+  border-color: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.5);
+}
+.model-pill.active {
+  border-color: rgba(0, 204, 255, 0.3);
+  color: rgba(0, 204, 255, 0.7);
+  background: rgba(0, 204, 255, 0.04);
+}
+
+/* === RIGHT: CHAT - Clean modern === */
+.chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.chat-title {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+}
+.chat-header-actions {
+  display: flex; gap: 4px;
+}
+.chat-icon-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.15);
+  font-size: 12px;
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.chat-icon-btn:hover {
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.4);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chat-messages::-webkit-scrollbar { width: 2px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 1px; }
+
+.message-row {
+  display: flex;
+  gap: 10px;
+  animation: msg-in 0.3s ease;
+}
+.message-row.user { justify-content: flex-end; }
+@keyframes msg-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.msg-bubble {
+  max-width: 80%;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 300;
+  position: relative;
+}
+.message-row.ai .msg-bubble {
+  background: rgba(255,255,255,0.03);
+  border-bottom-left-radius: 4px;
+  color: #d0d0e8;
+}
+.message-row.user .msg-bubble {
+  background: rgba(0, 204, 255, 0.06);
+  border-bottom-right-radius: 4px;
+  color: #c0c0f0;
+}
+
+.msg-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.15);
+  font-weight: 300;
+}
+
+/* typing */
+.typing-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+.typing-bar {
+  display: flex;
+  gap: 4px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 10px;
+}
+.typing-bar span {
+  width: 5px; height: 5px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  animation: dot-pulse 1.2s infinite;
+}
+.typing-bar span:nth-child(2) { animation-delay: 0.2s; }
+.typing-bar span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dot-pulse {
+  0%, 80% { transform: scale(1); opacity: 0.2; }
+  40% { transform: scale(1.4); opacity: 0.6; }
+}
+
+/* input */
+.chat-input-area {
+  padding: 12px 20px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.chat-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 0 12px;
+  transition: border-color 0.2s;
+}
+.chat-input-wrap:focus-within {
+  border-color: rgba(0, 204, 255, 0.2);
+}
+.chat-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #e0e0ee;
+  outline: none;
+  font-weight: 300;
+}
+.chat-input::placeholder {
+  color: rgba(255,255,255,0.1);
+  font-weight: 300;
+}
+.input-actions {
+  display: flex; gap: 2px;
+}
+.input-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.12);
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.input-btn:hover {
+  color: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.03);
+}
+.send-action {
+  background: rgba(0, 204, 255, 0.06);
+  border: 1px solid rgba(0, 204, 255, 0.1);
+  color: rgba(0, 204, 255, 0.5);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.5px;
+}
+.send-action:hover {
+  background: rgba(0, 204, 255, 0.1);
+  color: #00ccff;
+}
+
+/* Memory indicator - thin bar at bottom */
+.memory-indicator {
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid rgba(255,255,255,0.02);
+}
+.memory-label {
+  font-size: 9px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.12);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.memory-items {
+  display: flex;
+  gap: 6px;
+  overflow: hidden;
+  flex: 1;
+}
+.memory-tag {
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.15);
+  white-space: nowrap;
+  font-weight: 300;
+}
+
+/* system status pill */
+.sys-pill {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(0, 204, 255, 0.04);
+  border: 1px solid rgba(0, 204, 255, 0.06);
+  font-size: 9px;
+  color: rgba(0, 204, 255, 0.3);
+  letter-spacing: 0.5px;
+  font-weight: 300;
+}
+
+/* Mute decorative corner */
+.corner-deco {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: rgba(255,255,255,0.04);
+  border-style: solid;
+}
+.corner-deco.tl { top: 12px; left: 12px; border-width: 1px 0 0 1px; }
+.corner-deco.tr { top: 12px; right: 12px; border-width: 1px 1px 0 0; }
+.corner-deco.bl { bottom: 12px; left: 12px; border-width: 0 0 1px 1px; }
+.corner-deco.br { bottom: 12px; right: 12px; border-width: 0 1px 1px 0; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="logo">AIPET <span>// neural companion</span></div>
+  <div class="top-actions">
+    <button class="top-action">Settings</button>
+    <button class="top-action">About</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- CHARACTER -->
+  <div class="character-panel">
+    <div class="corner-deco tl"></div>
+    <div class="corner-deco tr"></div>
+    <div class="corner-deco bl"></div>
+    <div class="corner-deco br"></div>
+
+    <div class="sys-pill">⟐ ONLINE · 42ms</div>
+
+    <div class="char-viewport">
+      <div class="char-placeholder">✦</div>
+
+      <!-- Emotion ring -->
+      <div class="emotion-ring">
+        <svg viewBox="0 0 48 48">
+          <circle class="bg" cx="24" cy="24" r="20"/>
+          <circle class="fill" cx="24" cy="24" r="20"/>
+        </svg>
+        <div class="emotion-label">HAPPY</div>
+      </div>
+    </div>
+
+    <div class="char-info-panel">
+      <div class="char-name">Haru</div>
+      <div class="char-status">● Online · 12h memory</div>
+    </div>
+
+    <div class="model-strip">
+      <span class="model-pill active">Haru</span>
+      <span class="model-pill">Hiyori</span>
+      <span class="model-pill">Mao</span>
+      <span class="model-pill">Natori</span>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="chat-title">Neural Channel</div>
+      <div class="chat-header-actions">
+        <button class="chat-icon-btn">📌</button>
+        <button class="chat-icon-btn">🎤</button>
+        <button class="chat-icon-btn">⋯</button>
+      </div>
+    </div>
+
+    <div class="chat-messages">
+      <div class="message-row ai">
+        <div class="msg-bubble">
+          系统已就绪。你好，我是 AIPET。
+          <div class="msg-meta"><span>AIPET</span><span>13:42</span></div>
+        </div>
+      </div>
+      <div class="message-row user">
+        <div class="msg-bubble">
+          今天有什么有趣的事情吗？
+          <div class="msg-meta"><span>You</span><span>13:43</span></div>
+        </div>
+      </div>
+      <div class="message-row ai">
+        <div class="msg-bubble">
+          从对话记录来看，你好像对科幻很感兴趣。要聊聊最新的赛博朋克作品吗？
+          <div class="msg-meta"><span>AIPET</span><span>13:43</span></div>
+        </div>
+      </div>
+      <div class="typing-row">
+        <div class="typing-bar">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-wrap">
+        <input class="chat-input" type="text" placeholder="输入消息..." autofocus>
+        <div class="input-actions">
+          <button class="input-btn">😊</button>
+          <button class="input-btn">🎤</button>
+        </div>
+      </div>
+      <button class="send-action">发送</button>
+    </div>
+
+    <!-- Memory row -->
+    <div class="memory-indicator">
+      <span class="memory-label">记忆</span>
+      <div class="memory-items">
+        <span class="memory-tag">喜欢科幻电影</span>
+        <span class="memory-tag">赛博朋克爱好者</span>
+        <span class="memory-tag">提到了工作项目</span>
+        <span class="memory-tag">中文母语者</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

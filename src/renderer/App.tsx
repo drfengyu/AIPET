@@ -19,6 +19,7 @@ interface Settings {
   autoReply: boolean;
   theme: string;
   soundEnabled: boolean;
+  alwaysOnTop: boolean;
   debugMode: boolean;
 }
 
@@ -27,6 +28,16 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [currentExpression, setCurrentExpression] = useState('F01');
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [sessionStart] = useState(Date.now());
+  const [msgCount, setMsgCount] = useState(0);
+  const [memoryTags] = useState(['喜欢科幻电影', '赛博朋克爱好者', '中文母语者']);
+  const [latency] = useState(42);
+
+  // Fake HUD state — in future these could come from AI emotion analysis
+  const [mood] = useState(78);
+  const [energy] = useState(65);
+  const [memory] = useState(45);
+  const [currentEmotion] = useState('HAPPY');
 
   // 从 localStorage 加载设置
   useEffect(() => {
@@ -36,29 +47,37 @@ function App() {
     }
   }, []);
 
-  const handleSendMessage = (_message: string) => {
-    // ChatWindow handles its own state; this is for future extensibility
+  // 会话时长格式化
+  const sessionTime = () => {
+    const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const s = String(elapsed % 60).padStart(2, '0');
+    return `${m}:${s}`;
   };
+  const [sessionDisplay, setSessionDisplay] = useState('00:00');
+  useEffect(() => {
+    const timer = setInterval(() => setSessionDisplay(sessionTime()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  const handleMotion = (_motion: string) => {
-    // 由 Live2DViewer 内部处理
-  };
+  const handleSendMessage = (_message: string) => {};
+
+  const handleMotion = (_motion: string) => {};
 
   const handleAIResponse = (emotion: string) => {
     const expression = getExpressionForEmotion(emotion);
     setCurrentExpression(expression);
-    console.log('AI emotion:', emotion, '-> Expression:', expression);
+    setMsgCount(c => c + 1);
   };
 
   const handleSettingsChange = (newSettings: Settings) => {
     setSettings(newSettings);
-    console.log('设置已更新:', newSettings);
   };
 
   const checkUpdate = async () => {
     const api = (window as any).electronAPI;
     if (!api?.checkForUpdates) {
-      alert('更新检查仅在桌面版可用。\n请在 Electron 环境中运行此应用。');
+      alert('更新检查仅在安装版可用。');
       return;
     }
     try {
@@ -81,86 +100,116 @@ function App() {
   };
 
   return (
-    <div style={styles.app}>
-      {/* Grid overlay for cyberpunk aesthetic */}
-      <div style={styles.gridOverlay} />
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100vh', background: '#07070f' }}>
 
-      {/* Scanline effect */}
-      <div style={styles.scanlines} />
-
-      <header style={styles.appHeader}>
-        <div style={styles.headerGlow} />
-        <h1 style={styles.title}>
-          <span style={styles.titleAccent}>LIVE</span>2D
-          <span style={styles.titleSuffix}>_AI</span>
-        </h1>
-        <p style={styles.subtitle}>NEURAL CHAT INTERFACE v2.0</p>
-        <div style={styles.headerButtons}>
-          <button
-            style={styles.settingsButton}
-            onClick={() => setShowSettings(true)}
-          >
-            ⚙ SETTINGS
+      {/* ===== TOP BAR ===== */}
+      <header style={s.topBar}>
+        <div style={s.topBarLeft}>
+          <span style={s.logo}>AIPET</span>
+          <span style={s.logoVersion}>v0.2.0</span>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center', marginLeft: 20 }}>
+            <span style={s.statusItem}>
+              <span style={{ ...s.statusDot, background: '#00ff88', boxShadow: '0 0 6px #00ff88' }} />
+              ONLINE
+            </span>
+            <span style={s.statusItem}>⚡ {latency}ms</span>
+            <span style={s.statusItem}>MEM {memory}%</span>
+          </div>
+        </div>
+        <div style={s.topBarRight}>
+          <button style={s.topBtn} onClick={() => {
+            if ((window as any).electronAPI?.setAlwaysOnTop) {
+              (window as any).electronAPI.setAlwaysOnTop(!settings?.alwaysOnTop);
+            }
+          }}>
+            📌 PIN
           </button>
-          <button
-            style={styles.updateButton}
-            onClick={checkUpdate}
-          >
-            🔄 UPDATE
+          <button style={s.topBtn} onClick={checkUpdate}>⟳ UPDATE</button>
+          <button style={{ ...s.topBtn, borderColor: 'rgba(255,0,255,0.3)', color: 'rgba(255,0,255,0.6)' }} onClick={() => setShowSettings(true)}>
+            ⚙ SETTINGS
           </button>
         </div>
       </header>
 
-      <main style={styles.appMain}>
-        <div style={styles.live2dSection}>
-          <div style={styles.viewerFrame}>
+      {/* ===== MAIN SPLIT ===== */}
+      <div style={{ flex: 1, display: 'flex', padding: '0 24px 12px', gap: 24, overflow: 'hidden' }}>
+
+        {/* LEFT: Character Panel */}
+        <div style={s.charPanel}>
+          <div style={s.charViewport}>
             <Live2DViewer
               modelUrl={selectedModel}
               scale={settings?.modelScale || 1.0}
               onMotion={handleMotion}
               expression={settings?.expressionEnabled ? currentExpression : undefined}
             />
+            {/* Floating particles */}
+            <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+              {[...Array(8)].map((_, i) => (
+                <span key={i} style={{
+                  position: 'absolute', width: 2, height: 2,
+                  background: 'rgba(0,255,255,0.25)', borderRadius: '50%',
+                  left: (10 + i * 12) + '%',
+                  animation: `float-particle ${8 + i * 2}s linear infinite`,
+                  animationDelay: `${i * 0.8}s`,
+                }} />
+              ))}
+            </div>
+            {/* Holographic rings — purely decorative CSS overlay */}
+            <div style={s.holoRing1} />
+            <div style={s.holoRing2} />
           </div>
-          <div style={styles.modelSelector}>
-            <button
-              style={selectedModel === './models/Haru/Haru.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('./models/Haru/Haru.model3.json')}
-            >
-              <span style={styles.btnIndicator} />
-              Haru
-            </button>
-            <button
-              style={selectedModel === './models/Hiyori/Hiyori.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('./models/Hiyori/Hiyori.model3.json')}
-            >
-              <span style={styles.btnIndicator} />
-              Hiyori
-            </button>
-            <button
-              style={selectedModel === './models/Mao/Mao.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('./models/Mao/Mao.model3.json')}
-            >
-              <span style={styles.btnIndicator} />
-              Mao
-            </button>
-            <button
-              style={selectedModel === './models/Mark/Mark.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('./models/Mark/Mark.model3.json')}
-            >
-              <span style={styles.btnIndicator} />
-              Mark
-            </button>
-            <button
-              style={selectedModel === './models/Natori/Natori.model3.json' ? styles.modelBtnActive : styles.modelBtn}
-              onClick={() => setSelectedModel('./models/Natori/Natori.model3.json')}
-            >
-              <span style={styles.btnIndicator} />
-              Natori
-            </button>
+
+          {/* HUD Bars */}
+          <div style={s.hudRow}>
+            <div style={s.hudItem}>
+              <span style={s.hudLabel}>MOOD</span>
+              <div style={s.hudTrack}><div style={{ ...s.hudFill, width: mood + '%', background: '#00ffff', boxShadow: '0 0 6px #00ffff' }} /></div>
+            </div>
+            <div style={s.hudItem}>
+              <span style={s.hudLabel}>ENERGY</span>
+              <div style={s.hudTrack}><div style={{ ...s.hudFill, width: energy + '%', background: '#ff00ff', boxShadow: '0 0 6px #ff00ff' }} /></div>
+            </div>
+            <div style={s.hudItem}>
+              <span style={s.hudLabel}>MEMORY</span>
+              <div style={s.hudTrack}><div style={{ ...s.hudFill, width: memory + '%', background: '#00ff88', boxShadow: '0 0 6px #00ff88' }} /></div>
+            </div>
+          </div>
+
+          {/* Emotion Badge */}
+          <div style={s.emotionBadge}>◉ {currentEmotion}</div>
+
+          {/* Model Selector */}
+          <div style={s.modelStrip}>
+            {[
+              { id: './models/Haru/Haru.model3.json', name: 'Haru' },
+              { id: './models/Hiyori/Hiyori.model3.json', name: 'Hiyori' },
+              { id: './models/Mao/Mao.model3.json', name: 'Mao' },
+              { id: './models/Mark/Mark.model3.json', name: 'Mark' },
+              { id: './models/Natori/Natori.model3.json', name: 'Natori' },
+            ].map(m => (
+              <button
+                key={m.id}
+                style={{
+                  ...s.modelPill,
+                  ...(selectedModel === m.id ? s.modelPillActive : {}),
+                }}
+                onClick={() => setSelectedModel(m.id)}
+              >
+                {m.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Memory Shard */}
+          <div style={s.memoryShard}>
+            <div style={{ fontSize: 7, letterSpacing: 2, color: 'rgba(0,255,136,0.3)', marginBottom: 3 }}>⫸ MEMORY</div>
+            <div style={{ fontSize: 9, color: 'rgba(0,255,136,0.5)', letterSpacing: 0.5 }}>用户喜欢科幻电影</div>
           </div>
         </div>
 
-        <div style={styles.chatSection}>
+        {/* RIGHT: Chat Panel */}
+        <div style={s.chatPanel}>
           <ChatWindow
             onSendMessage={handleSendMessage}
             onAIResponse={handleAIResponse}
@@ -171,17 +220,39 @@ function App() {
             aiModel={settings?.aiModel}
             fontSize={settings?.fontSize || 13}
             messageHistory={settings?.messageHistory || 10}
+            memoryTags={memoryTags}
+            latency={latency}
           />
+          {/* Bottom Status Bar (inside chat panel) */}
+          <div style={s.statusBar}>
+            <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+              <span style={{ color: 'rgba(0,255,255,0.5)', fontSize: 9, letterSpacing: 1.5 }}>
+                ⟐ ACTIVE
+              </span>
+              <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 9, letterSpacing: 1 }}>
+                ⚡ {latency}ms
+              </span>
+              {/* Audio visualizer */}
+              <div style={{ display: 'flex', gap: 2, alignItems: 'center', height: 12 }}>
+                {[1,2,3,4,5,6].map(i => (
+                  <span key={i} style={{
+                    width: 2, background: '#00ffff', borderRadius: 1,
+                    animation: `viz-bar ${0.6 + i*0.1}s ease infinite alternate`,
+                    animationDelay: `${i * 0.1}s`,
+                  }} />
+                ))}
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+              <span style={s.statusText}>SES {sessionDisplay}</span>
+              <span style={s.statusText}>MSG {msgCount}</span>
+              <span style={s.statusText}>v0.2.0</span>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
 
-      <footer style={styles.appFooter}>
-        <div style={styles.footerLine} />
-        <p style={styles.footerText}>
-          <span style={styles.footerAccent}>AIPET</span> SYSTEM // LIVE2D CHAT INTERFACE // BUILD 2026.05
-        </p>
-      </footer>
-
+      {/* Settings Overlay */}
       {showSettings && (
         <SettingsPanel
           onClose={() => setShowSettings(false)}
@@ -192,222 +263,145 @@ function App() {
   );
 }
 
-const styles: { [key: string]: React.CSSProperties } = {
-  app: {
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: '100vh',
-    background: 'linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 50%, #0f0f1a 100%)',
-    fontFamily: '"Share Tech Mono", "Courier New", monospace',
-    overflow: 'hidden',
+// ===== STYLES =====
+const s: Record<string, React.CSSProperties> = {
+  topBar: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    padding: '12px 28px',
+    borderBottom: '1px solid rgba(0,255,255,0.08)',
+    background: 'rgba(7,7,15,0.85)',
+    backdropFilter: 'blur(12px)',
+    position: 'relative', zIndex: 100,
   },
-  gridOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: `
-      repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0, 255, 255, 0.03) 2px,
-        rgba(0, 255, 255, 0.03) 4px
-      ),
-      repeating-linear-gradient(
-        90deg,
-        transparent,
-        transparent 2px,
-        rgba(255, 0, 255, 0.03) 2px,
-        rgba(255, 0, 255, 0.03) 4px
-      )
-    `,
-    pointerEvents: 'none',
-    zIndex: 1,
+  topBarLeft: { display: 'flex', alignItems: 'center', gap: 8 },
+  logo: {
+    fontFamily: "'Orbitron', monospace", fontSize: 16, fontWeight: 900,
+    letterSpacing: 4,
+    background: 'linear-gradient(90deg, #00ffff, #ff00ff)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
   },
-  scanlines: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'linear-gradient(transparent 50%, rgba(0, 0, 0, 0.1) 50%)',
-    backgroundSize: '100% 4px',
-    pointerEvents: 'none',
-    zIndex: 2,
-    animation: 'scanline 8s linear infinite',
+  logoVersion: {
+    fontFamily: "'Share Tech Mono', monospace", fontSize: 9,
+    letterSpacing: 1, color: 'rgba(0,255,255,0.3)',
   },
-  appHeader: {
-    position: 'relative',
-    textAlign: 'center',
-    padding: '24px 20px',
-    background: 'linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.1) 50%, transparent 100%)',
-    borderBottom: '1px solid rgba(0, 255, 255, 0.3)',
-    zIndex: 10,
+  statusItem: {
+    display: 'flex', alignItems: 'center', gap: 5,
+    fontFamily: "'Share Tech Mono', monospace", fontSize: 9,
+    letterSpacing: 1.5, color: 'rgba(255,255,255,0.25)',
   },
-  headerButtons: {
-    position: 'absolute',
-    right: '20px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    display: 'flex',
-    gap: '8px',
+  statusDot: { width: 5, height: 5, borderRadius: '50%', display: 'inline-block' },
+  topBarRight: { display: 'flex', gap: 6 },
+  topBtn: {
+    background: 'transparent', border: '1px solid rgba(0,255,255,0.15)',
+    color: 'rgba(0,255,255,0.4)',
+    padding: '5px 12px', fontFamily: "'Share Tech Mono', monospace",
+    fontSize: 9, letterSpacing: 1.5, cursor: 'pointer',
+    transition: 'all 0.2s',
   },
-  headerGlow: {
-    position: 'absolute',
-    top: 0,
-    left: '50%',
+
+  // Character Panel
+  charPanel: {
+    flex: '1.1', position: 'relative', display: 'flex',
+    flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    borderRadius: 8, overflow: 'hidden',
+    background: 'rgba(255,255,255,0.01)',
+    border: '1px solid rgba(255,255,255,0.04)',
+    minWidth: 0,
+  },
+  charViewport: {
+    width: '92%', height: '72%', position: 'relative',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    border: '1px solid rgba(0,255,255,0.04)',
+    borderRadius: 4, overflow: 'hidden',
+  },
+  holoRing1: {
+    position: 'absolute', width: '80%', height: '80%',
+    border: '1px solid rgba(0,255,255,0.06)',
+    borderRadius: '50%', top: '10%', left: '10%',
+    animation: 'rotate-ring 30s linear infinite',
+    pointerEvents: 'none', zIndex: 1,
+  },
+  holoRing2: {
+    position: 'absolute', width: '65%', height: '65%',
+    border: '1px solid rgba(255,0,255,0.04)',
+    borderRadius: '50%', top: '17.5%', left: '17.5%',
+    animation: 'rotate-ring 20s linear infinite reverse',
+    pointerEvents: 'none', zIndex: 1,
+  },
+  hudRow: {
+    position: 'absolute', bottom: '18%', left: '50%',
     transform: 'translateX(-50%)',
-    width: '300px',
-    height: '100%',
-    background: 'radial-gradient(ellipse at center, rgba(0, 255, 255, 0.15) 0%, transparent 70%)',
-    pointerEvents: 'none',
+    display: 'flex', gap: 24, zIndex: 5,
   },
-  title: {
-    margin: '0 0 8px 0',
-    fontSize: '32px',
-    letterSpacing: '8px',
-    color: '#e0e0e0',
-    textShadow: '0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(255, 0, 255, 0.3)',
+  hudItem: { textAlign: 'center' as const },
+  hudLabel: {
+    fontFamily: "'Share Tech Mono', monospace", fontSize: 7,
+    letterSpacing: 2, color: 'rgba(255,255,255,0.2)', marginBottom: 3,
   },
-  titleAccent: {
-    color: '#00ffff',
-    textShadow: '0 0 10px #00ffff, 0 0 20px #00ffff',
+  hudTrack: {
+    width: 50, height: 2, background: 'rgba(255,255,255,0.04)',
+    borderRadius: 1, overflow: 'hidden',
   },
-  titleSuffix: {
-    color: '#ff00ff',
-    fontSize: '20px',
-    letterSpacing: '4px',
+  hudFill: {
+    height: '100%', borderRadius: 1, transition: 'width 0.5s ease',
   },
-  subtitle: {
-    margin: 0,
-    fontSize: '11px',
-    letterSpacing: '4px',
-    color: '#888',
-    textTransform: 'uppercase',
+  emotionBadge: {
+    position: 'absolute', top: '14%', right: '10%',
+    padding: '4px 10px',
+    border: '1px solid rgba(255,0,255,0.15)',
+    background: 'rgba(7,7,15,0.6)',
+    backdropFilter: 'blur(6px)',
+    fontFamily: "'Share Tech Mono', monospace",
+    fontSize: 8, letterSpacing: 2, color: '#ff00ff',
+    zIndex: 5,
   },
-  appMain: {
-    flex: 1,
-    display: 'flex',
-    padding: '24px',
-    gap: '24px',
-    maxWidth: '1400px',
-    margin: '0 auto',
-    width: '100%',
-    position: 'relative',
-    zIndex: 10,
+  modelStrip: {
+    position: 'absolute', bottom: '4%', left: '50%',
+    transform: 'translateX(-50%)',
+    display: 'flex', gap: 6, zIndex: 5,
   },
-  live2dSection: {
-    flex: '1 1 420px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '20px',
-    minWidth: '300px',
-    maxWidth: '500px',
-  },
-  viewerFrame: {
-    position: 'relative',
-    width: '100%',
-    height: '500px',
-    padding: '0',
-    background: 'linear-gradient(135deg, #00ffff 0%, #ff00ff 100%)',
-    borderRadius: '4px',
-    boxShadow: '0 0 30px rgba(0, 255, 255, 0.3), 0 0 60px rgba(255, 0, 255, 0.2)',
-  },
-  modelSelector: {
-    display: 'flex',
-    gap: '16px',
-  },
-  modelBtn: {
-    padding: '12px 24px',
-    background: 'rgba(20, 20, 35, 0.9)',
-    border: '1px solid rgba(0, 255, 255, 0.4)',
-    color: '#00ffff',
-    fontSize: '12px',
-    letterSpacing: '2px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    transition: 'all 0.3s ease',
-    fontFamily: '"Share Tech Mono", monospace',
-  },
-  modelBtnActive: {
-    padding: '12px 24px',
-    background: 'linear-gradient(90deg, rgba(0, 255, 255, 0.2), rgba(255, 0, 255, 0.2))',
-    border: '1px solid #00ffff',
-    color: '#ffffff',
-    fontSize: '12px',
-    letterSpacing: '2px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    transition: 'all 0.3s ease',
-    fontFamily: '"Share Tech Mono", monospace',
-    boxShadow: '0 0 15px rgba(0, 255, 255, 0.4)',
-  },
-  btnIndicator: {
-    width: '8px',
-    height: '8px',
-    background: '#00ffff',
-    borderRadius: '50%',
-    boxShadow: '0 0 8px #00ffff',
-  },
-  chatSection: {
-    flex: 1,
-    height: '500px',
-  },
-  appFooter: {
-    position: 'relative',
-    textAlign: 'center',
-    padding: '16px 20px',
-    background: 'linear-gradient(90deg, transparent 0%, rgba(255, 0, 255, 0.1) 50%, transparent 100%)',
-    borderTop: '1px solid rgba(255, 0, 255, 0.3)',
-    zIndex: 10,
-  },
-  footerLine: {
-    position: 'absolute',
-    top: 0,
-    left: '10%',
-    right: '10%',
-    height: '1px',
-    background: 'linear-gradient(90deg, transparent, #ff00ff, transparent)',
-  },
-  footerText: {
-    margin: 0,
-    fontSize: '10px',
-    letterSpacing: '3px',
-    color: '#666',
-  },
-  footerAccent: {
-    color: '#ff00ff',
-    textShadow: '0 0 10px rgba(255, 0, 255, 0.5)',
-  },
-  settingsButton: {
-    padding: '8px 16px',
+  modelPill: {
+    padding: '4px 12px', border: '1px solid rgba(0,255,255,0.1)',
     background: 'transparent',
-    border: '1px solid rgba(0, 255, 255, 0.4)',
-    color: '#00ffff',
-    fontSize: '11px',
-    letterSpacing: '2px',
-    cursor: 'pointer',
-    fontFamily: '"Share Tech Mono", monospace',
-    transition: 'all 0.2s ease',
+    fontFamily: "'Share Tech Mono', monospace",
+    fontSize: 9, letterSpacing: 1, color: 'rgba(0,255,255,0.3)',
+    cursor: 'pointer', transition: 'all 0.2s', borderRadius: 2,
   },
-  updateButton: {
-    padding: '8px 16px',
-    background: 'transparent',
-    border: '1px solid rgba(255, 0, 255, 0.4)',
-    color: '#ff00ff',
-    fontSize: '11px',
-    letterSpacing: '2px',
-    cursor: 'pointer',
-    fontFamily: '"Share Tech Mono", monospace',
-    transition: 'all 0.2s ease',
+  modelPillActive: {
+    borderColor: 'rgba(0,255,255,0.3)',
+    color: '#00ffff',
+    background: 'rgba(0,255,255,0.06)',
+    boxShadow: '0 0 8px rgba(0,255,255,0.1)',
+  },
+  memoryShard: {
+    position: 'absolute', top: 16, left: 16,
+    padding: '8px 12px',
+    border: '1px solid rgba(0,255,136,0.1)',
+    background: 'rgba(7,7,15,0.5)',
+    backdropFilter: 'blur(4px)',
+    zIndex: 5, maxWidth: 140,
+  },
+
+  // Chat Panel
+  chatPanel: {
+    flex: 1, display: 'flex', flexDirection: 'column',
+    borderRadius: 8, overflow: 'hidden',
+    background: 'rgba(255,255,255,0.01)',
+    border: '1px solid rgba(255,255,255,0.04)',
+    minWidth: 0,
+  },
+
+  // Status Bar
+  statusBar: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    padding: '6px 16px',
+    borderTop: '1px solid rgba(0,255,255,0.05)',
+    background: 'rgba(7,7,15,0.4)',
+    fontFamily: "'Share Tech Mono', monospace",
+  },
+  statusText: {
+    color: 'rgba(255,255,255,0.12)', fontSize: 8, letterSpacing: 1,
   },
 };
 

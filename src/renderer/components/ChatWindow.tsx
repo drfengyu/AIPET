@@ -18,12 +18,19 @@ interface ChatWindowProps {
   useMockAI?: boolean;
   aiModel?: string;
   fontSize?: number;
-  messageHistory?: number; // max history messages to send as context
+  messageHistory?: number;
+  memoryTags?: string[];
+  latency?: number;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, ttsEnabled = false, ttsVoice = 'zh-CN', ttsRate = 1.0, useMockAI = false, aiModel, fontSize = 13, messageHistory = 10 }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({
+  onSendMessage, onAIResponse,
+  ttsEnabled = false, ttsVoice = 'zh-CN', ttsRate = 1.0,
+  useMockAI = false, aiModel, fontSize = 13, messageHistory = 10,
+  memoryTags = [],
+  latency = 0,
+}) => {
   const [messages, setMessages] = useState<Message[]>(() => {
-    // 从 localStorage 加载聊天记录
     try {
       const saved = localStorage.getItem('aipet-chat-history');
       if (saved && saved !== '[]') {
@@ -35,7 +42,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
     } catch (e) {
       console.warn('聊天记录加载失败:', e);
     }
-    // 默认欢迎消息
     return [{
       id: '1',
       text: '系统已就绪，神经网络连接成功。你好！我是AIPET，你的AI助手，有什么可以帮你的吗？',
@@ -44,7 +50,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
     }];
   });
 
-  // 聊天记录变化时自动保存
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
   useEffect(() => {
@@ -54,6 +59,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
       console.warn('聊天记录保存失败:', e);
     }
   }, [messages]);
+
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -69,8 +75,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
 
   const handleSend = async () => {
     if (!inputValue.trim()) return;
-
-    // 停止当前的语音播放
     stop();
 
     const userMessage: Message = {
@@ -83,11 +87,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsTyping(true);
-
     onSendMessage?.(inputValue);
 
     try {
-      // 构建消息历史用于上下文（限制条数）
       const historyMessages = messages
         .filter(m => m.text.length > 0)
         .slice(-messageHistory);
@@ -96,7 +98,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
         content: m.text
       }));
 
-      // 调用 AI 服务（含上下文）
       const aiResponse = await getAIResponse(inputValue, history, useMockAI, aiModel);
 
       const aiMessage: Message = {
@@ -108,28 +109,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
 
       setMessages(prev => [...prev, aiMessage]);
 
-      // 通知父组件情绪变化
       if (aiResponse.emotion) {
         onAIResponse?.(aiResponse.emotion);
       }
 
-      // 语音合成
       if (ttsEnabled && isSupported()) {
-        speak(aiResponse.text, { voice: ttsVoice, rate: ttsRate }).catch(() => {
-          console.log('TTS playback failed');
-        });
+        speak(aiResponse.text, { voice: ttsVoice, rate: ttsRate }).catch(() => {});
       }
     } catch (error) {
       console.error('AI response error:', error);
-
-      // 错误时显示默认回复
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: '抱歉，暂时无法连接AI服务。请稍后再试。',
         sender: 'ai',
         timestamp: new Date()
       };
-
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsTyping(false);
@@ -143,212 +137,215 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
     }
   };
 
-
-  const styles: { [key: string]: React.CSSProperties } = {
-    chatWindow: {
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      height: '100%',
-      background: 'rgba(10, 10, 20, 0.95)',
-      border: '1px solid rgba(0, 255, 255, 0.3)',
-      borderRadius: '2px',
-      overflow: 'hidden',
-      position: 'relative',
-    },
-    chatHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '12px 16px',
-      background: 'linear-gradient(90deg, rgba(0, 255, 255, 0.15), rgba(255, 0, 255, 0.15))',
-      borderBottom: '1px solid rgba(0, 255, 255, 0.4)',
-    },
-    headerTitle: {
-      margin: 0,
-      fontSize: '12px',
-      letterSpacing: '3px',
-      color: '#00ffff',
-      textShadow: '0 0 10px rgba(0, 255, 255, 0.5)',
-    },
-    status: {
-      fontSize: '10px',
-      padding: '4px 12px',
-      background: 'rgba(0, 255, 0, 0.2)',
-      border: '1px solid #00ff00',
-      color: '#00ff00',
-      letterSpacing: '2px',
-      fontFamily: '"Share Tech Mono", monospace',
-    },
-    messagesContainer: {
-      flex: 1,
-      overflowY: 'auto',
-      padding: '16px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '12px',
-      scrollbarWidth: 'thin',
-      scrollbarColor: '#00ffff transparent',
-    },
-    messageUser: {
-      alignSelf: 'flex-end',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-end',
-      maxWidth: '85%',
-    },
-    messageAI: {
-      alignSelf: 'flex-start',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-      maxWidth: '85%',
-    },
-    messageBubbleUser: {
-      padding: '10px 14px',
-      background: 'linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 200, 255, 0.15))',
-      border: '1px solid rgba(0, 255, 255, 0.5)',
-      borderRadius: '2px',
-      fontSize: '13px',
-      lineHeight: '1.5',
-      color: '#e0f0ff',
-      letterSpacing: '0.5px',
-    },
-    messageBubbleAI: {
-      padding: '10px 14px',
-      background: 'linear-gradient(135deg, rgba(255, 0, 255, 0.15), rgba(200, 0, 255, 0.1))',
-      border: '1px solid rgba(255, 0, 255, 0.4)',
-      borderRadius: '2px',
-      fontSize: '13px',
-      lineHeight: '1.5',
-      color: '#f0e0ff',
-      letterSpacing: '0.5px',
-    },
-    messageTime: {
-      fontSize: '9px',
-      color: '#555',
-      marginTop: '4px',
-      letterSpacing: '1px',
-      fontFamily: '"Share Tech Mono", monospace',
-    },
-    inputArea: {
-      display: 'flex',
-      padding: '12px 16px',
-      borderTop: '1px solid rgba(0, 255, 255, 0.3)',
-      background: 'rgba(5, 5, 15, 0.8)',
-      gap: '12px',
-    },
-    messageInput: {
-      flex: 1,
-      padding: '10px 14px',
-      background: 'rgba(0, 0, 0, 0.5)',
-      border: '1px solid rgba(0, 255, 255, 0.4)',
-      borderRadius: '2px',
-      fontSize: '13px',
-      color: '#00ffff',
-      outline: 'none',
-      fontFamily: '"Share Tech Mono", monospace',
-      letterSpacing: '1px',
-    },
-    messageInputPlaceholder: {
-      color: '#444',
-    },
-    sendButton: {
-      padding: '10px 20px',
-      background: 'linear-gradient(90deg, rgba(0, 255, 255, 0.2), rgba(255, 0, 255, 0.2))',
-      border: '1px solid #00ffff',
-      color: '#00ffff',
-      fontSize: '11px',
-      letterSpacing: '2px',
-      cursor: 'pointer',
-      fontFamily: '"Share Tech Mono", monospace',
-      transition: 'all 0.2s ease',
-    },
-    sendButtonHover: {
-      background: 'linear-gradient(90deg, rgba(0, 255, 255, 0.4), rgba(255, 0, 255, 0.4))',
-      boxShadow: '0 0 15px rgba(0, 255, 255, 0.4)',
-    },
-    typingIndicator: {
-      display: 'flex',
-      gap: '4px',
-      padding: '12px 16px',
-      background: 'linear-gradient(135deg, rgba(255, 0, 255, 0.15), rgba(200, 0, 255, 0.1))',
-      border: '1px solid rgba(255, 0, 255, 0.4)',
-      borderRadius: '2px',
-      width: 'fit-content',
-    },
-    typingDot: {
-      width: '6px',
-      height: '6px',
-      background: '#ff00ff',
-      borderRadius: '50%',
-      animation: 'typing 1.4s infinite ease-in-out',
-    },
-  };
+  const formatTime = (d: Date) =>
+    d.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div style={styles.chatWindow}>
-      <div style={styles.chatHeader}>
-        <h3 style={styles.headerTitle}>COMMUNICATION_LINK</h3>
-        <span style={styles.status}>● ONLINE</span>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
+
+      {/* Chat Header */}
+      <div style={s.chatHeader}>
+        <span style={s.chatTitle}>⟡ NEURAL CHANNEL</span>
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button style={s.chatIconBtn} title="Clear chat" onClick={() => {
+            if (confirm('清除所有聊天记录？')) {
+              setMessages([]);
+              localStorage.removeItem('aipet-chat-history');
+            }
+          }}>✕</button>
+          <button style={s.chatIconBtn} title="Voice input">🎤</button>
+          <button style={s.chatIconBtn} title="Menu">⋯</button>
+        </div>
       </div>
 
-      <div style={styles.messagesContainer}>
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            style={message.sender === 'user' ? styles.messageUser : styles.messageAI}
-          >
+      {/* Messages */}
+      <div style={s.messagesContainer}>
+        {messages.map((msg) => (
+          <div key={msg.id} style={{
+            ...s.messageRow,
+            justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+          }}>
             <div style={{
-              ...(message.sender === 'user' ? styles.messageBubbleUser : styles.messageBubbleAI),
+              ...s.msgBubble,
+              ...(msg.sender === 'user' ? s.msgBubbleUser : s.msgBubbleAI),
               fontSize: fontSize + 'px',
             }}>
-              {message.text}
-            </div>
-            <div style={styles.messageTime}>
-              {message.timestamp.toLocaleTimeString('en-US', { hour12: false })}
+              {msg.text}
+              <div style={s.msgTime}>{formatTime(msg.timestamp)}</div>
             </div>
           </div>
         ))}
+
         {isTyping && (
-          <div style={styles.messageAI}>
-            <div style={styles.typingIndicator}>
-              <div style={{ ...styles.typingDot, animationDelay: '0s' }} />
-              <div style={{ ...styles.typingDot, animationDelay: '0.2s' }} />
-              <div style={{ ...styles.typingDot, animationDelay: '0.4s' }} />
+          <div style={s.messageRow}>
+            <div style={s.typingBox}>
+              <span style={s.typingDot} />
+              <span style={{ ...s.typingDot, animationDelay: '0.15s' }} />
+              <span style={{ ...s.typingDot, animationDelay: '0.3s' }} />
             </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div style={styles.inputArea}>
-        <input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="> ENTER TRANSMISSION..."
-          style={{ ...styles.messageInput, ...styles.messageInputPlaceholder }}
-        />
-        <button
-          onClick={handleSend}
-          style={styles.sendButton}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(90deg, rgba(0, 255, 255, 0.4), rgba(255, 0, 255, 0.4))';
-            e.currentTarget.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'linear-gradient(90deg, rgba(0, 255, 255, 0.2), rgba(255, 0, 255, 0.2))';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          TRANSMIT
-        </button>
+      {/* Memory Tags */}
+      {memoryTags.length > 0 && (
+        <div style={s.memoryBar}>
+          <span style={s.memoryLabel}>记忆</span>
+          <div style={s.memoryItems}>
+            {memoryTags.map((tag, i) => (
+              <span key={i} style={s.memoryTag}>{tag}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Input Area */}
+      <div style={s.inputArea}>
+        <div style={s.inputWrap}>
+          <button style={s.inputBtn} title="Emoji">😊</button>
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyPress}
+            placeholder="输入消息..."
+            style={s.chatInput}
+          />
+          <button style={s.inputBtn} title="Voice input">🎤</button>
+        </div>
+        <button onClick={handleSend} style={s.sendBtn}>发送</button>
       </div>
     </div>
   );
+};
+
+// ===== STYLES =====
+const s: Record<string, React.CSSProperties> = {
+  chatHeader: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    padding: '12px 16px',
+    borderBottom: '1px solid rgba(255,255,255,0.04)',
+  },
+  chatTitle: {
+    fontFamily: "'Share Tech Mono', monospace",
+    fontSize: 10, letterSpacing: 2,
+    color: 'rgba(255,255,255,0.2)',
+  },
+  chatIconBtn: {
+    background: 'transparent', border: 'none',
+    color: 'rgba(255,255,255,0.1)', fontSize: 11,
+    width: 26, height: 26, borderRadius: 4,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    cursor: 'pointer', transition: 'all 0.2s',
+  },
+  messagesContainer: {
+    flex: 1, overflowY: 'auto',
+    padding: '12px 16px',
+    display: 'flex', flexDirection: 'column', gap: 8,
+  },
+  messageRow: {
+    display: 'flex', animation: 'msg-in 0.25s ease',
+  },
+  msgBubble: {
+    maxWidth: '80%',
+    padding: '10px 14px',
+    borderRadius: 12,
+    lineHeight: 1.6,
+    fontWeight: 300,
+    position: 'relative',
+  },
+  msgBubbleAI: {
+    background: 'rgba(255,255,255,0.03)',
+    borderBottomLeftRadius: 4,
+    color: '#d0d0e8',
+  },
+  msgBubbleUser: {
+    background: 'rgba(0, 204, 255, 0.06)',
+    borderBottomRightRadius: 4,
+    color: '#c0c0f0',
+  },
+  msgTime: {
+    fontSize: 9, color: 'rgba(255,255,255,0.1)',
+    marginTop: 3, fontFamily: "'Share Tech Mono', monospace",
+    letterSpacing: 0.5,
+  },
+  typingBox: {
+    display: 'flex', gap: 4,
+    padding: '8px 14px',
+    background: 'rgba(255,255,255,0.02)',
+    borderRadius: 10,
+  },
+  typingDot: {
+    width: 5, height: 5,
+    background: 'rgba(255,255,255,0.2)',
+    borderRadius: '50%',
+    animation: 'dot-bounce 1.2s infinite',
+  },
+  memoryBar: {
+    display: 'flex', alignItems: 'center', gap: 8,
+    padding: '6px 16px',
+    borderTop: '1px solid rgba(255,255,255,0.02)',
+  },
+  memoryLabel: {
+    fontSize: 8, fontFamily: "'Share Tech Mono', monospace",
+    letterSpacing: 1, color: 'rgba(255,255,255,0.08)',
+    whiteSpace: 'nowrap', textTransform: 'uppercase',
+  },
+  memoryItems: {
+    display: 'flex', gap: 4, overflow: 'hidden', flex: 1,
+  },
+  memoryTag: {
+    fontSize: 9, padding: '1px 7px',
+    borderRadius: 8,
+    background: 'rgba(255,255,255,0.02)',
+    border: '1px solid rgba(255,255,255,0.04)',
+    color: 'rgba(255,255,255,0.15)',
+    whiteSpace: 'nowrap', fontWeight: 300,
+  },
+  inputArea: {
+    display: 'flex', gap: 8,
+    padding: '10px 16px',
+    borderTop: '1px solid rgba(255,255,255,0.04)',
+    alignItems: 'center',
+  },
+  inputWrap: {
+    flex: 1, display: 'flex', alignItems: 'center', gap: 2,
+    background: 'rgba(255,255,255,0.02)',
+    border: '1px solid rgba(255,255,255,0.05)',
+    borderRadius: 10,
+    padding: '0 6px',
+    transition: 'border-color 0.2s',
+  },
+  chatInput: {
+    flex: 1,
+    background: 'transparent', border: 'none',
+    padding: '9px 4px',
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 12, color: '#e0e0ee',
+    outline: 'none', fontWeight: 300,
+  },
+  inputBtn: {
+    background: 'transparent', border: 'none',
+    color: 'rgba(255,255,255,0.08)',
+    width: 26, height: 26, borderRadius: 4,
+    cursor: 'pointer', fontSize: 13,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    transition: 'all 0.2s',
+  },
+  sendBtn: {
+    background: 'rgba(0,204,255,0.05)',
+    border: '1px solid rgba(0,204,255,0.08)',
+    color: 'rgba(0,204,255,0.4)',
+    padding: '7px 14px',
+    borderRadius: 8,
+    fontSize: 11, fontWeight: 400,
+    cursor: 'pointer',
+    fontFamily: "'Inter', sans-serif",
+    letterSpacing: 0.5,
+    transition: 'all 0.2s',
+  },
 };
 
 export default ChatWindow;
