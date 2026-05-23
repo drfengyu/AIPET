@@ -186,7 +186,6 @@ function createWindow() {
     },
     // 窗口外观
     titleBarStyle: 'default',
-    transparent: true,
     backgroundColor: '#1a1a2e',
     show: true,
   });
@@ -419,7 +418,40 @@ ipcMain.handle('quit-app', () => {
   app.quit();
 });
 
-// ========== 透明浮动模式 ==========
+// ========== 迷你紧凑模式 ==========
+
+ipcMain.handle('set-mini-mode', (event, enabled) => {
+  if (!mainWindow) return false;
+  try {
+    if (enabled) {
+      // 保存正常窗口尺寸
+      const bounds = mainWindow.getBounds();
+      global._aipet_before_mini = bounds;
+      // 缩小窗口，无边框
+      mainWindow.setBounds({ x: bounds.x, y: bounds.y, width: 360, height: 460 });
+      mainWindow.setResizable(false);
+    } else {
+      mainWindow.setResizable(true);
+      if (global._aipet_before_mini) {
+        const b = global._aipet_before_mini;
+        mainWindow.setBounds(b);
+      }
+    }
+    mainWindow.webContents.send('mini-mode-changed', enabled);
+    return true;
+  } catch (e) {
+    debugLog('set-mini-mode error: ' + e.message);
+    return false;
+  }
+});
+
+ipcMain.handle('get-mini-mode', () => {
+  if (!mainWindow) return false;
+  try {
+    const b = mainWindow.getBounds();
+    return b.width < 500 && b.height < 600;
+  } catch { return false; }
+});
 
 ipcMain.handle('set-transparent-mode', (event, enabled) => {
   if (!mainWindow) return false;

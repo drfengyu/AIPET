@@ -40,12 +40,12 @@ function App() {
   const [memory, setMemory] = useState(45);
   const [currentEmotion, setCurrentEmotion] = useState('HAPPY');
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [transparentMode, setTransparentMode] = useState(false);
+  const [miniMode, setMiniMode] = useState(false);
 
-  // 监听透明模式变化（来自主进程）
+  // 监听迷你模式变化
   useEffect(() => {
-    const cleanup = (window as any).electronAPI?.onTransparentModeChanged?.((enabled: boolean) => {
-      setTransparentMode(enabled);
+    const cleanup = (window as any).electronAPI?.onMiniModeChanged?.((enabled: boolean) => {
+      setMiniMode(enabled);
     });
     return () => cleanup?.();
   }, []);
@@ -119,7 +119,7 @@ function App() {
   };
 
   return (
-    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100vh', background: transparentMode ? 'transparent' : '#1a1a2e' }}>
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100vh', background: '#1a1a2e' }}>
 
       {/* ===== TOP BAR ===== */}
       <header style={s.topBar}>
@@ -145,16 +145,16 @@ function App() {
           </button>
           <button className="top-btn" onClick={() => {
             const api = (window as any).electronAPI;
-            if (api?.setTransparentMode) {
-              const newVal = !transparentMode;
-              api.setTransparentMode(newVal);
-              setTransparentMode(newVal);
+            if (api?.setMiniMode) {
+              const newVal = !miniMode;
+              api.setMiniMode(newVal);
+              setMiniMode(newVal);
             }
           }}
-            style={{ borderColor: transparentMode ? 'rgba(0,255,255,0.4)' : undefined,
-                     color: transparentMode ? '#00ffff' : undefined }}
+            style={{ borderColor: miniMode ? 'rgba(0,255,255,0.4)' : undefined,
+                     color: miniMode ? '#00ffff' : undefined }}
           >
-            🎯 浮动
+            📱 迷你
           </button>
           <button className="top-btn" onClick={checkUpdate}>⟳ 更新</button>
           <button className="top-btn" style={{ borderColor: 'rgba(255,0,255,0.3)', color: 'rgba(255,0,255,0.6)' }} onClick={() => setShowSettings(true)}>

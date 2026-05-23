@@ -44,17 +44,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // ========== v0.3.0 ==========
 
-  // 透明浮动模式
-  setTransparentMode: (enabled) => ipcRenderer.invoke('set-transparent-mode', enabled),
-  getTransparentMode: () => ipcRenderer.invoke('get-transparent-mode'),
-  onTransparentModeChanged: (callback) => {
+  // 迷你紧凑模式
+  setMiniMode: (enabled) => ipcRenderer.invoke('set-mini-mode', enabled),
+  getMiniMode: () => ipcRenderer.invoke('get-mini-mode'),
+  onMiniModeChanged: (callback) => {
     const handler = (event, value) => callback(value);
-    ipcRenderer.on('transparent-mode-changed', handler);
-    return () => ipcRenderer.removeListener('transparent-mode-changed', handler);
+    ipcRenderer.on('mini-mode-changed', handler);
+    return () => ipcRenderer.removeListener('mini-mode-changed', handler);
   },
 
-  // 窗口拖拽（透明模式下拖角色移动窗口）
+  // 窗口拖拽
   dragWindow: (deltaX, deltaY) => ipcRenderer.invoke('drag-window', { deltaX, deltaY }),
+
+  // 透明浮动模式（预留）
 
   // 检查更新
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),

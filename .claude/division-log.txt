@@ -1302,3 +1302,7 @@
 [2026-05-23 15:23:32] POST_COMMIT: 3348508 - docs: 更新README/CHANGELOG/知识点总结文档
 [2026-05-23 15:25:22] POST_COMMIT: 74908ca - docs: 添加技术实现详解文档
 [2026-05-23 15:26:56] POST_COMMIT: 7967552 - docs: 按归属+更新轮次整理分类 (guide/dev/optimization/archive)
+[2026-05-23 15:35:28] PRE_COMMIT: OK - 3 files checked
+[2026-05-23 15:35:29] POST_COMMIT: ebbc81e - v0.3.0 WIP: 透明浮动模式(IPC+点击穿透+拖拽)+设置面板
+[2026-05-23 15:55:04] PRE_COMMIT: OK - 1 files checked
+[2026-05-23 15:55:05] POST_COMMIT: c456c53 - fix: 透明模式改用transparent:true窗口+CSS控制, 托盘图标加入打包
