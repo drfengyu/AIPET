@@ -1297,3 +1297,7 @@
 [2026-05-23 14:25:55] POST_COMMIT: d77d1e4 - 修复: 模型频繁加载(useCallback), 字体改用Share Tech Mono+微软雅黑
 [2026-05-23 14:31:36] PRE_COMMIT: OK - 4 files checked
 [2026-05-23 14:31:37] POST_COMMIT: 7330fc8 - UI: 调亮背景+增大字号+替换记忆碎片为角色名
+[2026-05-23 15:19:24] PRE_COMMIT: OK - 3 files checked
+[2026-05-23 15:19:25] POST_COMMIT: 24c3789 - UI打磨: 全中文界面+视觉统一+按钮重设计+交互反馈
+[2026-05-23 15:23:32] POST_COMMIT: 3348508 - docs: 更新README/CHANGELOG/知识点总结文档
+[2026-05-23 15:25:22] POST_COMMIT: 74908ca - docs: 添加技术实现详解文档

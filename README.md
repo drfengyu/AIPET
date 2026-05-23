@@ -85,7 +85,12 @@ AIPET/
 │   └── agents/           # AI 代理系统
 ├── public/models/        # Live2D 模型文件
 ├── docs/                 # 文档
-│   └── plans/            # 实施计划
+│   ├── guide/            # 用户指南
+│   ├── dev/              # 开发参考
+│   ├── optimization/     # 性能优化
+│   ├── plans/            # 实施计划
+│   ├── archive/          # 历史归档
+│   └── superpowers/      # 技能文档
 ├── sketches/             # UI 设计原型
 ├── build/                # 构建资源（图标等）
 └── scripts/              # 工具脚本
@@ -93,20 +98,16 @@ AIPET/
 
 ---
 
-## 📚 文档
+## 📚 文档分类
 
-| 文档 | 说明 |
-|------|------|
-| [项目架构](docs/PROJECT_ARCHITECTURE.md) | 整体架构与目录结构 |
-| [API 指南](docs/API_GUIDE.md) | Cloudflare AI 接口说明 |
-| [模型指南](docs/MODEL_GUIDE.md) | Live2D 模型加载与配置 |
-| [打包指南](docs/PACKAGING_GUIDE.md) | 应用打包与发布 |
-| [TTS 指南](docs/TTS_GUIDE.md) | 语音合成配置 |
-| [故障排查](docs/TROUBLESHOOTING.md) | 常见问题解决 |
-| [环境配置](docs/ENVIRONMENT_TROUBLESHOOTING.md) | 开发环境搭建 |
-| [知识总结](docs/KNOWLEDGE_SUMMARY.md) | 项目开发经验总结 |
-| [技术详解](docs/TECHNICAL_DETAILS.md) | 核心功能实现细节与代码解读 |
-
+| 分类 | 说明 | 文档 |
+|------|------|------|
+| 🧭 **用户指南** | 面向使用者 | [TTS 指南](docs/guide/TTS_GUIDE.md)、[模型指南](docs/guide/MODEL_GUIDE.md)、[打包指南](docs/guide/PACKAGING_GUIDE.md)、[打包速查](docs/guide/PACKAGING_QUICK_REFERENCE.md)、[故障排查](docs/guide/TROUBLESHOOTING.md)、[环境配置](docs/guide/ENVIRONMENT_TROUBLESHOOTING.md)、[Haru TTS](docs/guide/HARU_TTS_GUIDE.md) |
+| 🔧 **开发参考** | 面向开发者 | [技术详解](docs/dev/TECHNICAL_DETAILS.md)、[知识总结](docs/dev/KNOWLEDGE_SUMMARY.md)、[API 指南](docs/dev/API_GUIDE.md)、[代理指南](docs/dev/AGENTS_GUIDE.md)、[架构文档](docs/dev/ARCHITECTURE.md)、[项目架构](docs/dev/PROJECT_ARCHITECTURE.md)、[Hermes 使用](docs/dev/HERMES_USAGE_GUIDE.md) |
+| ⚡ **性能优化** | 内存优化 | [优化详情](docs/optimization/MEMORY_OPTIMIZATION.md)、[最终方案](docs/optimization/MEMORY_OPTIMIZATION_FINAL.md)、[速查表](docs/optimization/MEMORY_OPTIMIZATION_QUICK_REFERENCE.md) |
+| 📋 **实施计划** | 迭代计划 | [`plans/`](docs/plans/) |
+| 🗄️ **归档** | 历史报告 | [`archive/`](docs/archive/) |
+| 🧪 **Superpowers** | 技能文档 | [`superpowers/`](docs/superpowers/) |
 ---
 
 ## 📄 开源协议
