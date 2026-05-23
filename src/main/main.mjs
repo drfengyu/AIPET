@@ -419,7 +419,7 @@ ipcMain.handle('quit-app', () => {
 });
 
 // 应用准备好时创建窗口
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   debugLog('app.whenReady() fired');
   phaseLog('whenReady');
 

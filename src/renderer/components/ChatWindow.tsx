@@ -234,8 +234,8 @@ const s: Record<string, React.CSSProperties> = {
   },
   chatTitle: {
     fontFamily: "'Share Tech Mono', monospace",
-    fontSize: 10, letterSpacing: 2,
-    color: 'rgba(255,255,255,0.2)',
+    fontSize: 11, letterSpacing: 2,
+    color: 'rgba(255,255,255,0.25)',
   },
   chatIconBtn: {
     background: 'transparent', border: 'none',
@@ -293,15 +293,15 @@ const s: Record<string, React.CSSProperties> = {
     borderTop: '1px solid rgba(255,255,255,0.02)',
   },
   memoryLabel: {
-    fontSize: 8, fontFamily: "'Share Tech Mono', monospace",
-    letterSpacing: 1, color: 'rgba(255,255,255,0.08)',
+    fontSize: 10, fontFamily: "'Share Tech Mono', monospace",
+    letterSpacing: 1, color: 'rgba(255,255,255,0.12)',
     whiteSpace: 'nowrap', textTransform: 'uppercase',
   },
   memoryItems: {
     display: 'flex', gap: 4, overflow: 'hidden', flex: 1,
   },
   memoryTag: {
-    fontSize: 9, padding: '1px 7px',
+    fontSize: 10, padding: '2px 8px',
     borderRadius: 8,
     background: 'rgba(255,255,255,0.02)',
     border: '1px solid rgba(255,255,255,0.04)',

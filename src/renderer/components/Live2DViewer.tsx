@@ -529,7 +529,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
           background: 'rgba(7,7,15,0.6)',
           backdropFilter: 'blur(6px)',
           fontFamily: '"Share Tech Mono", monospace',
-          fontSize: 8, letterSpacing: 2, color: '#ff00ff',
+          fontSize: 10, letterSpacing: 2, color: '#ff00ff',
           zIndex: 5,
         }}>
           ◉ {emotion}
@@ -550,8 +550,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
             <div key={h.label} style={{ textAlign: 'center' }}>
               <div style={{
                 fontFamily: '"Share Tech Mono", monospace',
-                fontSize: 7, letterSpacing: 2,
-                color: 'rgba(255,255,255,0.2)', marginBottom: 3,
+                fontSize: 9, letterSpacing: 2,
+                color: 'rgba(255,255,255,0.3)', marginBottom: 4,
               }}>{h.label}</div>
               <div style={{
                 width: 46, height: 2,

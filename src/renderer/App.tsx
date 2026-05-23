@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Live2DViewer from './components/Live2DViewer';
 import ChatWindow from './components/ChatWindow';
 import SettingsPanel from './components/SettingsPanel';
@@ -67,9 +67,9 @@ function App() {
     setEnergy(e => Math.max(20, e - 2));
   };
 
-  const handleMotion = React.useCallback((_motion: string) => {}, []);
+  const handleMotion = useCallback((_motion: string) => {}, []);
 
-  const handleAIResponse = React.useCallback((emotion: string) => {
+  const handleAIResponse = useCallback((emotion: string) => {
     const expression = getExpressionForEmotion(emotion);
     setCurrentExpression(expression);
     setCurrentEmotion(emotion.toUpperCase());
@@ -110,7 +110,7 @@ function App() {
   };
 
   return (
-    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100vh', background: '#07070f' }}>
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100vh', background: '#0f0f1a' }}>
 
       {/* ===== TOP BAR ===== */}
       <header style={s.topBar}>
@@ -196,10 +196,26 @@ function App() {
             ))}
           </div>
 
-          {/* Memory Shard — 缓存记忆碎片 */}
-          <div style={s.memoryShard}>
-            <div style={{ fontSize: 7, letterSpacing: 2, color: 'rgba(0,255,136,0.3)', marginBottom: 3 }}>⫸ MEMORY</div>
-            <div style={{ fontSize: 9, color: 'rgba(0,255,136,0.5)', letterSpacing: 0.5 }}>{memory}% retained</div>
+          {/* 角色信息浮窗 */}
+          <div style={{
+            position: 'absolute', bottom: '24%', left: '12px',
+            zIndex: 5,
+          }}>
+            <div style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: 13, letterSpacing: 1,
+              color: 'rgba(255,255,255,0.6)',
+            }}>
+              Haru
+            </div>
+            <div style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: 10, letterSpacing: 1,
+              color: 'rgba(0,255,255,0.4)',
+              marginTop: 2,
+            }}>
+              ● ONLINE · 12h
+            </div>
           </div>
         </div>
 
@@ -275,17 +291,18 @@ const s: Record<string, React.CSSProperties> = {
   },
   statusItem: {
     display: 'flex', alignItems: 'center', gap: 5,
-    fontFamily: "'Share Tech Mono', monospace", fontSize: 9,
-    letterSpacing: 1.5, color: 'rgba(255,255,255,0.25)',
+    fontFamily: "'Share Tech Mono', monospace", fontSize: 11,
+    letterSpacing: 1.5, color: 'rgba(255,255,255,0.3)',
   },
   statusDot: { width: 5, height: 5, borderRadius: '50%', display: 'inline-block' },
   topBarRight: { display: 'flex', gap: 6 },
   topBtn: {
     background: 'transparent', border: '1px solid rgba(0,255,255,0.15)',
     color: 'rgba(0,255,255,0.4)',
-    padding: '5px 12px', fontFamily: "'Share Tech Mono', monospace",
-    fontSize: 9, letterSpacing: 1.5, cursor: 'pointer',
+    padding: '7px 14px', fontFamily: "'Share Tech Mono', monospace",
+    fontSize: 11, letterSpacing: 1.5, cursor: 'pointer',
     transition: 'all 0.2s',
+    borderRadius: 4,
   },
 
   // Character Panel
@@ -335,15 +352,6 @@ const s: Record<string, React.CSSProperties> = {
     background: 'rgba(0,255,255,0.06)',
     boxShadow: '0 0 8px rgba(0,255,255,0.1)',
   },
-  memoryShard: {
-    position: 'absolute', top: 16, left: 16,
-    padding: '8px 12px',
-    border: '1px solid rgba(0,255,136,0.1)',
-    background: 'rgba(7,7,15,0.5)',
-    backdropFilter: 'blur(4px)',
-    zIndex: 5, maxWidth: 140,
-  },
-
   // Chat Panel
   chatPanel: {
     flex: 1, display: 'flex', flexDirection: 'column',
@@ -362,7 +370,7 @@ const s: Record<string, React.CSSProperties> = {
     fontFamily: "'Share Tech Mono', monospace",
   },
   statusText: {
-    color: 'rgba(255,255,255,0.12)', fontSize: 8, letterSpacing: 1,
+    color: 'rgba(255,255,255,0.15)', fontSize: 10, letterSpacing: 1,
   },
 };
 
