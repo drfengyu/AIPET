@@ -26,12 +26,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
     // 从 localStorage 加载聊天记录
     try {
       const saved = localStorage.getItem('aipet-chat-history');
-      if (saved) {
+      if (saved && saved !== '[]') {
         const parsed = JSON.parse(saved);
-        // 恢复 Date 对象
-        return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
+        }
       }
-    } catch (_) {}
+    } catch (e) {
+      console.warn('聊天记录加载失败:', e);
+    }
     // 默认欢迎消息
     return [{
       id: '1',
@@ -47,7 +50,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
   useEffect(() => {
     try {
       localStorage.setItem('aipet-chat-history', JSON.stringify(messagesRef.current));
-    } catch (_) {}
+    } catch (e) {
+      console.warn('聊天记录保存失败:', e);
+    }
   }, [messages]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);

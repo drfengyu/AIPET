@@ -270,15 +270,6 @@ function createWindow() {
     debugLog('Window minimized to tray');
   });
 
-  mainWindow.on('close', (event) => {
-    // 非强制退出时，关闭窗口改为隐藏到托盘
-    if (!app.isQuitting) {
-      event.preventDefault();
-      mainWindow.hide();
-      debugLog('Window closed to tray (not quit)');
-    }
-  });
-
   mainWindow.on('ready-to-show', () => {
     debugLog('Window ready-to-show');
     phaseLog('win_ready');
@@ -440,11 +431,11 @@ app.whenReady().then(() => {
 
   // 启动自动更新检查
   try {
-    const { setupAutoUpdater } = require('./updater.js');
+    const { setupAutoUpdater } = await import('./updater.js');
     setupAutoUpdater();
     debugLog('Auto updater initialized');
   } catch (e) {
-    debugLog('Auto updater setup failed (non-critical): ' + e.message);
+    debugLog('Auto updater setup failed (non-critical): ' + (e?.message || e));
   }
 
   debugLog('after createWindow() - handlers registered, event loop running');
@@ -476,9 +467,7 @@ app.on('window-all-closed', () => {
   debugLog('window-all-closed fired');
   phaseLog('win_all_closed');
   if (process.platform !== 'darwin') {
-    if (app.isQuitting) {
-      app.quit();
-    }
+    app.quit();
   }
 });
 
