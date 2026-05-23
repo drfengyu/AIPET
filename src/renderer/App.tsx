@@ -178,7 +178,7 @@ function App() {
               energy={energy}
               memory={memory}
               emotion={currentEmotion}
-              dragEnabled={transparentMode}
+              dragEnabled={miniMode}
               onDrag={(dx, dy) => (window as any).electronAPI?.dragWindow?.(dx, dy)}
             />
             {/* Floating particles */}
