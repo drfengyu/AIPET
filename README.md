@@ -105,6 +105,7 @@ AIPET/
 | [故障排查](docs/TROUBLESHOOTING.md) | 常见问题解决 |
 | [环境配置](docs/ENVIRONMENT_TROUBLESHOOTING.md) | 开发环境搭建 |
 | [知识总结](docs/KNOWLEDGE_SUMMARY.md) | 项目开发经验总结 |
+| [技术详解](docs/TECHNICAL_DETAILS.md) | 核心功能实现细节与代码解读 |
 
 ---
 
