@@ -42,6 +42,14 @@ function App() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transparentMode, setTransparentMode] = useState(false);
 
+  // 监听透明模式变化（来自主进程）
+  useEffect(() => {
+    const cleanup = (window as any).electronAPI?.onTransparentModeChanged?.((enabled: boolean) => {
+      setTransparentMode(enabled);
+    });
+    return () => cleanup?.();
+  }, []);
+
   // 从 localStorage 加载设置
   useEffect(() => {
     const saved = localStorage.getItem('aipet-settings');
@@ -111,7 +119,7 @@ function App() {
   };
 
   return (
-    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100vh', background: '#1a1a2e' }}>
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100vh', background: transparentMode ? 'transparent' : '#1a1a2e' }}>
 
       {/* ===== TOP BAR ===== */}
       <header style={s.topBar}>

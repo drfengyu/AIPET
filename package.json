@@ -101,6 +101,7 @@
     "files": [
       "dist/main/**/*",
       "dist/renderer/**/*",
+      "build/**/*",
       "node_modules/**/*"
     ],
     "extraResources": [

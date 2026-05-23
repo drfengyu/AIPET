@@ -186,7 +186,8 @@ function createWindow() {
     },
     // 窗口外观
     titleBarStyle: 'default',
-    backgroundColor: '#0a0a0f',
+    transparent: true,
+    backgroundColor: '#1a1a2e',
     show: true,
   });
 
@@ -427,12 +428,10 @@ ipcMain.handle('set-transparent-mode', (event, enabled) => {
       // 保存当前窗口状态
       const bounds = mainWindow.getBounds();
       global._aipet_before_transparent = bounds;
-      // 启用透明 + 点击穿透
-      mainWindow.setBackgroundColor('#00000000');
+      // 启用点击穿透（透明由 CSS 控制）
       mainWindow.setHasShadow(false);
       mainWindow.setIgnoreMouseEvents(true, { forward: true });
     } else {
-      mainWindow.setBackgroundColor('#1a1a2e');
       mainWindow.setHasShadow(true);
       mainWindow.setIgnoreMouseEvents(false);
       // 恢复尺寸
@@ -441,6 +440,7 @@ ipcMain.handle('set-transparent-mode', (event, enabled) => {
         mainWindow.setBounds(b);
       }
     }
+    // 通知渲染进程切换 CSS 背景
     mainWindow.webContents.send('transparent-mode-changed', enabled);
     return true;
   } catch (e) {
