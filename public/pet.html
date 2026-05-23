@@ -108,9 +108,9 @@ html, body {
   document.head.appendChild(s);
 
   function initPet() {
-    var Live2DModel = window.Live2DModel;
+    var Live2DModel = window.PIXI?.live2d?.Live2DModel;
     if (!Live2DModel || !window.PIXI) {
-      showError('渲染库加载失败');
+      showError('渲染库加载失败 (PIXI=' + !!window.PIXI + ', Live2DModel=' + !!Live2DModel + ')');
       return;
     }
     Live2DModel.registerTicker(window.PIXI.Ticker);
