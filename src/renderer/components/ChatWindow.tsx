@@ -12,6 +12,7 @@ export interface Message {
 interface ChatWindowProps {
   onSendMessage?: (message: string) => void;
   onAIResponse?: (emotion: string) => void;
+  onSpeakingChange?: (speaking: boolean) => void;
   ttsEnabled?: boolean;
   ttsVoice?: string;
   ttsRate?: number;
@@ -114,7 +115,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       }
 
       if (ttsEnabled && isSupported()) {
-        speak(aiResponse.text, { voice: ttsVoice, rate: ttsRate }).catch(() => {});
+        onSpeakingChange?.(true);
+        speak(aiResponse.text, { voice: ttsVoice, rate: ttsRate })
+          .catch(() => {})
+          .finally(() => onSpeakingChange?.(false));
       }
     } catch (error) {
       console.error('AI response error:', error);

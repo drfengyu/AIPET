@@ -9,14 +9,23 @@ interface Live2DViewerProps {
   modelUrl?: string;
   scale?: number;
   onMotion?: (motion: string) => void;
-  expression?: string; // 表情名称 (如 'F01', 'F02' 等)
+  expression?: string;
+  // HUD data
+  mood?: number;
+  energy?: number;
+  memory?: number;
+  emotion?: string;
 }
 
 const Live2DViewer: React.FC<Live2DViewerProps> = ({
   modelUrl = './models/Haru/Haru.model3.json',
-  scale = 0.08, // 调整缩放比例以适应大尺寸模型
+  scale = 0.08,
   onMotion,
-  expression
+  expression,
+  mood = 78,
+  energy = 65,
+  memory = 45,
+  emotion = 'HAPPY',
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const modelRef = useRef<Live2DModel | null>(null);
@@ -511,6 +520,56 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   return (
     <div style={styles.viewer}>
       <div ref={containerRef} style={styles.canvas} />
+      {/* HUD: Emotion Badge */}
+      {!isLoading && (
+        <div style={{
+          position: 'absolute', top: '12%', right: '8%',
+          padding: '4px 10px',
+          border: '1px solid rgba(255,0,255,0.15)',
+          background: 'rgba(7,7,15,0.6)',
+          backdropFilter: 'blur(6px)',
+          fontFamily: '"Share Tech Mono", monospace',
+          fontSize: 8, letterSpacing: 2, color: '#ff00ff',
+          zIndex: 5,
+        }}>
+          ◉ {emotion}
+        </div>
+      )}
+      {/* HUD: Status Bars */}
+      {!isLoading && (
+        <div style={{
+          position: 'absolute', bottom: '15%', left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex', gap: 20, zIndex: 5,
+        }}>
+          {[
+            { label: 'MOOD', val: mood, color: '#00ffff' },
+            { label: 'ENERGY', val: energy, color: '#ff00ff' },
+            { label: 'MEMORY', val: memory, color: '#00ff88' },
+          ].map(h => (
+            <div key={h.label} style={{ textAlign: 'center' }}>
+              <div style={{
+                fontFamily: '"Share Tech Mono", monospace',
+                fontSize: 7, letterSpacing: 2,
+                color: 'rgba(255,255,255,0.2)', marginBottom: 3,
+              }}>{h.label}</div>
+              <div style={{
+                width: 46, height: 2,
+                background: 'rgba(255,255,255,0.04)',
+                borderRadius: 1, overflow: 'hidden',
+              }}>
+                <div style={{
+                  height: '100%', borderRadius: 1,
+                  transition: 'width 0.5s ease',
+                  width: h.val + '%',
+                  background: h.color,
+                  boxShadow: `0 0 6px ${h.color}`,
+                }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {isLoading && (
         <div style={styles.overlay}>
           <div style={styles.loadingContainer}>

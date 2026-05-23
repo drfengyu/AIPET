@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Live2DViewer from './components/Live2DViewer';
 import ChatWindow from './components/ChatWindow';
 import SettingsPanel from './components/SettingsPanel';
+import AudioVisualizer from './components/AudioVisualizer';
 import { getExpressionForEmotion } from './services/aiService';
 
 interface Settings {
@@ -33,11 +34,12 @@ function App() {
   const [memoryTags] = useState(['喜欢科幻电影', '赛博朋克爱好者', '中文母语者']);
   const [latency] = useState(42);
 
-  // Fake HUD state — in future these could come from AI emotion analysis
-  const [mood] = useState(78);
-  const [energy] = useState(65);
-  const [memory] = useState(45);
-  const [currentEmotion] = useState('HAPPY');
+  // HUD state — updated by AI interactions
+  const [mood, setMood] = useState(78);
+  const [energy, setEnergy] = useState(65);
+  const [memory, setMemory] = useState(45);
+  const [currentEmotion, setCurrentEmotion] = useState('HAPPY');
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   // 从 localStorage 加载设置
   useEffect(() => {
@@ -60,14 +62,22 @@ function App() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleSendMessage = (_message: string) => {};
+  const handleSendMessage = (_message: string) => {
+    // 用户发送消息时能量略微下降
+    setEnergy(e => Math.max(20, e - 2));
+  };
 
   const handleMotion = (_motion: string) => {};
 
   const handleAIResponse = (emotion: string) => {
     const expression = getExpressionForEmotion(emotion);
     setCurrentExpression(expression);
+    setCurrentEmotion(emotion.toUpperCase());
     setMsgCount(c => c + 1);
+    // 交互后情绪和能量改善
+    setMood(m => Math.min(100, m + 3));
+    setEnergy(e => Math.min(100, e + 1));
+    setMemory(m => Math.min(100, m + 1));
   };
 
   const handleSettingsChange = (newSettings: Settings) => {
@@ -142,6 +152,10 @@ function App() {
               scale={settings?.modelScale || 1.0}
               onMotion={handleMotion}
               expression={settings?.expressionEnabled ? currentExpression : undefined}
+              mood={mood}
+              energy={energy}
+              memory={memory}
+              emotion={currentEmotion}
             />
             {/* Floating particles */}
             <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
@@ -159,25 +173,6 @@ function App() {
             <div style={s.holoRing1} />
             <div style={s.holoRing2} />
           </div>
-
-          {/* HUD Bars */}
-          <div style={s.hudRow}>
-            <div style={s.hudItem}>
-              <span style={s.hudLabel}>MOOD</span>
-              <div style={s.hudTrack}><div style={{ ...s.hudFill, width: mood + '%', background: '#00ffff', boxShadow: '0 0 6px #00ffff' }} /></div>
-            </div>
-            <div style={s.hudItem}>
-              <span style={s.hudLabel}>ENERGY</span>
-              <div style={s.hudTrack}><div style={{ ...s.hudFill, width: energy + '%', background: '#ff00ff', boxShadow: '0 0 6px #ff00ff' }} /></div>
-            </div>
-            <div style={s.hudItem}>
-              <span style={s.hudLabel}>MEMORY</span>
-              <div style={s.hudTrack}><div style={{ ...s.hudFill, width: memory + '%', background: '#00ff88', boxShadow: '0 0 6px #00ff88' }} /></div>
-            </div>
-          </div>
-
-          {/* Emotion Badge */}
-          <div style={s.emotionBadge}>◉ {currentEmotion}</div>
 
           {/* Model Selector */}
           <div style={s.modelStrip}>
@@ -201,10 +196,10 @@ function App() {
             ))}
           </div>
 
-          {/* Memory Shard */}
+          {/* Memory Shard — 缓存记忆碎片 */}
           <div style={s.memoryShard}>
             <div style={{ fontSize: 7, letterSpacing: 2, color: 'rgba(0,255,136,0.3)', marginBottom: 3 }}>⫸ MEMORY</div>
-            <div style={{ fontSize: 9, color: 'rgba(0,255,136,0.5)', letterSpacing: 0.5 }}>用户喜欢科幻电影</div>
+            <div style={{ fontSize: 9, color: 'rgba(0,255,136,0.5)', letterSpacing: 0.5 }}>{memory}% retained</div>
           </div>
         </div>
 
@@ -213,6 +208,7 @@ function App() {
           <ChatWindow
             onSendMessage={handleSendMessage}
             onAIResponse={handleAIResponse}
+            onSpeakingChange={setIsSpeaking}
             ttsEnabled={settings?.ttsEnabled || false}
             ttsVoice={settings?.ttsVoice || 'zh-CN'}
             ttsRate={settings?.ttsRate || 1.0}
@@ -233,15 +229,7 @@ function App() {
                 ⚡ {latency}ms
               </span>
               {/* Audio visualizer */}
-              <div style={{ display: 'flex', gap: 2, alignItems: 'center', height: 12 }}>
-                {[1,2,3,4,5,6].map(i => (
-                  <span key={i} style={{
-                    width: 2, background: '#00ffff', borderRadius: 1,
-                    animation: `viz-bar ${0.6 + i*0.1}s ease infinite alternate`,
-                    animationDelay: `${i * 0.1}s`,
-                  }} />
-                ))}
-              </div>
+              <AudioVisualizer isSpeaking={isSpeaking} />
             </div>
             <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
               <span style={s.statusText}>SES {sessionDisplay}</span>
@@ -328,33 +316,6 @@ const s: Record<string, React.CSSProperties> = {
     borderRadius: '50%', top: '17.5%', left: '17.5%',
     animation: 'rotate-ring 20s linear infinite reverse',
     pointerEvents: 'none', zIndex: 1,
-  },
-  hudRow: {
-    position: 'absolute', bottom: '18%', left: '50%',
-    transform: 'translateX(-50%)',
-    display: 'flex', gap: 24, zIndex: 5,
-  },
-  hudItem: { textAlign: 'center' as const },
-  hudLabel: {
-    fontFamily: "'Share Tech Mono', monospace", fontSize: 7,
-    letterSpacing: 2, color: 'rgba(255,255,255,0.2)', marginBottom: 3,
-  },
-  hudTrack: {
-    width: 50, height: 2, background: 'rgba(255,255,255,0.04)',
-    borderRadius: 1, overflow: 'hidden',
-  },
-  hudFill: {
-    height: '100%', borderRadius: 1, transition: 'width 0.5s ease',
-  },
-  emotionBadge: {
-    position: 'absolute', top: '14%', right: '10%',
-    padding: '4px 10px',
-    border: '1px solid rgba(255,0,255,0.15)',
-    background: 'rgba(7,7,15,0.6)',
-    backdropFilter: 'blur(6px)',
-    fontFamily: "'Share Tech Mono', monospace",
-    fontSize: 8, letterSpacing: 2, color: '#ff00ff',
-    zIndex: 5,
   },
   modelStrip: {
     position: 'absolute', bottom: '4%', left: '50%',
