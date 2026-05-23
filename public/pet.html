@@ -78,6 +78,23 @@ html, body {
 <script src="live2dcubismcore.js"></script>
 <script src="./lib/pixi.min.js"></script>
 <script>
+// 全局错误捕获
+window.onerror = function(msg, url, line, col, err) {
+  var el = document.getElementById('error');
+  el.textContent = '⚠ ' + (err ? (err.message || err) : msg);
+  el.style.display = 'block';
+  document.getElementById('loading').style.display = 'none';
+  console.error('[Pet] Uncaught:', msg, err);
+  return true;
+};
+window.addEventListener('unhandledrejection', function(e) {
+  var el = document.getElementById('error');
+  el.textContent = '⚠ Promise: ' + (e.reason ? (e.reason.message || e.reason) : e);
+  el.style.display = 'block';
+  document.getElementById('loading').style.display = 'none';
+  console.error('[Pet] Unhandled rejection:', e.reason);
+});
+
 (function() {
   const params = new URLSearchParams(location.search);
   const modelUrl = params.get('model') || './models/Haru/Haru.model3.json';

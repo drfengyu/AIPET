@@ -1314,3 +1314,4 @@
 [2026-05-23 16:37:17] POST_COMMIT: 3d1ce3c - feat: 真正桌宠模式(独立透明窗口+仅Live2D角色)
 [2026-05-23 16:43:13] POST_COMMIT: 922a6ce - fix: pet.html 改本地加载PixiJS+Live2D库,不再依赖CDN,增加加载提示和错误显示
 [2026-05-23 16:45:46] POST_COMMIT: f615110 - fix: pixi-live2d-display 挂载在 PIXI.live2d 下, 修正 Live2DModel 引用路径
+[2026-05-23 16:51:32] POST_COMMIT: 1b73644 - fix: 改用 cubism4.min.js(不检查Cubism2), 增加pet窗口日志

@@ -483,14 +483,26 @@ ipcMain.handle('open-pet-mode', (event, modelUrl) => {
     petWindow.loadFile(petPath, { query: { model: modelUrl || './models/Haru/Haru.model3.json' } });
     petWindow.setIgnoreMouseEvents(false);
 
-    // 记录 pet 窗口的 console 输出到 debug 日志
+    // 记录 pet 窗口的 console 输出（不受 DEBUG 开关控制，始终写入 aipet-phase.log）
     petWindow.webContents.on('console-message', (event, level, message) => {
-      const tag = ['verbose', 'info', 'warn', 'error'][level] || 'log';
-      debugLog('[Pet ' + tag + '] ' + message);
+      const tag = ['v', 'i', 'w', 'e'][level] || 'l';
+      const line = new Date().toISOString() + ' [Pet.' + tag + '] ' + message;
+      try { fs.appendFileSync(PHASE_LOG, line + '\n'); } catch (_) {}
     });
 
     petWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
-      debugLog('Pet window failed to load: errorCode=' + errorCode + ' desc=' + errorDescription);
+      const line = new Date().toISOString() + ' [Pet.load.fail] errorCode=' + errorCode + ' desc=' + errorDescription;
+      try { fs.appendFileSync(PHASE_LOG, line + '\n'); } catch (_) {}
+    });
+
+    petWindow.webContents.on('crashed', (event, killed) => {
+      const line = new Date().toISOString() + ' [Pet.crashed] killed=' + killed;
+      try { fs.appendFileSync(PHASE_LOG, line + '\n'); } catch (_) {}
+    });
+
+    petWindow.webContents.on('destroyed', () => {
+      const line = new Date().toISOString() + ' [Pet.destroyed]';
+      try { fs.appendFileSync(PHASE_LOG, line + '\n'); } catch (_) {}
     });
 
     petWindow.on('closed', () => {
