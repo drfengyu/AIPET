@@ -1,95 +1,82 @@
-# Live2D Chat App
+# AIPET
 
-基于Live2D的桌面AI陪聊软件
+基于 Live2D 的桌面 AI 陪聊软件 — Electron + React + TypeScript
 
-## 🚀 快速启动
+## 📦 下载
 
-### 方法1：使用启动脚本（推荐）
+[![GitHub Release](https://img.shields.io/badge/release-v0.1.0-blue)](https://github.com/drfengyu/AIPET/releases/tag/v0.1.0)
+
+从 **[GitHub Releases](https://github.com/drfengyu/AIPET/releases/tag/v0.1.0)** 下载最新安装包。
+
+## 🚀 快速启动（开发）
+
 ```bash
-# 双击运行
-start.bat
-```
-
-### 方法2：手动启动
-```bash
-# 启动Vite开发服务器
-npx vite
-
-# 然后在浏览器中访问
-http://localhost:5174/index.html
-```
-
-### 方法3：使用yarn
-```bash
-# 安装依赖（如果还没安装）
+# 安装依赖
 yarn install
 
-# 启动开发服务器
+# 启动 Vite 开发服务器
 yarn dev:vite
-
-# 然后在浏览器中访问
-http://localhost:5174/index.html
 ```
 
-## 📱 访问地址
+浏览器访问 http://localhost:5174/
 
-- **本地访问**: http://localhost:5174/index.html
-- **网络访问**: http://192.168.6.78:5174/index.html
+## 🖥️ 桌面应用
 
-## 🎯 应用功能
+```bash
+# 启动 Electron
+yarn dev:electron
 
-### Live2D展示
-- ✅ Live2D角色模型加载
-- ✅ 点击交互（头部、身体）
-- ✅ 模型切换
+# 构建打包
+yarn build
 
-### AI聊天
-- ✅ 聊天界面
-- ✅ 消息发送/接收
-- ✅ 打字动画效果
+# 打包 Windows 安装版
+npx electron-builder --win --dir
+```
+
+## ✨ 功能
+
+- **🎮 Live2D 角色** — 点击交互、模型切换、动作表情
+- **🤖 AI 对话** — Cloudflare Workers AI（llama-3.1-8b）
+- **💬 聊天界面** — 打字动画、消息流式输出
+- **🔊 语音合成** — Edge TTS / Haru TTS
+
+## 🧱 技术栈
+
+| 层级 | 技术 |
+|------|------|
+| 前端 | React + TypeScript + Vite |
+| Live2D | Pixi.js + pixi-live2d-display |
+| AI | Cloudflare Workers AI |
+| 桌面 | Electron |
+| 构建 | Vite + electron-builder |
 
 ## 📁 项目结构
 
 ```
 AIPET/
 ├── src/
-│   ├── agents/           # AI代理架构
-│   ├── main/             # Electron主进程
-│   ├── renderer/         # React前端
-│   │   ├── components/   # 组件
-│   │   │   ├── Live2DViewer.tsx
-│   │   │   └── ChatWindow.tsx
-│   │   ├── App.tsx
-│   │   └── index.tsx
-│   └── shared/           # 共享类型
-├── public/               # 静态资源
-│   └── models/           # Live2D模型
-├── package.json
-├── vite.config.ts
-└── start.bat             # 启动脚本
+│   ├── agents/         # AI 代理系统
+│   ├── main/           # Electron 主进程
+│   └── renderer/       # React 渲染进程
+├── public/models/      # Live2D 模型
+├── docs/               # 文档
+├── scripts/            # 工具脚本
+└── package.json
 ```
 
-## 🔧 技术栈
+## 📚 文档
 
-- **前端**: React + TypeScript + Vite
-- **Live2D**: Pixi.js + pixi-live2d-display
-- **AI代理**: Cloudflare Agents SDK
-- **桌面应用**: Electron
+文档位于 [`docs/`](docs/) 目录下：
 
-## 📝 注意事项
+- [项目架构](docs/PROJECT_ARCHITECTURE.md)
+- [API 指南](docs/API_GUIDE.md)
+- [模型指南](docs/MODEL_GUIDE.md)
+- [打包指南](docs/PACKAGING_GUIDE.md)
+- [TTS 指南](docs/TTS_GUIDE.md)
+- [故障排查](docs/TROUBLESHOOTING.md)
+- [环境配置](docs/ENVIRONMENT_TROUBLESHOOTING.md)
+- [Hermes 使用](docs/HERMES_USAGE_GUIDE.md)
 
-1. **Live2D模型**: 当前使用占位符模型，需要下载真实模型文件
-2. **AI对话**: 当前使用模拟回复，需要集成AI服务
-3. **Electron**: 由于网络问题，Electron二进制文件未下载完成
+## 📄 开源协议
 
-## 🎯 下一步
-
-1. 下载Live2D模型文件到 `public/models/`
-2. 集成AI对话服务（Cloudflare Workers AI）
-3. 添加语音合成功能
-4. 打包发布桌面应用
-
----
-
-*版本: 1.0.0*
-*最后更新: 2026/05/20*
+MIT
