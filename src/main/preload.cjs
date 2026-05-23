@@ -23,6 +23,30 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 获取系统主题
   getSystemTheme: () => ipcRenderer.invoke('get-system-theme'),
 
+  // AI 聊天 - 通过主进程调用 Cloudflare API
+  chatWithAI: (message) => ipcRenderer.invoke('ai-chat', message),
+
+  // ========== v0.2.0 新增 ==========
+
+  // 窗口置顶
+  setAlwaysOnTop: (value) => ipcRenderer.invoke('set-always-on-top', value),
+  getAlwaysOnTop: () => ipcRenderer.invoke('get-always-on-top'),
+
+  // 监听置顶状态变化（来自托盘菜单）
+  onAlwaysOnTopChanged: (callback) => {
+    const handler = (event, value) => callback(value);
+    ipcRenderer.on('always-on-top-changed', handler);
+    return () => ipcRenderer.removeListener('always-on-top-changed', handler);
+  },
+
+  // 退出应用
+  quitApp: () => ipcRenderer.invoke('quit-app'),
+
+  // 检查更新
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
+
   // 监听事件
   onEvent: (channel, callback) => {
     const handler = (event, ...args) => callback(...args);
@@ -34,9 +58,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   sendEvent: (channel, ...args) => {
     ipcRenderer.send(channel, ...args);
   },
-
-  // AI 聊天 - 通过主进程调用 Cloudflare API
-  chatWithAI: (message) => ipcRenderer.invoke('ai-chat', message),
 });
 
 // 暴露一个用于调试的 API（仅开发环境）

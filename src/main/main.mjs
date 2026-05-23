@@ -9,8 +9,15 @@ import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 
-const { app, BrowserWindow, ipcMain, nativeTheme } = electron;
+const { app, BrowserWindow, ipcMain, nativeTheme, Tray, Menu, globalShortcut } = electron;
 const require = createRequire(import.meta.url);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 保持全局引用，防止窗口被垃圾回收时自动关闭
+let mainWindow = null;
+let tray = null;
 
 // ============================================
 // 内存优化配置
@@ -147,16 +154,10 @@ function loadEnv() {
   debugLog('No .env file found');
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 loadEnv();
 debugLog('__dirname: ' + __dirname);
 debugLog('resourcesPath: ' + (process.resourcesPath || 'undefined'));
 phaseLog('env_loaded');
-
-// 保持全局引用，防止窗口被垃圾回收时自动关闭
-let mainWindow = null;
 
 // 安全配置（sandbox=false 以支持 Live2D Cubism WASM 渲染）
 const SECURITY_CONFIG = {
@@ -262,6 +263,22 @@ function createWindow() {
     mainWindow = null;
   });
 
+  // 最小化时隐藏到托盘（而不是最小化到任务栏）
+  mainWindow.on('minimize', (event) => {
+    event.preventDefault();
+    mainWindow.hide();
+    debugLog('Window minimized to tray');
+  });
+
+  mainWindow.on('close', (event) => {
+    // 非强制退出时，关闭窗口改为隐藏到托盘
+    if (!app.isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+      debugLog('Window closed to tray (not quit)');
+    }
+  });
+
   mainWindow.on('ready-to-show', () => {
     debugLog('Window ready-to-show');
     phaseLog('win_ready');
@@ -298,11 +315,138 @@ function createWindow() {
   });
 }
 
+// ============================================
+// 系统托盘
+// ============================================
+function createTray() {
+  const iconPath = path.join(__dirname, '../../build/tray-icon.png');
+  let trayIcon;
+  try {
+    trayIcon = electron.nativeImage.createFromPath(iconPath);
+    // 缩放为 16x16（系统托盘标准尺寸）
+    trayIcon = trayIcon.resize({ width: 16, height: 16 });
+  } catch (e) {
+    debugLog('Tray icon load failed: ' + e.message);
+    // 用 1x1 像素占位
+    trayIcon = electron.nativeImage.createEmpty();
+  }
+
+  tray = new Tray(trayIcon);
+  tray.setToolTip('AIPET - Live2D AI Desktop Pet');
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '显示 AIPET',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      },
+    },
+    {
+      label: '窗口置顶',
+      type: 'checkbox',
+      checked: false,
+      click: (menuItem) => {
+        if (mainWindow) {
+          mainWindow.setAlwaysOnTop(menuItem.checked);
+          mainWindow.webContents.send('always-on-top-changed', menuItem.checked);
+        }
+      },
+    },
+    { type: 'separator' },
+    {
+      label: '退出',
+      click: () => {
+        app.isQuitting = true;
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
+
+  // 双击托盘图标显示窗口
+  tray.on('double-click', () => {
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  });
+
+  debugLog('Tray created');
+}
+
+// ============================================
+// 全局快捷键
+// ============================================
+function setupShortcuts() {
+  // Ctrl+Shift+A 或 Command+Shift+A 唤出窗口
+  globalShortcut.register('CommandOrControl+Shift+A', () => {
+    if (mainWindow) {
+      if (mainWindow.isVisible()) {
+        mainWindow.focus();
+      } else {
+        mainWindow.show();
+        mainWindow.focus();
+      }
+    }
+  });
+  debugLog('Global shortcuts registered: Ctrl+Shift+A');
+}
+
+// ============================================
+// IPC 通信处理
+// ============================================
+
+// 窗口置顶
+ipcMain.handle('set-always-on-top', (event, value) => {
+  if (mainWindow) {
+    mainWindow.setAlwaysOnTop(value);
+    // 更新托盘菜单的勾选状态
+    if (tray) {
+      const menu = tray.getContextMenu();
+      // 重建菜单（electron 不支持动态更新 checkbox）
+      const items = menu.items;
+      items[1].checked = value;
+      tray.setContextMenu(Menu.buildFromTemplate(items));
+    }
+    return true;
+  }
+  return false;
+});
+
+ipcMain.handle('get-always-on-top', () => {
+  return mainWindow ? mainWindow.isAlwaysOnTop() : false;
+});
+
+// 退出应用
+ipcMain.handle('quit-app', () => {
+  app.isQuitting = true;
+  app.quit();
+});
+
 // 应用准备好时创建窗口
 app.whenReady().then(() => {
   debugLog('app.whenReady() fired');
   phaseLog('whenReady');
+
+  app.isQuitting = false;
+
   createWindow();
+  createTray();
+  setupShortcuts();
+
+  // 启动自动更新检查
+  try {
+    const { setupAutoUpdater } = require('./updater.js');
+    setupAutoUpdater();
+    debugLog('Auto updater initialized');
+  } catch (e) {
+    debugLog('Auto updater setup failed (non-critical): ' + e.message);
+  }
+
   debugLog('after createWindow() - handlers registered, event loop running');
   phaseLog('after_createWindow');
 
@@ -332,13 +476,23 @@ app.on('window-all-closed', () => {
   debugLog('window-all-closed fired');
   phaseLog('win_all_closed');
   if (process.platform !== 'darwin') {
-    app.quit();
+    if (app.isQuitting) {
+      app.quit();
+    }
   }
 });
 
 app.on('will-quit', () => {
   debugLog('will-quit fired');
   phaseLog('will_quit');
+  // 注销全局快捷键
+  globalShortcut.unregisterAll();
+  debugLog('Global shortcuts unregistered');
+  // 销毁托盘
+  if (tray) {
+    tray.destroy();
+    tray = null;
+  }
 });
 
 // IPC 通信处理

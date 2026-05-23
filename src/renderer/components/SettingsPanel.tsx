@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface SettingsPanelProps {
   onClose: () => void;
@@ -29,6 +29,7 @@ interface Settings {
   // 外观设置
   theme: string;
   soundEnabled: boolean;
+  alwaysOnTop: boolean;
 
   // 开发者选项
   debugMode: boolean;
@@ -58,6 +59,7 @@ const DEFAULT_SETTINGS: Settings = {
   // 外观设置
   theme: 'cyberpunk',
   soundEnabled: true,
+  alwaysOnTop: false,
 
   // 开发者选项
   debugMode: false,
@@ -83,6 +85,23 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSettingsChange
     localStorage.setItem('aipet-settings', JSON.stringify(DEFAULT_SETTINGS));
     onSettingsChange?.(DEFAULT_SETTINGS);
   };
+
+  // 同步 Electron 窗口置顶状态
+  useEffect(() => {
+    // 加载时读取当前置顶状态
+    if (window.electronAPI?.getAlwaysOnTop) {
+      window.electronAPI.getAlwaysOnTop().then((v) => {
+        if (v !== settings.alwaysOnTop) {
+          updateSetting('alwaysOnTop', v);
+        }
+      });
+    }
+    // 监听托盘菜单的置顶变化
+    const cleanup = window.electronAPI?.onAlwaysOnTopChanged?.((v) => {
+      updateSetting('alwaysOnTop', v);
+    });
+    return () => cleanup?.();
+  }, []);
 
 
   const styles: { [key: string]: React.CSSProperties } = {
@@ -434,6 +453,22 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSettingsChange
             <div style={{ ...styles.toggleKnob, ...(settings.soundEnabled ? styles.toggleKnobActive : {}) }} />
           </div>
         </div>
+        <div style={styles.settingRow}>
+          <span style={styles.settingLabel}>窗口置顶</span>
+          <div
+            style={{ ...styles.toggle, ...(settings.alwaysOnTop ? styles.toggleActive : {}) }}
+            onClick={() => {
+              const newVal = !settings.alwaysOnTop;
+              updateSetting('alwaysOnTop', newVal);
+              // 同步到 Electron 窗口
+              if (window.electronAPI?.setAlwaysOnTop) {
+                window.electronAPI.setAlwaysOnTop(newVal);
+              }
+            }}
+          >
+            <div style={{ ...styles.toggleKnob, ...(settings.alwaysOnTop ? styles.toggleKnobActive : {}) }} />
+          </div>
+        </div>
       </div>
 
       {/* 开发者选项 */}
@@ -456,7 +491,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSettingsChange
       </button>
 
       <div style={styles.versionInfo}>
-        AIPET v1.0.0 // LIVE2D 聊天界面
+        AIPET v0.2.0 // LIVE2D 聊天界面
       </div>
     </div>
   );

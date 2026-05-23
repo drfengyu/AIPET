@@ -22,14 +22,33 @@ interface ChatWindowProps {
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, ttsEnabled = false, ttsVoice = 'zh-CN', ttsRate = 1.0, useMockAI = false, aiModel, fontSize = 13, messageHistory = 10 }) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
+  const [messages, setMessages] = useState<Message[]>(() => {
+    // 从 localStorage 加载聊天记录
+    try {
+      const saved = localStorage.getItem('aipet-chat-history');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // 恢复 Date 对象
+        return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
+      }
+    } catch (_) {}
+    // 默认欢迎消息
+    return [{
       id: '1',
       text: '系统已就绪，神经网络连接成功。你好！我是AIPET，你的AI助手，有什么可以帮你的吗？',
       sender: 'ai',
       timestamp: new Date()
-    }
-  ]);
+    }];
+  });
+
+  // 聊天记录变化时自动保存
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+  useEffect(() => {
+    try {
+      localStorage.setItem('aipet-chat-history', JSON.stringify(messagesRef.current));
+    } catch (_) {}
+  }, [messages]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
