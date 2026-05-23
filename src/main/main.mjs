@@ -1,6 +1,6 @@
 /**
  * AIPET - Electron 主进程 (ES 模块)
- * 使用安全的 Electron 配置
+ * 使用安全的 Electron 配置 + 内存优化
  */
 
 import electron from 'electron';
@@ -12,21 +12,77 @@ import { createRequire } from 'module';
 const { app, BrowserWindow, ipcMain, nativeTheme } = electron;
 const require = createRequire(import.meta.url);
 
-// 启动调试日志——写入固定路径，可以追踪闪退前执行到哪一步
-const __debugLogFile = path.join(process.env.USERPROFILE || 'C:\\Users\\Administrator', 'aipet-debug.log');
-const PHASE_LOG = path.join(process.env.USERPROFILE || 'C:\\Users\\Administrator', 'aipet-phase.log');
-function debugLog(msg) {
-  try {
-    fs.appendFileSync(__debugLogFile, new Date().toISOString() + ' ' + msg + '\n');
-  } catch (_) {}
-}
-function phaseLog(msg) {
-  try {
-    fs.appendFileSync(PHASE_LOG, new Date().toISOString() + ' ' + msg + '\n');
-  } catch (_) {}
+// ============================================
+// 内存优化配置
+// ============================================
+
+// 环境变量控制
+const DEBUG = process.env.DEBUG === 'true';
+const DISABLE_GPU = process.env.DISABLE_GPU === 'true';
+const MAX_LOG_SIZE = 5 * 1024 * 1024; // 5MB 日志文件大小限制
+
+// 日志轮转类 - 防止日志文件无限增长
+class RotatingLogger {
+  constructor(filePath, maxSize = MAX_LOG_SIZE) {
+    this.filePath = filePath;
+    this.maxSize = maxSize;
+  }
+
+  log(msg) {
+    if (!DEBUG) return; // 非 DEBUG 模式不记录日志
+    try {
+      // 检查文件大小
+      if (fs.existsSync(this.filePath)) {
+        const stats = fs.statSync(this.filePath);
+        if (stats.size > this.maxSize) {
+          // 轮转日志文件
+          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const backupPath = `${this.filePath}.${timestamp}`;
+          fs.renameSync(this.filePath, backupPath);
+          // 删除超过 7 天的备份日志
+          this.cleanOldLogs();
+        }
+      }
+      fs.appendFileSync(this.filePath, new Date().toISOString() + ' ' + msg + '\n');
+    } catch (_) {}
+  }
+
+  cleanOldLogs() {
+    try {
+      const dir = path.dirname(this.filePath);
+      const basename = path.basename(this.filePath);
+      const files = fs.readdirSync(dir);
+      const now = Date.now();
+      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+
+      files.forEach(file => {
+        if (file.startsWith(basename + '.')) {
+          const filePath = path.join(dir, file);
+          const stats = fs.statSync(filePath);
+          if (now - stats.mtimeMs > sevenDaysMs) {
+            fs.unlinkSync(filePath);
+          }
+        }
+      });
+    } catch (_) {}
+  }
 }
 
-debugLog('STARTUP: module loading begins');
+// 启动调试日志
+const __debugLogFile = path.join(process.env.USERPROFILE || 'C:\\Users\\Administrator', 'aipet-debug.log');
+const PHASE_LOG = path.join(process.env.USERPROFILE || 'C:\\Users\\Administrator', 'aipet-phase.log');
+const debugLogger = new RotatingLogger(__debugLogFile);
+const phaseLogger = new RotatingLogger(PHASE_LOG);
+
+function debugLog(msg) {
+  debugLogger.log(msg);
+}
+
+function phaseLog(msg) {
+  phaseLogger.log(msg);
+}
+
+debugLog('STARTUP: module loading begins (DEBUG=' + DEBUG + ', DISABLE_GPU=' + DISABLE_GPU + ')');
 phaseLog('start');
 
 // 全局未捕获异常处理
@@ -44,9 +100,16 @@ process.on('unhandledRejection', (reason) => {
   phaseLog('UNHANDLED_REJ: ' + (reason?.message || 'unknown'));
 });
 
-// 禁用 GPU 加速——便携版经常因 GPU 驱动问题闪退
-app.commandLine.appendSwitch('disable-gpu');
-app.commandLine.appendSwitch('disable-software-rasterizer');
+// GPU 加速配置
+// 如果遇到 GPU 驱动问题，设置 DISABLE_GPU=true 环境变量
+if (DISABLE_GPU) {
+  debugLog('GPU acceleration disabled (DISABLE_GPU=true)');
+  app.commandLine.appendSwitch('disable-gpu');
+  app.commandLine.appendSwitch('disable-software-rasterizer');
+} else {
+  debugLog('GPU acceleration enabled (set DISABLE_GPU=true to disable)');
+  app.commandLine.appendSwitch('enable-gpu-rasterization');
+}
 
 debugLog('imports done, loading .env');
 phaseLog('imports_done');
@@ -133,7 +196,15 @@ function createWindow() {
   if (process.env.NODE_ENV === 'development') {
     // 开发环境：加载 Vite dev server
     mainWindow.loadURL('http://localhost:5174');
-    mainWindow.webContents.openDevTools();
+
+    // 仅在 DEBUG 模式下打开 DevTools（节省内存）
+    if (DEBUG) {
+      mainWindow.webContents.openDevTools();
+      debugLog('Development mode: DevTools opened (DEBUG=true)');
+    } else {
+      debugLog('Development mode: DevTools closed (set DEBUG=true to enable)');
+    }
+
     debugLog('Development mode: loadURL http://localhost:5174');
   } else {
     // 生产环境：加载构建好的 HTML 文件
@@ -157,27 +228,37 @@ function createWindow() {
   debugLog('createWindow() returning - event loop should run now');
   phaseLog('createWindow_exit');
 
-  // 快速诊断定时器
-  const intervals = [2, 5, 10, 20];
-  intervals.forEach(sec => {
-    setTimeout(() => {
-      phaseLog('alive_' + sec + 's');
-      debugLog('>>> ALIVE CHECK at ' + sec + 's');
-      try {
-        if (mainWindow && mainWindow.webContents) {
-          const wc = mainWindow.webContents;
-          debugLog('>>> IsLoading:' + wc.isLoading() + ' IsCrashed:' + wc.isCrashed() + ' IsDestroyed:' + wc.isDestroyed());
+  // 快速诊断定时器 - 保存 ID 以便清理
+  const diagnosticTimers = [];
+  if (DEBUG) {
+    const intervals = [2, 5, 10, 20];
+    intervals.forEach(sec => {
+      const timerId = setTimeout(() => {
+        phaseLog('alive_' + sec + 's');
+        debugLog('>>> ALIVE CHECK at ' + sec + 's');
+        try {
+          if (mainWindow && mainWindow.webContents) {
+            const wc = mainWindow.webContents;
+            debugLog('>>> IsLoading:' + wc.isLoading() + ' IsCrashed:' + wc.isCrashed() + ' IsDestroyed:' + wc.isDestroyed());
+          }
+        } catch (e) {
+          debugLog('>>> alive check err: ' + e?.message);
         }
-      } catch (e) {
-        debugLog('>>> alive check err: ' + e?.message);
-      }
-    }, sec * 1000);
-  });
+      }, sec * 1000);
+      diagnosticTimers.push(timerId);
+    });
+    debugLog('Diagnostic timers started (DEBUG=true)');
+  }
 
   // 窗口事件处理
   mainWindow.on('closed', () => {
     debugLog('Window closed');
     phaseLog('win_closed');
+
+    // 清理诊断定时器，防止内存泄漏
+    diagnosticTimers.forEach(id => clearTimeout(id));
+    debugLog('Diagnostic timers cleared');
+
     mainWindow = null;
   });
 
@@ -224,6 +305,19 @@ app.whenReady().then(() => {
   createWindow();
   debugLog('after createWindow() - handlers registered, event loop running');
   phaseLog('after_createWindow');
+
+  // 内存监控（仅在 DEBUG 模式）
+  if (DEBUG) {
+    const memoryInterval = setInterval(() => {
+      const memUsage = process.memoryUsage();
+      debugLog(`Memory: RSS=${Math.round(memUsage.rss / 1024 / 1024)}MB, Heap=${Math.round(memUsage.heapUsed / 1024 / 1024)}MB/${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`);
+    }, 30000); // 每 30 秒输出一次
+
+    // 应用退出时清理
+    app.on('will-quit', () => {
+      clearInterval(memoryInterval);
+    });
+  }
 
   // macOS：即使没有窗口打开，也要保持应用活跃
   app.on('activate', () => {
@@ -292,7 +386,7 @@ ipcMain.handle('ai-chat', async (event, { message, history = [] }) => {
 
     // 使用 Cloudflare Workers AI REST API 进行对话
     const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-2-7b-chat-fp16`,
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-3.1-8b-instruct`,
       {
         method: 'POST',
         headers: {

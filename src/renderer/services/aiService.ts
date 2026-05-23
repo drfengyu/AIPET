@@ -42,8 +42,12 @@ export async function getAIResponse(
     try {
       const data = await (window as any).electronAPI.chatWithAI({ message, history });
       if (data.error) throw new Error(data.error);
+      // 兼容两种返回值格式:
+      // - IPC: { response: "..." }
+      // - 代理: { result: { response: "..." } }
+      const reply = data.response || data.result?.response || '抱歉，我无法理解您的请求。';
       return {
-        text: data.result?.response || '抱歉，我无法理解您的请求。',
+        text: reply,
         emotion: detectEmotion(message)
       };
     } catch (error) {
@@ -65,8 +69,9 @@ export async function getAIResponse(
     }
 
     const data = await response.json();
+    const reply = data.response || data.result?.response || '抱歉，我无法理解您的请求。';
     return {
-      text: data.result?.response || '抱歉，我无法理解您的请求。',
+      text: reply,
       emotion: detectEmotion(message)
     };
   } catch (error) {

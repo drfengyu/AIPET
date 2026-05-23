@@ -4834,6 +4834,11 @@ lines-and-columns@^1.1.6:
   resolved "https://registry.npmmirror.com/lines-and-columns/-/lines-and-columns-1.2.4.tgz"
   integrity sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==
 
+live2dcubismcore@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.npmmirror.com/live2dcubismcore/-/live2dcubismcore-1.0.2.tgz"
+  integrity sha512-nABJjQb6XqzQ6JDWINtu8w9a1wTHvmxh85FafeIJ6xwUTFP+TVhq81dTeB2VKLesDyIuZ7CZ1X/Vi8nin3PSIA==
+
 locate-path@^5.0.0:
   version "5.0.0"
   resolved "https://registry.npmmirror.com/locate-path/-/locate-path-5.0.0.tgz"
