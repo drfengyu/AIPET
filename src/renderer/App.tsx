@@ -2,8 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Live2DViewer from './components/Live2DViewer';
 import ChatWindow from './components/ChatWindow';
 import SettingsPanel from './components/SettingsPanel';
+import MemoryPanel from './components/MemoryPanel';
 import AudioVisualizer from './components/AudioVisualizer';
 import { getExpressionForEmotion } from './services/aiService';
+import { loadFacts, getMemoryStats } from './services/memoryService';
 
 interface Settings {
   aiModel: string;
@@ -31,7 +33,12 @@ function App() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [sessionStart] = useState(Date.now());
   const [msgCount, setMsgCount] = useState(0);
-  const [memoryTags] = useState(['喜欢科幻电影', '赛博朋克爱好者', '中文母语者']);
+  const [memoryTags, setMemoryTags] = useState<string[]>(() => {
+    const facts = loadFacts();
+    return facts.slice(0, 5).map(f => f.fact);
+  });
+  const [memoryCount, setMemoryCount] = useState(() => getMemoryStats().total);
+  const [showMemory, setShowMemory] = useState(false);
   const [latency] = useState(42);
 
   // HUD state — updated by AI interactions
@@ -83,6 +90,14 @@ function App() {
 
   const handleSettingsChange = (newSettings: Settings) => {
     setSettings(newSettings);
+  };
+
+  const handleMemoryChange = (count: number) => {
+    setMemoryCount(count);
+    const facts = loadFacts();
+    setMemoryTags(facts.slice(0, 5).map(f => f.fact));
+    // 更新 HUD 记忆值
+    setMemory(Math.min(100, Math.round((count / 50) * 100)));
   };
 
   const checkUpdate = async () => {
@@ -234,6 +249,8 @@ function App() {
             onSendMessage={handleSendMessage}
             onAIResponse={handleAIResponse}
             onSpeakingChange={setIsSpeaking}
+            onMemoryChange={handleMemoryChange}
+            onOpenMemory={() => setShowMemory(true)}
             ttsEnabled={settings?.ttsEnabled || false}
             ttsVoice={settings?.ttsVoice || 'zh-CN'}
             ttsRate={settings?.ttsRate || 1.0}
@@ -242,6 +259,7 @@ function App() {
             fontSize={settings?.fontSize || 13}
             messageHistory={settings?.messageHistory || 10}
             memoryTags={memoryTags}
+            memoryCount={memoryCount}
             latency={latency}
           />
           {/* Bottom Status Bar (inside chat panel) */}
@@ -271,6 +289,15 @@ function App() {
           onClose={() => setShowSettings(false)}
           onSettingsChange={handleSettingsChange}
         />
+      )}
+
+      {/* Memory Panel */}
+      {showMemory && (
+        <MemoryPanel onClose={() => {
+          setShowMemory(false);
+          // 关闭后刷新记忆显示
+          handleMemoryChange(loadFacts().length);
+        }} />
       )}
     </div>
   );

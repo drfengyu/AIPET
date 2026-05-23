@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { getAIResponse, type ChatMessage } from '../services/aiService';
 import { speak, stop, isSupported } from '../services/ttsService';
+import { loadFacts, extractFacts, addFact, getRelevantFacts, formatFactsForContext } from '../services/memoryService';
 
 export interface Message {
   id: string;
@@ -13,6 +14,8 @@ interface ChatWindowProps {
   onSendMessage?: (message: string) => void;
   onAIResponse?: (emotion: string) => void;
   onSpeakingChange?: (speaking: boolean) => void;
+  onMemoryChange?: (count: number) => void;
+  onOpenMemory?: () => void;
   ttsEnabled?: boolean;
   ttsVoice?: string;
   ttsRate?: number;
@@ -21,14 +24,15 @@ interface ChatWindowProps {
   fontSize?: number;
   messageHistory?: number;
   memoryTags?: string[];
+  memoryCount?: number;
   latency?: number;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
-  onSendMessage, onAIResponse, onSpeakingChange,
+  onSendMessage, onAIResponse, onSpeakingChange, onMemoryChange, onOpenMemory,
   ttsEnabled = false, ttsVoice = 'zh-CN', ttsRate = 1.0,
   useMockAI = false, aiModel, fontSize = 14, messageHistory = 10,
-  memoryTags = [],
+  memoryTags = [], memoryCount = 0,
   latency = 0,
 }) => {
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -99,6 +103,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         content: m.text
       }));
 
+      // 注入记忆到 AI 上下文
+      const relevantFacts = getRelevantFacts(inputValue);
+      const memoryContext = formatFactsForContext(relevantFacts);
+      if (memoryContext) {
+        history.unshift({ role: 'assistant', content: memoryContext });
+      }
+
       const aiResponse = await getAIResponse(inputValue, history, useMockAI, aiModel);
 
       const aiMessage: Message = {
@@ -112,6 +123,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
       if (aiResponse.emotion) {
         onAIResponse?.(aiResponse.emotion);
+      }
+
+      // 从用户消息中提取记忆
+      const newFacts = extractFacts(inputValue, aiResponse.text);
+      let memoryUpdated = false;
+      for (const fact of newFacts) {
+        addFact(fact);
+        memoryUpdated = true;
+      }
+      if (memoryUpdated && onMemoryChange) {
+        onMemoryChange(loadFacts().length);
       }
 
       if (ttsEnabled && isSupported()) {
@@ -150,7 +172,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       {/* Chat Header */}
       <div style={s.chatHeader}>
         <span style={s.chatTitle}>⟡ 神经通道</span>
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+          <button className="chat-btn" style={s.memBtn} onClick={onOpenMemory} title="记忆库">
+            🧠
+            {memoryCount > 0 && <span style={s.memBadge}>{memoryCount > 99 ? '99+' : memoryCount}</span>}
+          </button>
           <button className="chat-btn" style={s.chatIconBtn} title="Clear chat" onClick={() => {
             if (confirm('清除所有聊天记录？')) {
               setMessages([]);
@@ -254,6 +280,24 @@ const s: Record<string, React.CSSProperties> = {
     width: 26, height: 26, borderRadius: 4,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     cursor: 'pointer', transition: 'all 0.2s',
+  },
+  memBtn: {
+    background: 'rgba(0,255,255,0.02)',
+    border: '1px solid rgba(0,255,255,0.06)',
+    color: 'rgba(0,255,255,0.2)',
+    padding: '2px 6px', fontSize: 12,
+    borderRadius: 4, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', gap: 4,
+    position: 'relative' as const,
+    transition: 'all 0.2s',
+  },
+  memBadge: {
+    background: 'rgba(0,255,255,0.1)',
+    color: 'rgba(0,255,255,0.5)',
+    fontSize: 8, padding: '0 4px',
+    borderRadius: 6, lineHeight: '14px',
+    fontFamily: "'Share Tech Mono', monospace",
+    fontWeight: 700,
   },
   messagesContainer: {
     flex: 1, overflowY: 'auto',
