@@ -67,9 +67,9 @@ function App() {
     setEnergy(e => Math.max(20, e - 2));
   };
 
-  const handleMotion = (_motion: string) => {};
+  const handleMotion = React.useCallback((_motion: string) => {}, []);
 
-  const handleAIResponse = (emotion: string) => {
+  const handleAIResponse = React.useCallback((emotion: string) => {
     const expression = getExpressionForEmotion(emotion);
     setCurrentExpression(expression);
     setCurrentEmotion(emotion.toUpperCase());
@@ -78,7 +78,7 @@ function App() {
     setMood(m => Math.min(100, m + 3));
     setEnergy(e => Math.min(100, e + 1));
     setMemory(m => Math.min(100, m + 1));
-  };
+  }, []);
 
   const handleSettingsChange = (newSettings: Settings) => {
     setSettings(newSettings);
