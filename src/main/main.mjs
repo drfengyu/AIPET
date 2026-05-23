@@ -359,7 +359,7 @@ ipcMain.handle('get-system-theme', () => {
 });
 
 // AI 聊天 - 通过主进程直接调用 Cloudflare API (无 CORS 问题，不需要额外代理服务器)
-ipcMain.handle('ai-chat', async (event, { message, history = [] }) => {
+ipcMain.handle('ai-chat', async (event, { message, history = [], model }) => {
   try {
     const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID;
     const apiToken = process.env.VITE_CLOUDFLARE_API_TOKEN;
@@ -367,6 +367,9 @@ ipcMain.handle('ai-chat', async (event, { message, history = [] }) => {
     if (!accountId || !apiToken) {
       return { error: 'Cloudflare credentials not configured' };
     }
+
+    // 使用传入门模型，否则默认用 llama-3.1-8b
+    const modelName = model || '@cf/meta/llama-3.1-8b-instruct';
 
     // 构建消息历史
     const messages = [
@@ -386,7 +389,7 @@ ipcMain.handle('ai-chat', async (event, { message, history = [] }) => {
 
     // 使用 Cloudflare Workers AI REST API 进行对话
     const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-3.1-8b-instruct`,
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${modelName}`,
       {
         method: 'POST',
         headers: {

@@ -36,7 +36,7 @@ interface Settings {
 
 const DEFAULT_SETTINGS: Settings = {
   // AI 服务设置
-  aiModel: '@cf/meta/llama-2-7b-chat-int8',
+  aiModel: '@cf/meta/llama-3.1-8b-instruct',
   aiTemperature: 0.7,
   useMockAI: false,
 
@@ -259,9 +259,10 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onSettingsChange
             value={settings.aiModel}
             onChange={(e) => updateSetting('aiModel', e.target.value)}
           >
-            <option value="@cf/meta/llama-2-7b-chat-int8">Llama 2 7B</option>
+            <option value="@cf/meta/llama-3.1-8b-instruct">Llama 3.1 8B (推荐)</option>
+            <option value="@cf/meta/llama-3.2-3b-instruct">Llama 3.2 3B</option>
             <option value="@cf/mistral/mistral-7b-instruct-v0.1">Mistral 7B</option>
-            <option value="@cf/thebloke/discolm-german-7b-v0.1-wizard">Discolm German</option>
+            <option value="@cf/mistral/mistral-7b-instruct-v0.2-lora">Mistral 7B LoRA</option>
           </select>
         </div>
         <div style={styles.settingRow}>

@@ -13,16 +13,19 @@ interface ChatWindowProps {
   onSendMessage?: (message: string) => void;
   onAIResponse?: (emotion: string) => void;
   ttsEnabled?: boolean;
+  ttsVoice?: string;
+  ttsRate?: number;
   useMockAI?: boolean;
+  aiModel?: string;
   fontSize?: number;
   messageHistory?: number; // max history messages to send as context
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, ttsEnabled = false, useMockAI = false, fontSize = 13, messageHistory = 10 }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, ttsEnabled = false, ttsVoice = 'zh-CN', ttsRate = 1.0, useMockAI = false, aiModel, fontSize = 13, messageHistory = 10 }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'SYSTEM ONLINE. NEURAL LINK ESTABLISHED. READY FOR INPUT.',
+      text: '系统已就绪，神经网络连接成功。你好！我是AIPET，你的AI助手，有什么可以帮你的吗？',
       sender: 'ai',
       timestamp: new Date()
     }
@@ -70,7 +73,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
       }));
 
       // 调用 AI 服务（含上下文）
-      const aiResponse = await getAIResponse(inputValue, history, useMockAI);
+      const aiResponse = await getAIResponse(inputValue, history, useMockAI, aiModel);
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -88,7 +91,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ onSendMessage, onAIResponse, tt
 
       // 语音合成
       if (ttsEnabled && isSupported()) {
-        speak(aiResponse.text).catch(() => {
+        speak(aiResponse.text, { voice: ttsVoice, rate: ttsRate }).catch(() => {
           console.log('TTS playback failed');
         });
       }

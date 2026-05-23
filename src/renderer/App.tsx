@@ -165,7 +165,10 @@ function App() {
             onSendMessage={handleSendMessage}
             onAIResponse={handleAIResponse}
             ttsEnabled={settings?.ttsEnabled || false}
+            ttsVoice={settings?.ttsVoice || 'zh-CN'}
+            ttsRate={settings?.ttsRate || 1.0}
             useMockAI={settings?.useMockAI ?? false}
+            aiModel={settings?.aiModel}
             fontSize={settings?.fontSize || 13}
             messageHistory={settings?.messageHistory || 10}
           />

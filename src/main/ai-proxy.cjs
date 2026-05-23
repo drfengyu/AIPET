@@ -41,7 +41,7 @@ app.use(express.json());
 // AI 代理路由
 app.post('/api/ai/chat', async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, model } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -54,8 +54,10 @@ app.post('/api/ai/chat', async (req, res) => {
       return res.status(500).json({ error: 'Cloudflare credentials not configured' });
     }
 
-    // 使用 Cloudflare 上最好的免费模型 - Llama 3.1 8B (支持多语言，中文效果很好)
-    const apiUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-3.1-8b-instruct`;
+    // 使用传入门模型，否则默认用 llama-3.1-8b
+    const modelName = model || '@cf/meta/llama-3.1-8b-instruct';
+
+    const apiUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${modelName}`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',

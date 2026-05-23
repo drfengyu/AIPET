@@ -30,7 +30,8 @@ try {
 export async function getAIResponse(
   message: string,
   history: ChatMessage[] = [],
-  useMock: boolean = false
+  useMock: boolean = false,
+  model?: string  // 新增 model 参数
 ): Promise<AIResponse> {
   // 如果 useMock 为 true 或消息为空，直接返回模拟回复
   if (useMock || !message.trim()) {
@@ -40,7 +41,7 @@ export async function getAIResponse(
   // Electron 环境: 通过 IPC 调用主进程 (生产环境)
   if (isElectron) {
     try {
-      const data = await (window as any).electronAPI.chatWithAI({ message, history });
+      const data = await (window as any).electronAPI.chatWithAI({ message, history, model });
       if (data.error) throw new Error(data.error);
       // 兼容两种返回值格式:
       // - IPC: { response: "..." }
@@ -61,7 +62,7 @@ export async function getAIResponse(
     const response = await fetch('http://localhost:3002/api/ai/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message, history })
+      body: JSON.stringify({ message, history, model })
     });
 
     if (!response.ok) {
