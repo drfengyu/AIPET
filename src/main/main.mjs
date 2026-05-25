@@ -528,6 +528,18 @@ ipcMain.handle('close-pet-mode', () => {
   return true;
 });
 
+// 桌宠聊天气泡
+ipcMain.handle('pet-speech', (event, text) => {
+  if (petWindow && !petWindow.isDestroyed()) {
+    petWindow.webContents.executeJavaScript(`
+      if (typeof window.showPetSpeech === 'function') {
+        window.showPetSpeech(${JSON.stringify(text)});
+      }
+    `);
+  }
+  return true;
+});
+
 ipcMain.handle('set-transparent-mode', (event, enabled) => {
   if (!mainWindow) return false;
   try {

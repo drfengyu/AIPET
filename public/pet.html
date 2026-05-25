@@ -14,16 +14,11 @@ html, body {
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
 #loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
   color: rgba(255,255,255,0.12);
-  font-size: 11px;
-  letter-spacing: 1px;
-  gap: 8px;
+  font-size: 11px; letter-spacing: 1px; gap: 8px;
 }
 #loading .spinner {
   width: 18px; height: 18px;
@@ -33,36 +28,33 @@ html, body {
   animation: spin 1s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 #error {
   display: none;
-  position: absolute;
-  bottom: 16px;
-  left: 16px;
-  right: 16px;
+  position: absolute; bottom: 16px; left: 16px; right: 16px;
   color: rgba(255,100,100,0.6);
-  font-size: 10px;
-  text-align: center;
-  line-height: 1.5;
-  word-break: break-all;
+  font-size: 10px; text-align: center; line-height: 1.5; word-break: break-all;
 }
 #canvas-container {
-  width: 100vw;
-  height: 100vh;
+  width: 100vw; height: 100vh;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
 }
 #model-label {
-  position: absolute;
-  bottom: 10px;
-  left: 0;
-  right: 0;
+  position: absolute; bottom: 10px; left: 0; right: 0;
   text-align: center;
   color: rgba(255,255,255,0.06);
-  font-size: 9px;
-  letter-spacing: 2px;
+  font-size: 9px; letter-spacing: 2px;
   pointer-events: none;
+}
+#pet-speech {
+  display: none;
+  position: absolute; bottom: 25%; left: 10%; right: 10%;
+  z-index: 10; pointer-events: none;
+  animation: bubble-in 0.3s ease;
 }
 </style>
 </head>
@@ -74,6 +66,12 @@ html, body {
 <div id="canvas-container"></div>
 <div id="model-label"></div>
 <div id="error"></div>
+<div id="pet-speech">
+  <div style="background:rgba(10,10,20,0.8);border:1px solid rgba(0,255,255,0.12);border-radius:8px;border-bottom-left-radius:2px;padding:8px 12px;font-size:11px;line-height:1.5;color:#c0c0d8;font-family:'Segoe UI',system-ui,sans-serif;font-weight:300;text-align:center;">
+    <span id="pet-speech-text"></span>
+  </div>
+  <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(0,255,255,0.12);margin-left:16px;"></div>
+</div>
 
 <script src="live2dcubismcore.js"></script>
 <script src="./lib/pixi.min.js"></script>
@@ -84,7 +82,6 @@ window.onerror = function(msg, url, line, col, err) {
   el.textContent = '⚠ ' + (err ? (err.message || err) : msg);
   el.style.display = 'block';
   document.getElementById('loading').style.display = 'none';
-  console.error('[Pet] Uncaught:', msg, err);
   return true;
 };
 window.addEventListener('unhandledrejection', function(e) {
@@ -92,8 +89,23 @@ window.addEventListener('unhandledrejection', function(e) {
   el.textContent = '⚠ Promise: ' + (e.reason ? (e.reason.message || e.reason) : e);
   el.style.display = 'block';
   document.getElementById('loading').style.display = 'none';
-  console.error('[Pet] Unhandled rejection:', e.reason);
 });
+
+// 聊天气泡（通过 IPC 调用）
+window.showPetSpeech = function(text) {
+  var el = document.getElementById('pet-speech');
+  var textEl = document.getElementById('pet-speech-text');
+  if (!el || !textEl) return;
+  textEl.textContent = text.length > 80 ? text.slice(0, 80) + '...' : text;
+  el.style.display = 'block';
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = 'bubble-in 0.3s ease';
+  if (window._petSpeechTimer) clearTimeout(window._petSpeechTimer);
+  window._petSpeechTimer = setTimeout(function() {
+    el.style.display = 'none';
+  }, 6000);
+};
 
 (function() {
   const params = new URLSearchParams(location.search);
@@ -109,25 +121,18 @@ window.addEventListener('unhandledrejection', function(e) {
     document.getElementById('loading').style.display = 'none';
   }
 
-  // 加载 pixi-live2d-display (Cubism 4 runtime only)
   var s = document.createElement('script');
   s.src = './lib/cubism4.min.js';
   s.onload = function() {
-    try {
-      initPet();
-    } catch (e) {
-      showError('初始化失败: ' + (e.message || e));
-    }
+    try { initPet(); } catch (e) { showError('初始化失败: ' + (e.message || e)); }
   };
-  s.onerror = function() {
-    showError('无法加载 Live2D 渲染库');
-  };
+  s.onerror = function() { showError('无法加载 Live2D 渲染库'); };
   document.head.appendChild(s);
 
   function initPet() {
     var Live2DModel = window.PIXI?.live2d?.Live2DModel;
     if (!Live2DModel || !window.PIXI) {
-      showError('渲染库加载失败 (PIXI=' + !!window.PIXI + ', Live2DModel=' + !!Live2DModel + ')');
+      showError('渲染库加载失败');
       return;
     }
     Live2DModel.registerTicker(window.PIXI.Ticker);
@@ -142,7 +147,6 @@ window.addEventListener('unhandledrejection', function(e) {
     });
     document.getElementById('canvas-container').appendChild(app.view);
 
-    // 加载模型
     Live2DModel.from(modelUrl).then(function(model) {
       var scale = Math.min(
         (app.screen.width * 0.85) / model.width,
@@ -154,11 +158,8 @@ window.addEventListener('unhandledrejection', function(e) {
       model.y = app.screen.height / 2;
       model.anchor.set(0.5, 0.5);
       app.stage.addChild(model);
-
-      // 隐藏 loading
       document.getElementById('loading').style.display = 'none';
 
-      // 空闲动画
       var motions = ['Idle', 'TapBody', 'TapHead'];
       setInterval(function() {
         try { model.motion(motions[Math.floor(Math.random() * motions.length)]); } catch(e) {}
@@ -167,7 +168,6 @@ window.addEventListener('unhandledrejection', function(e) {
       showError('模型加载失败: ' + (e.message || e));
     });
 
-    // 窗口 resize
     window.addEventListener('resize', function() {
       app.renderer.resize(window.innerWidth, window.innerHeight);
     });

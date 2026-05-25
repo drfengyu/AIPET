@@ -65,6 +65,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     return () => ipcRenderer.removeListener(channel, handler);
   },
 
+  // 桌宠聊天气泡
+  petSpeech: (text) => ipcRenderer.invoke('pet-speech', text),
+
   // 发送事件到主进程
   sendEvent: (channel, ...args) => {
     ipcRenderer.send(channel, ...args);

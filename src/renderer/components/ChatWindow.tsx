@@ -17,6 +17,7 @@ interface ChatWindowProps {
   onSpeakingChange?: (speaking: boolean) => void;
   onMemoryChange?: (count: number) => void;
   onOpenMemory?: () => void;
+  onSpeech?: (text: string) => void;
   ttsEnabled?: boolean;
   ttsVoice?: string;
   ttsRate?: number;
@@ -39,6 +40,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   latency = 0,
   proactiveMessages: _proactiveMessages = [],
   onResetProactive: _onResetProactive,
+  onSpeech,
 }) => {
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
@@ -129,6 +131,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       if (aiResponse.emotion) {
         onAIResponse?.(aiResponse.emotion);
       }
+      // 聊天气泡
+      onSpeech?.(aiResponse.text);
 
       // 从用户消息中提取记忆
       const newFacts = extractFacts(inputValue, aiResponse.text);

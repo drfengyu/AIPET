@@ -73,6 +73,8 @@ function App() {
         timestamp: new Date(),
         isProactive: true,
       }]);
+      // 聊天气泡
+      showSpeechBubble(msg);
       // 更新 HUD
       setMood(m => Math.min(100, m + 2));
     }, proactiveConfig.intervalMinutes);
@@ -95,6 +97,21 @@ function App() {
   const [currentEmotion, setCurrentEmotion] = useState('HAPPY');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [petMode, setPetMode] = useState(false);
+  // 聊天气泡
+  const [speechText, setSpeechText] = useState('');
+  const [speechVisible, setSpeechVisible] = useState(false);
+  const speechTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showSpeechBubble = useCallback((text: string) => {
+    if (speechTimerRef.current) clearTimeout(speechTimerRef.current);
+    setSpeechText(text);
+    setSpeechVisible(true);
+    speechTimerRef.current = setTimeout(() => setSpeechVisible(false), 6000);
+    // 桌宠模式也显示气泡
+    if (petMode && (window as any).electronAPI?.petSpeech) {
+      (window as any).electronAPI.petSpeech(text);
+    }
+  }, [petMode]);
 
   // 系统事件
   const [systemTrigger, setSystemTrigger] = useState<{ motion?: string; expression?: string; id: number } | undefined>(undefined);
@@ -131,6 +148,8 @@ function App() {
           timestamp: new Date(),
           isProactive: true,
         }]);
+        // 聊天气泡
+        showSpeechBubble(event.message);
       }
     };
     // 首次启动时也检查一次
@@ -300,6 +319,8 @@ function App() {
               onMotion={handleMotion}
               expression={settings?.expressionEnabled ? currentExpression : undefined}
               systemTrigger={systemTrigger}
+              speechText={speechText}
+              speechVisible={speechVisible}
               mood={mood}
               energy={energy}
               memory={memory}
@@ -370,6 +391,7 @@ function App() {
             onOpenMemory={() => setShowMemory(true)}
             proactiveMessages={proactiveMessages}
             onResetProactive={() => setProactiveMessages([])}
+            onSpeech={showSpeechBubble}
             ttsEnabled={settings?.ttsEnabled || false}
             ttsVoice={settings?.ttsVoice || 'zh-CN'}
             ttsRate={settings?.ttsRate || 1.0}

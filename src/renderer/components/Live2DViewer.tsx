@@ -12,6 +12,9 @@ interface Live2DViewerProps {
   expression?: string;
   // 系统事件触发
   systemTrigger?: { motion?: string; expression?: string; id: number };
+  // 聊天气泡
+  speechText?: string;
+  speechVisible?: boolean;
   // HUD data
   mood?: number;
   energy?: number;
@@ -28,6 +31,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   onMotion,
   expression,
   systemTrigger,
+  speechText,
+  speechVisible,
   mood = 78,
   energy = 65,
   memory = 45,
@@ -644,6 +649,38 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {/* 聊天气泡 */}
+      {speechVisible && speechText && (
+        <div style={{
+          position: 'absolute', top: '8%', left: '10%', right: '10%',
+          zIndex: 10,
+          animation: 'msg-in 0.3s ease',
+        }}>
+          <div style={{
+            background: 'rgba(10,10,20,0.85)',
+            border: '1px solid rgba(0,255,255,0.15)',
+            borderRadius: 10,
+            borderBottomLeftRadius: 2,
+            padding: '10px 14px',
+            fontSize: 12,
+            lineHeight: 1.6,
+            color: '#d0d0e8',
+            fontFamily: "'Share Tech Mono', 'Microsoft YaHei', sans-serif",
+            fontWeight: 300,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+          }}>
+            {speechText.length > 80 ? speechText.slice(0, 80) + '…' : speechText}
+          </div>
+          {/* 气泡尾巴 */}
+          <div style={{
+            width: 0, height: 0,
+            borderLeft: '8px solid transparent',
+            borderRight: '8px solid transparent',
+            borderTop: '8px solid rgba(0,255,255,0.15)',
+            marginLeft: 12,
+          }} />
         </div>
       )}
       {isLoading && (
