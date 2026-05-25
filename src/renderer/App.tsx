@@ -492,7 +492,9 @@ const s: Record<string, React.CSSProperties> = {
   topBarRight: { display: 'flex', gap: 6 },
   topBtn: {
     background: 'rgba(0,255,255,0.03)',
-    border: '1px solid rgba(0,255,255,0.1)',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: 'rgba(0,255,255,0.1)',
     color: 'rgba(0,255,255,0.35)',
     padding: '6px 12px', fontFamily: "'Share Tech Mono', monospace",
     fontSize: 11, letterSpacing: 1.5, cursor: 'pointer',

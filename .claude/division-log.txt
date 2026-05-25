@@ -1352,3 +1352,5 @@
 [2026-05-25 15:11:11] POST_COMMIT: 68d3046 - feat: 角色聊天气泡-主窗口/桌宠/主动问候都显示
 [2026-05-25 15:14:42] PRE_COMMIT: OK - 1 files checked
 [2026-05-25 15:14:42] POST_COMMIT: 1c7a373 - fix: 主动问候显示在聊天+强制中文回复
+[2026-05-25 15:26:32] PRE_COMMIT: OK - 1 files checked
+[2026-05-25 15:26:33] POST_COMMIT: c085925 - chore: bump v0.3.1
