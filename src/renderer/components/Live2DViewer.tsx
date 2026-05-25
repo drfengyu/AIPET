@@ -5,6 +5,14 @@ import { Live2DModel } from 'pixi-live2d-display/cubism4';
 // 注册 Pixi Ticker (必须在使用 Live2DModel 之前调用)
 Live2DModel.registerTicker(PIXI.Ticker);
 
+/** 从模型 URL 中提取角色名称 */
+function extractModelName(url: string): string {
+  const match = url.match(/\/([^/]+)\/\1\.model3\.json/);
+  if (match) return match[1];
+  const parts = url.replace(/\/+$/, '').split('/');
+  return parts[parts.length - 2] || parts[parts.length - 1] || 'Haru';
+}
+
 interface Live2DViewerProps {
   modelUrl?: string;
   scale?: number;
@@ -47,16 +55,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   const [loadingStage, setLoadingStage] = useState('初始化中...');
   const [loadingProgress, setLoadingProgress] = useState(0);
   const idleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [characterName, setCharacterName] = useState(() => {
-    const modelMap: { [key: string]: string } = {
-      './models/Haru/Haru.model3.json': 'Haru',
-      '/models/Hiyori/Hiyori.model3.json': 'Hiyori',
-      '/models/Mao/Mao.model3.json': 'Mao',
-      '/models/Mark/Mark.model3.json': 'Mark',
-      '/models/Natori/Natori.model3.json': 'Natori',
-    };
-    return modelMap[modelUrl] || 'Haru';
-  });
+  const [characterName, setCharacterName] = useState(() => extractModelName(modelUrl));
 
   // 拖拽状态
   const dragState = useRef({ dragging: false, startX: 0, startY: 0, winX: 0, winY: 0 });
@@ -100,7 +99,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       app = new PIXI.Application({
         width: containerWidth,
         height: containerHeight,
-        backgroundColor: 0x0a0a12,
+        backgroundColor: 0x12121e,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
         autoDensity: true,
@@ -129,14 +128,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         // console.log('Loading Live2D model from:', modelUrl);
         // console.log('PIXI app created, stage children:', app.stage.children.length);
 
-        const modelMap: { [key: string]: string } = {
-          './models/Haru/Haru.model3.json': 'Haru',
-          '/models/Hiyori/Hiyori.model3.json': 'Hiyori',
-          '/models/Mao/Mao.model3.json': 'Mao',
-          '/models/Mark/Mark.model3.json': 'Mark',
-          '/models/Natori/Natori.model3.json': 'Natori',
-        };
-        setCharacterName(modelMap[modelUrl] || 'Haru');
+        const name = extractModelName(modelUrl);
+        setCharacterName(name);
 
         setLoadingStage('解码纹理...');
         setLoadingProgress(50);

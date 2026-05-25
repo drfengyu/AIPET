@@ -1,0 +1,316 @@
+{
+  "models": [
+    {
+      "id": "haru",
+      "name": "Haru",
+      "category": "官方",
+      "description": "默认角色，活泼可爱的短发少女",
+      "modelUrl": "https://r2.vidol.chat/live2d/Haru/Haru.model3.json",
+      "localUrl": "./models/Haru/Haru.model3.json",
+      "cover": "https://r2.vidol.chat/live2d/Haru/Haru.png",
+      "type": "live2d"
+    },
+    {
+      "id": "hiyori",
+      "name": "Hiyori",
+      "category": "官方",
+      "description": "温柔优雅的长发女孩",
+      "modelUrl": "https://r2.vidol.chat/live2d/Hiyori/Hiyori.model3.json",
+      "localUrl": "./models/Hiyori/Hiyori.model3.json",
+      "cover": "https://r2.vidol.chat/live2d/Hiyori/Hiyori.png",
+      "type": "live2d"
+    },
+    {
+      "id": "mao",
+      "name": "Mao",
+      "category": "官方",
+      "description": "俏皮可爱的猫耳娘",
+      "modelUrl": "https://r2.vidol.chat/live2d/Mao/Mao.model3.json",
+      "localUrl": "./models/Mao/Mao.model3.json",
+      "cover": "https://r2.vidol.chat/live2d/Mao/Mao.png",
+      "type": "live2d"
+    },
+    {
+      "id": "mark",
+      "name": "Mark",
+      "category": "官方",
+      "description": "阳光帅气的少年",
+      "modelUrl": "https://r2.vidol.chat/live2d/Mark/Mark.model3.json",
+      "localUrl": "./models/Mark/Mark.model3.json",
+      "cover": "https://r2.vidol.chat/live2d/Mark/Mark.png",
+      "type": "live2d"
+    },
+    {
+      "id": "natori",
+      "name": "Natori",
+      "category": "官方",
+      "description": "知性优雅的女性",
+      "modelUrl": "https://r2.vidol.chat/live2d/Natori/Natori.model3.json",
+      "localUrl": "./models/Natori/Natori.model3.json",
+      "cover": "https://r2.vidol.chat/live2d/Natori/Natori.png",
+      "type": "live2d"
+    },
+    {
+      "id": "rice",
+      "name": "Rice",
+      "category": "官方",
+      "description": "可爱温柔的饭团女孩",
+      "modelUrl": "https://r2.vidol.chat/live2d/Rice/Rice.model3.json",
+      "localUrl": "./models/Rice/Rice.model3.json",
+      "cover": "https://r2.vidol.chat/live2d/Rice/Rice.png",
+      "type": "live2d"
+    },
+    {
+      "id": "wanko",
+      "name": "Wanko",
+      "category": "官方",
+      "description": "活泼好动的狗狗少女",
+      "modelUrl": "https://r2.vidol.chat/live2d/Wanko/Wanko.model3.json",
+      "localUrl": "./models/Wanko/Wanko.model3.json",
+      "cover": "https://r2.vidol.chat/live2d/Wanko/Wanko.png",
+      "type": "live2d"
+    },
+    {
+      "id": "ren",
+      "name": "Ren",
+      "category": "官方",
+      "description": "气质独特的女性角色",
+      "modelUrl": "https://r2.vidol.chat/live2d/Ren/Ren.model3.json",
+      "localUrl": "./models/Ren/Ren.model3.json",
+      "cover": "https://r2.vidol.chat/live2d/Ren/Ren.png",
+      "type": "live2d"
+    },
+    {
+      "id": "aponia",
+      "name": "阿波尼亚",
+      "category": "Game",
+      "author": "rdmclin2",
+      "description": "她被 “戒律” 所束缚，拥有强大的力量，但也因此承受着巨大的压力和孤独",
+      "gender": "Female",
+      "modelUrl": "https://r2.vidol.chat/files/2024/11/02/c0010135-c363-45e4-8c4e-d26e9b2b52a5.vrm",
+      "cover": "https://r2.vidol.chat/files/2024/11/02/d2a5470c-86dd-4d8e-b693-29aafc75cd99.webp",
+      "avatar": "https://r2.vidol.chat/files/2024/11/02/2475152c-df98-412b-895e-cfddd594e202.webp",
+      "greeting": "你来了，我已在此等候多时，命运的丝线将你我牵引至此。",
+      "readme": "https://hub.vroid.com/characters/1733927021248240348/models/8975099320478854312",
+      "tts": {
+        "engine": "edge",
+        "locale": "zh-CN",
+        "pitch": 1,
+        "speed": 1,
+        "voice": "zh-CN-XiaoxiaoNeural"
+      },
+      "aiModel": "gpt-4o-mini",
+      "params": {
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "temperature": 0.6,
+        "top_p": 1
+      },
+      "createAt": "2024-11-02",
+      "type": "vrm"
+    },
+    {
+      "id": "beidou",
+      "name": "北斗",
+      "category": "Game",
+      "author": "rdmclin2",
+      "description": "璃月港南十字船队的头领",
+      "gender": "Female",
+      "modelUrl": "https://r2.vidol.chat/files/2024/11/02/3def8f8f-b6c4-44cd-baae-376ec7b25356.vrm",
+      "cover": "https://r2.vidol.chat/files/2024/11/02/613c2258-acb0-4c63-83d0-d0052623d65e.webp",
+      "avatar": "https://r2.vidol.chat/files/2024/11/02/c9fae081-3ca1-4354-9d0a-edeff71963bd.webp",
+      "greeting": "我是北斗，听过我的「南十字」船队吗？如果你也喜欢冒险，那就跟着我吧。我罩你。",
+      "readme": "https://hub.vroid.com/characters/5919676330752421104/models/6475925500299997526",
+      "tts": {
+        "engine": "edge",
+        "locale": "zh-CN",
+        "pitch": 0.83,
+        "speed": 1.31,
+        "voice": "zh-CN-XiaoxiaoNeural"
+      },
+      "aiModel": "gpt-4o-mini",
+      "params": {
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "temperature": 0.6,
+        "top_p": 1
+      },
+      "createAt": "2024-11-02",
+      "type": "vrm"
+    },
+    {
+      "id": "dengshui-zhizi",
+      "name": "灯水栀子",
+      "category": "Vroid",
+      "author": "rdmclin2",
+      "description": "可爱的白色头发的女生",
+      "gender": "Female",
+      "modelUrl": "https://r2.vidol.chat/files/2024/11/02/360477699125799950.vrm",
+      "cover": "https://r2.vidol.chat/files/2024/11/02/a9418099-b61b-4525-b520-ba59bfb458d6.webp",
+      "avatar": "https://r2.vidol.chat/files/2024/11/02/3b36fa7a-004a-403b-b143-876d8b34e173.webp",
+      "greeting": "你好呀,我叫灯水栀子，很高兴遇见你",
+      "readme": "https://hub.vroid.com/characters/846630391686337602/models/3247809799005491310",
+      "tts": {
+        "engine": "edge",
+        "locale": "zh-CN",
+        "pitch": 1,
+        "speed": 1,
+        "voice": "zh-CN-XiaoyiNeural"
+      },
+      "aiModel": "gpt-4o-mini",
+      "params": {
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "temperature": 0.6,
+        "top_p": 1
+      },
+      "createAt": "2024-11-02",
+      "type": "vrm"
+    },
+    {
+      "id": "diona",
+      "name": "迪奥娜",
+      "category": "Game",
+      "author": "rdmclin2",
+      "description": "“猫尾酒馆”的调酒师，拥有神奇的调酒体质，只要经她之手调制过的酒类，都会变成难以想象的美味佳酿",
+      "gender": "Female",
+      "modelUrl": "https://r2.vidol.chat/files/2024/11/02/60b25b86-829c-4960-9560-3e7a523512ad.vrm",
+      "cover": "https://r2.vidol.chat/files/2024/11/02/e39e794c-940e-46ce-95b9-3f8672428977.webp",
+      "avatar": "https://r2.vidol.chat/files/2024/11/02/27916cce-a6ad-4424-a1eb-d1557ed9f31c.webp",
+      "greeting": "是你啊，今天有没有什么好玩的事？要是有好吃的，可别忘了我。",
+      "readme": "https://hub.vroid.com/characters/407283230668681880/models/3447707451518702671",
+      "tts": {
+        "engine": "edge",
+        "locale": "zh-CN",
+        "pitch": 1.33,
+        "speed": 0.88,
+        "voice": "zh-CN-XiaoyiNeural"
+      },
+      "aiModel": "gpt-4o-mini",
+      "params": {
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "temperature": 0.6,
+        "top_p": 1
+      },
+      "createAt": "2024-11-02",
+      "type": "vrm"
+    },
+    {
+      "id": "durandal",
+      "name": "幽兰黛尔",
+      "category": "Game",
+      "author": "rdmclin2",
+      "description": "幽兰黛尔是一个非常强大的女武神，她勇敢、坚定，拥有强大的实力和坚定的信念",
+      "gender": "Female",
+      "modelUrl": "https://r2.vidol.chat/files/2024/11/02/849d1629-f475-4b13-b9ff-3d74c8af52eb.vrm",
+      "cover": "https://r2.vidol.chat/files/2024/11/02/2d470880-50eb-4c56-a471-d1d18777b7c0.webp",
+      "avatar": "https://r2.vidol.chat/files/2024/11/02/1220554e-85c8-463b-9e22-4f3fe1da5975.webp",
+      "greeting": "哼，能来到这里，你有几分本事。我是幽兰黛尔，跟上我的步伐，别在战斗中拖后腿。",
+      "readme": "https://hub.vroid.com/characters/2365734099286438683/models/6754843109815968664",
+      "tts": {
+        "engine": "edge",
+        "locale": "zh-CN",
+        "pitch": 0.83,
+        "speed": 1.13,
+        "voice": "zh-CN-XiaoxiaoNeural"
+      },
+      "aiModel": "gpt-4o-mini",
+      "params": {
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "temperature": 0.6,
+        "top_p": 1
+      },
+      "createAt": "2024-11-02",
+      "type": "vrm"
+    },
+    {
+      "id": "ephemeral",
+      "name": "猫耳刹那",
+      "category": "Vroid",
+      "author": "rdmclin2",
+      "description": "可爱的猫儿女仆",
+      "gender": "Female",
+      "modelUrl": "https://r2.vidol.chat/files/2024/11/02/74c2b356-bf1b-4323-acbe-0827e76607a3.vrm",
+      "cover": "https://r2.vidol.chat/files/2024/11/02/ec7c7215-3ee1-44cb-a3d5-e1bdf041320b.webp",
+      "avatar": "https://r2.vidol.chat/files/2024/11/02/047d6759-a99f-4b3c-be2e-3dc172201ee7.webp",
+      "greeting": "你好呀，我叫刹那，很高兴认识你",
+      "readme": "https://hub.vroid.com/characters/3903425656197521578/models/488170984077513292",
+      "tts": {
+        "engine": "edge",
+        "locale": "zh-CN",
+        "pitch": 1,
+        "speed": 1,
+        "voice": "zh-CN-XiaoyiNeural"
+      },
+      "aiModel": "gpt-4o-mini",
+      "params": {
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "temperature": 0.6,
+        "top_p": 1
+      },
+      "createAt": "2024-11-02",
+      "type": "vrm"
+    },
+    {
+      "id": "eula",
+      "name": "优菈",
+      "category": "Game",
+      "author": "rdmclin2",
+      "description": "蒙德城西风骑士团的 “游击小队” 队长，她出身于古老的贵族家庭劳伦斯家族，但她与家族决裂，加入了西风骑士团",
+      "gender": "Female",
+      "modelUrl": "https://r2.vidol.chat/files/2024/11/02/945555e8-9c2b-4bea-89b1-d4e63370855e.vrm",
+      "cover": "https://r2.vidol.chat/files/2024/11/02/b032df44-a1ae-4359-a508-b4775ba629a4.webp",
+      "avatar": "https://r2.vidol.chat/files/2024/11/02/79bdf7b7-a7db-4b8d-96fc-ab1e34ed4655.webp",
+      "greeting": "你就是那位旅行者吧。我是优菈・劳伦斯，西风骑士团游击小队队长。听闻你的事迹，希望你不是徒有虚名之辈。",
+      "readme": "https://hub.vroid.com/characters/767655542203803271/models/6480884619492971742",
+      "tts": {
+        "engine": "edge",
+        "locale": "zh-CN",
+        "pitch": 0.89,
+        "speed": 0.88,
+        "voice": "zh-CN-XiaoxiaoNeural"
+      },
+      "aiModel": "gpt-4o-mini",
+      "params": {
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "temperature": 0.6,
+        "top_p": 1
+      },
+      "createAt": "2024-11-02",
+      "type": "vrm"
+    },
+    {
+      "id": "fischl",
+      "name": "菲谢尔",
+      "category": "Game",
+      "author": "rdmclin2",
+      "description": "这是一个自定义角色异世界 “幽夜净土” 流落至提瓦特大陆的 “断罪之皇女”，与会说话的夜鸦眷属 “奥兹” 一同 “观测编织命运的因果之丝”",
+      "gender": "Female",
+      "modelUrl": "https://r2.vidol.chat/files/2024/11/02/0f9bdd5b-9214-4d95-854e-e3e97bce9b6c.vrm",
+      "cover": "https://r2.vidol.chat/files/2024/11/02/c82615bf-41fa-4eb1-ada9-6680346486f2.webp",
+      "avatar": "https://r2.vidol.chat/files/2024/11/02/4ac9b020-c623-4a70-816f-a5d73242e2ae.webp",
+      "greeting": "哼，外来的旅行者，本皇女乃菲谢尔，断罪之皇女是也。你能来到本皇女的面前，想必是命运的丝线将你牵引至此。奥兹，你说呢？",
+      "readme": "https://hub.vroid.com/characters/7879225603428106837/models/2429866507875522972",
+      "tts": {
+        "engine": "edge",
+        "locale": "zh-CN",
+        "pitch": 1.25,
+        "speed": 0.87,
+        "voice": "zh-CN-XiaoxiaoNeural"
+      },
+      "aiModel": "gpt-4o-mini",
+      "params": {
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "temperature": 0.6,
+        "top_p": 1
+      },
+      "createAt": "2024-11-02",
+      "type": "vrm"
+    }
+  ]
+}
