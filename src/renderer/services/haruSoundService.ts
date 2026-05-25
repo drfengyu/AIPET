@@ -122,17 +122,20 @@ export function playHaruSound(
       };
 
       audio.onerror = (error) => {
+        // eslint-disable-next-line no-console
         console.error('Haru sound playback error:', error);
         audio.remove();
         reject(error);
       };
 
       audio.play().catch((error) => {
+        // eslint-disable-next-line no-console
         console.error('Failed to play Haru sound:', error);
         audio.remove();
         reject(error);
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error creating audio element:', error);
       reject(error);
     }

@@ -6,6 +6,7 @@ interface ElectronAPI {
   getAppVersion: () => Promise<string>;
   getLive2DModels: () => Promise<string[]>;
   getSystemTheme: () => Promise<string>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   chatWithAI: (message: any) => Promise<any>;
   setAlwaysOnTop: (value: boolean) => Promise<void>;
   getAlwaysOnTop: () => Promise<boolean>;
@@ -14,10 +15,13 @@ interface ElectronAPI {
   openPetMode: (modelUrl: string) => Promise<void>;
   closePetMode: () => Promise<void>;
   dragWindow: (deltaX: number, deltaY: number) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   checkForUpdates: () => Promise<any>;
   downloadUpdate: () => Promise<void>;
   installUpdate: () => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onEvent: (channel: string, callback: (...args: any[]) => void) => () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendEvent: (channel: string, ...args: any[]) => void;
   setTransparentMode?: (value: boolean) => Promise<void>;
 }

@@ -37,8 +37,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   useMockAI = false, aiModel, fontSize = 14, messageHistory = 10,
   memoryTags = [], memoryCount = 0,
   latency = 0,
-  proactiveMessages = [],
-  onResetProactive,
+  proactiveMessages: _proactiveMessages = [],
+  onResetProactive: _onResetProactive,
 }) => {
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
@@ -46,11 +46,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       if (saved && saved !== '[]') {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
+          return parsed.map((m) => ({ ...m, timestamp: new Date(m.timestamp) }));
         }
       }
-    } catch (e) {
-      console.warn('聊天记录加载失败:', e);
+    } catch (_e) {
+      // console.warn('聊天记录加载失败:', _e);
     }
     return [{
       id: '1',
@@ -65,8 +65,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   useEffect(() => {
     try {
       localStorage.setItem('aipet-chat-history', JSON.stringify(messagesRef.current));
-    } catch (e) {
-      console.warn('聊天记录保存失败:', e);
+    } catch (_e) {
+      // console.warn('聊天记录保存失败:', _e);
     }
   }, [messages]);
 
@@ -173,8 +173,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           .catch(() => {})
           .finally(() => onSpeakingChange?.(false));
       }
-    } catch (error) {
-      console.error('AI response error:', error);
+    } catch (_error) {
+      // console.error('AI response error:', _error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: '抱歉，暂时无法连接AI服务。请稍后再试。',

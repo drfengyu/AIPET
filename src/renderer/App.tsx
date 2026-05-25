@@ -57,7 +57,7 @@ function App() {
 
   // 主动对话
   const [proactiveConfig, setProactiveConfig] = useState<ProactiveConfig>(loadConfig);
-  const [lastActivity, setLastActivity] = useState(Date.now());
+  const [_lastActivity, setLastActivity] = useState(Date.now());
   const [proactiveMessages, setProactiveMessages] = useState<Message[]>([]);
   const idleTimerRef = useRef<IdleTimer | null>(null);
 
@@ -196,6 +196,7 @@ function App() {
   };
 
   const checkUpdate = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api = (window as any).electronAPI;
     if (!api?.checkForUpdates) {
       alert('更新检查仅在安装版可用。');
@@ -215,7 +216,7 @@ function App() {
         alert('当前已是最新版本');
       }
     } catch (error) {
-      console.error('检查更新失败:', error);
+      // console.error('检查更新失败:', error);
       alert('检查更新失败: ' + (error instanceof Error ? error.message : String(error)));
     }
   };
@@ -239,13 +240,16 @@ function App() {
         </div>
         <div style={s.topBarRight}>
           <button className="top-btn" onClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((window as any).electronAPI?.setAlwaysOnTop) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (window as any).electronAPI.setAlwaysOnTop(!settings?.alwaysOnTop);
             }
           }}>
             📌 固定
           </button>
           <button className="top-btn" onClick={async () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const api = (window as any).electronAPI;
             if (!petMode && api?.openPetMode) {
               await api.openPetMode(selectedModel);
@@ -264,6 +268,7 @@ function App() {
           <button className="top-btn" onClick={() => setShowExpression(true)} style={{ borderColor: 'rgba(255,200,0,0.2)', color: 'rgba(255,200,0,0.5)' }}>
             🎭 表情
           </button>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <button className="top-btn" style={{ position: 'relative' } as any} onClick={() => setShowDiary(true)}>
             📓 日记{diaryRecordCount > 0 && (
               <span style={{

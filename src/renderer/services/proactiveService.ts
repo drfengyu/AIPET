@@ -25,14 +25,14 @@ export function loadConfig(): ProactiveConfig {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (data) return { ...DEFAULT_CONFIG, ...JSON.parse(data) };
-  } catch {}
+  } catch { /* ignore parse errors */ }
   return { ...DEFAULT_CONFIG };
 }
 
 export function saveConfig(config: ProactiveConfig): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-  } catch {}
+  } catch { /* ignore parse errors */ }
 }
 
 // ===== 时间段检测 =====

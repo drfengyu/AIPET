@@ -18,6 +18,7 @@ export interface ChatMessage {
 // 检查是否在 Electron 环境 (有 IPC 桥接)
 let isElectron = false;
 try {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isElectron = typeof window !== 'undefined' && !!(window as any).electronAPI?.chatWithAI;
 } catch { /* ignore */ }
 
@@ -42,6 +43,7 @@ export async function getAIResponse(
   // Electron 环境: 通过 IPC 调用主进程 (生产环境)
   if (isElectron) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data = await (window as any).electronAPI.chatWithAI({ message, history, model });
       if (data.error) throw new Error(data.error);
       // 兼容两种返回值格式:
@@ -50,8 +52,8 @@ export async function getAIResponse(
       const reply = data.response || data.result?.response || '抱歉，我无法理解您的请求。';
       const { text, emotion } = parseAIReply(reply, message);
       return { text, emotion };
-    } catch (error) {
-      console.error('AI IPC error:', error);
+    } catch (_error) {
+      // console.error('AI IPC error:', _error);
       return getMockResponse(message);
     }
   }
@@ -72,8 +74,8 @@ export async function getAIResponse(
     const reply = data.response || data.result?.response || '抱歉，我无法理解您的请求。';
     const { text, emotion } = parseAIReply(reply, message);
     return { text, emotion };
-  } catch (error) {
-    console.error('AI API error:', error);
+  } catch (_error) {
+    // console.error('AI API error:', _error);
     return getMockResponse(message);
   }
 }

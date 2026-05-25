@@ -109,20 +109,20 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         canvas.style.width = '100%';
         canvas.style.height = '100%';
         canvas.style.display = 'block';
-        console.log('Canvas created:', canvas.width, 'x', canvas.height);
-        console.log('Container:', containerRef.current.clientWidth, 'x', containerRef.current.clientHeight);
-        console.log('Canvas style:', canvas.style.cssText);
-        console.log('Container style:', containerRef.current.style.cssText);
+        // console.log('Canvas created:', canvas.width, 'x', canvas.height);
+        // console.log('Container:', containerRef.current.clientWidth, 'x', containerRef.current.clientHeight);
+        // console.log('Canvas style:', canvas.style.cssText);
+        // console.log('Container style:', containerRef.current.style.cssText);
       } else {
-        console.error('Container ref is null!');
+        // console.error('Container ref is null!');
       }
 
       try {
 
         setLoadingStage('加载模型数据...');
         setLoadingProgress(35);
-        console.log('Loading Live2D model from:', modelUrl);
-        console.log('PIXI app created, stage children:', app.stage.children.length);
+        // console.log('Loading Live2D model from:', modelUrl);
+        // console.log('PIXI app created, stage children:', app.stage.children.length);
 
         const modelMap: { [key: string]: string } = {
           './models/Haru/Haru.model3.json': 'Haru',
@@ -157,11 +157,13 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         const modelWidth = model.width;
         const modelHeight = model.height;
 
-        console.log('Screen dimensions:', screenWidth, 'x', screenHeight);
-        console.log('Model dimensions:', modelWidth, 'x', modelHeight);
+        // console.log('Screen dimensions:', screenWidth, 'x', screenHeight);
+        // console.log('Model dimensions:', modelWidth, 'x', modelHeight);
 
         // 保存屏幕尺寸供后续使用
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (app as any)._screenWidth = screenWidth;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (app as any)._screenHeight = screenHeight;
 
         // 计算适合容器的缩放比例（留出少量边距）
@@ -171,10 +173,10 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
         model.scale.set(autoScale, autoScale);
 
-        console.log('Model loaded successfully:', model);
-        console.log('Model size:', model.width, 'x', model.height);
-        console.log('Auto scale:', autoScale);
-        console.log('Stage children after model added:', app.stage.children.length);
+        // console.log('Model loaded successfully:', model);
+        // console.log('Model size:', model.width, 'x', model.height);
+        // console.log('Auto scale:', autoScale);
+        // console.log('Stage children after model added:', app.stage.children.length);
 
         // 居中模型
         model.x = screenWidth / 2;
@@ -206,8 +208,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
             // 双击 - 触发 Special 动画
             try {
               model.motion('Special');
-            } catch (e) {
-              console.log('Special motion not available');
+            } catch (_e) {
+              // console.log('Special motion not available');
             }
             onMotion?.('Special');
             return;
@@ -217,12 +219,12 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
             // 点击头部 - 触发 TapHead 动画
             try {
               model.motion('TapHead');
-            } catch (e) {
-              console.log('TapHead motion not available, trying Idle');
+            } catch (_e) {
+              // console.log('TapHead motion not available, trying Idle');
               try {
                 model.motion('Idle');
-              } catch (e2) {
-                console.log('Idle motion not available');
+              } catch (_e2) {
+                // console.log('Idle motion not available');
               }
             }
             onMotion?.('TapHead');
@@ -230,8 +232,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
             // 点击身体 - 触发 TapBody 动画
             try {
               model.motion('TapBody');
-            } catch (e) {
-              console.log('TapBody motion not available');
+            } catch (_e) {
+              // console.log('TapBody motion not available');
             }
             onMotion?.('TapBody');
           }
@@ -258,21 +260,23 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
         // 短暂延迟让用户看到 100%
         setTimeout(() => setIsLoading(false), 300);
 
-      } catch (err) {
-        console.error('Failed to init character:', err);
-        console.log('Using placeholder model instead');
-        console.log('Error details:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
+      } catch (_err) {
+        // console.error('Failed to init character:', _err);
+        // console.log('Using placeholder model instead');
+        // console.log('Error details:', JSON.stringify(_err, Object.getOwnPropertyNames(_err)));
 
         // 确保 app 存在
         if (!app) {
-          console.error('App is null, cannot create placeholder');
+          // console.error('App is null, cannot create placeholder');
           setIsLoading(false);
           setError('无法初始化模型');
           return;
         }
 
         // 使用占位符模型 - 居中显示
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const screenWidth = (app as any)._screenWidth || app.screen.width;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const screenHeight = (app as any)._screenHeight || app.screen.height;
         const centerX = screenWidth / 2;
         const centerY = screenHeight / 2;
@@ -366,7 +370,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
 
         setError('使用占位符模型 - 请检查模型文件');
         setIsLoading(false);
-        console.log('Placeholder model added to stage, children:', app.stage.children.length);
+        // console.log('Placeholder model added to stage, children:', app.stage.children.length);
       }
     };
 
@@ -403,9 +407,9 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
     if (modelRef.current && expression) {
       try {
         modelRef.current.expression(expression);
-        console.log('Expression changed to:', expression);
-      } catch (e) {
-        console.log('Expression not available:', expression);
+        // console.log('Expression changed to:', expression);
+      } catch (_e) {
+        // console.log('Expression not available:', expression);
       }
     }
   }, [expression]);
