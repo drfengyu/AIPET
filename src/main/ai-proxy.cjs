@@ -1,15 +1,10 @@
-/**
- * AI 代理服务器 (CommonJS)
- * 用于绕过 Cloudflare Workers AI 的 CORS 限制
- */
-
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
 
-// 加载 .env 文件（在 Electron 外部运行时）
+// 加载 .env 文件
 try {
   const envPath = path.join(__dirname, '../../.env');
   if (fs.existsSync(envPath)) {
@@ -29,61 +24,38 @@ try {
 const app = express();
 const PORT = 3002;
 
-// 启用 CORS
 app.use(cors({
   origin: ['http://localhost:5200', 'http://localhost:5174', 'http://localhost:5193', 'http://localhost:5176', 'http://localhost:5175'],
   credentials: true
 }));
-
-// 解析 JSON 请求体
 app.use(express.json());
 
-// AI 代理路由
 app.post('/api/ai/chat', async (req, res) => {
   try {
     const { message, model } = req.body;
-
-    if (!message) {
-      return res.status(400).json({ error: 'Message is required' });
-    }
-
+    if (!message) return res.status(400).json({ error: 'Message is required' });
     const accountId = process.env.VITE_CLOUDFLARE_ACCOUNT_ID;
     const apiToken = process.env.VITE_CLOUDFLARE_API_TOKEN;
-
-    if (!accountId || !apiToken) {
-      return res.status(500).json({ error: 'Cloudflare credentials not configured' });
-    }
-
-    // 使用传入门模型，否则默认用 llama-3.1-8b
+    if (!accountId || !apiToken) return res.status(500).json({ error: 'Cloudflare credentials not configured' });
     const modelName = model || '@cf/meta/llama-3.1-8b-instruct';
-
     const apiUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${modelName}`;
-
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: [
           {
             role: 'system',
-            content: '你是一个友善的AI助手，运行在赛博朋克风格的Live2D桌面应用中。你的名字是AIPET。请始终用中文回复，语气亲切友好，可以带一些科技感和幽默感。回复要简洁自然，像是朋友间的对话。'
+            content: '你是一个友善的中文AI助手AIPET。回复要简短亲切。在回复末尾用【情绪:xxx】分析用户此刻的情绪。情绪标签只能是：happy(开心)、sad(难过)、angry(生气)、surprised(惊讶)、blush(害羞)、neutral(平静)。例如：用户说"今天被老板骂了"你回复"哎，别太难过啦【情绪:sad】"'
           },
-          {
-            role: 'user',
-            content: message
-          }
+          { role: 'user', content: message }
         ]
       })
     });
-
     if (!response.ok) {
       const errorText = await response.text();
       return res.status(response.status).json({ error: errorText });
     }
-
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -92,13 +64,9 @@ app.post('/api/ai/chat', async (req, res) => {
   }
 });
 
-// 健康检查
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', port: PORT });
-});
+app.get('/health', (req, res) => res.json({ status: 'ok', port: PORT }));
 
 app.listen(PORT, () => {
-  console.log(`AI Proxy server running on http://localhost:${PORT}`);
+  // Log to stderr so it doesn't interfere with pipe
+  process.stderr.write(`AI Proxy running on :${PORT}\n`);
 });
-
-module.exports = app;

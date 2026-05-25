@@ -47,10 +47,8 @@ export async function getAIResponse(
       // - IPC: { response: "..." }
       // - 代理: { result: { response: "..." } }
       const reply = data.response || data.result?.response || '抱歉，我无法理解您的请求。';
-      return {
-        text: reply,
-        emotion: detectEmotion(message, reply)
-      };
+      const { text, emotion } = parseAIReply(reply, message);
+      return { text, emotion };
     } catch (error) {
       console.error('AI IPC error:', error);
       return getMockResponse(message);
@@ -71,10 +69,8 @@ export async function getAIResponse(
 
     const data = await response.json();
     const reply = data.response || data.result?.response || '抱歉，我无法理解您的请求。';
-    return {
-      text: reply,
-      emotion: detectEmotion(message, reply)
-    };
+    const { text, emotion } = parseAIReply(reply, message);
+    return { text, emotion };
   } catch (error) {
     console.error('AI API error:', error);
     return getMockResponse(message);
@@ -160,7 +156,28 @@ function getMockResponse(message: string): AIResponse {
 }
 
 /**
- * 检测情绪类型 — 支持中英文混合，从用户消息和 AI 回复中共同检测
+ * 从 AI 回复中提取情绪标签 【情绪:xxx】
+ * 如果 AI 没返回标签，用正则 fallback
+ */
+function parseAIReply(reply: string, userMessage: string): { text: string; emotion: string } {
+  const match = reply.match(/【情绪:(\w+)】/i);
+  if (match) {
+    const emotion = match[1].toLowerCase();
+    // 只接受合法情绪值
+    const validEmotions = ['happy', 'sad', 'angry', 'surprised', 'blush', 'neutral'];
+    if (validEmotions.includes(emotion)) {
+      return {
+        text: reply.replace(/【情绪:\w+】/i, '').trim(),
+        emotion,
+      };
+    }
+  }
+  // fallback: 用正则检测
+  return { text: reply, emotion: detectEmotion(userMessage, reply) };
+}
+
+/**
+ * 检测情绪类型 (正则 fallback)
  */
 function detectEmotion(message: string, aiResponse?: string): string {
   const texts = [message, aiResponse || ''].filter(Boolean);

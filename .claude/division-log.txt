@@ -1330,3 +1330,5 @@
 [2026-05-25 10:24:54] POST_COMMIT: 55e697c - feat: 系统事件响应-时间段感知/表情动作/主动消息
 [2026-05-25 10:26:35] PRE_COMMIT: OK - 1 files checked
 [2026-05-25 10:26:36] POST_COMMIT: bd83e6f - chore: 清理系统事件模块lint警告
+[2026-05-25 13:59:23] PRE_COMMIT: OK - 2 files checked
+[2026-05-25 13:59:25] POST_COMMIT: fbc1dc1 - fix: 情绪检测扩展-更多关键词+AI回复分析+emoji支持
