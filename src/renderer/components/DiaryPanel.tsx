@@ -23,7 +23,6 @@ const DAY_LABELS: Record<string, string> = {
 const DiaryPanel: React.FC<DiaryPanelProps> = ({ onClose }) => {
   const [dates, setDates] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [entry, setEntry] = useState<DiaryEntry | null>(null);
   const [trend, setTrend] = useState<MoodTrend[]>([]);
   const [stats, setStats] = useState({ totalDays: 0, totalRecords: 0, avgMood: 0 });
 
@@ -35,14 +34,12 @@ const DiaryPanel: React.FC<DiaryPanelProps> = ({ onClose }) => {
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     setSelectedDate(todayStr);
-    setEntry(getDiaryByDate(todayStr));
   };
 
   useEffect(() => { refresh(); }, []);
 
   const handleSelectDate = (date: string) => {
     setSelectedDate(date);
-    setEntry(getDiaryByDate(date));
   };
 
   const formatDateDisplay = (dateStr: string) => {
@@ -94,10 +91,7 @@ const DiaryPanel: React.FC<DiaryPanelProps> = ({ onClose }) => {
           <div style={s.trendSection}>
             <div style={s.sectionLabel}>近 7 天趋势</div>
             <div style={s.trendRow}>
-              {trend.map((t, i) => {
-                const dayLabel = t.date.slice(5); // MM-DD
-                const d = new Date(t.date + 'T00:00:00');
-                const weekDay = DAY_LABELS[String(d.getDay())] || '';
+              {trend.map((t) => {
                 return (
                   <div
                     key={t.date}
@@ -182,7 +176,7 @@ const DiaryPanel: React.FC<DiaryPanelProps> = ({ onClose }) => {
                   {isSelected && e.records.length > 0 && (
                     <div style={s.timeline}>
                       <div style={s.timelineTitle}>情绪时间线</div>
-                      {[...e.records].reverse().slice(0, 20).map((rec, i) => (
+                      {[...e.records].reverse().slice(0, 20).map((rec) => (
                         <div key={rec.id} style={s.timeItem}>
                           <div style={{
                             ...s.timeDot,
@@ -197,7 +191,7 @@ const DiaryPanel: React.FC<DiaryPanelProps> = ({ onClose }) => {
                                 {new Date(rec.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
-                            {rec.context && <div style={s.timeContext}>"{rec.context}"</div>}
+                            {rec.context && <div style={s.timeContext}>&ldquo;{rec.context}&rdquo;</div>}
                           </div>
                         </div>
                       ))}
