@@ -38,8 +38,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   useMockAI = false, aiModel, fontSize = 14, messageHistory = 10,
   memoryTags = [], memoryCount = 0,
   latency = 0,
-  proactiveMessages: _proactiveMessages = [],
-  onResetProactive: _onResetProactive,
+  proactiveMessages = [],
+  onResetProactive,
   onSpeech,
 }) => {
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -80,6 +80,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages]);
+
+  // 主动问候消息并入聊天记录
+  useEffect(() => {
+    if (proactiveMessages.length > 0) {
+      setMessages(prev => {
+        const existingIds = new Set(prev.map(m => m.id));
+        const newOnes = proactiveMessages.filter(m => !existingIds.has(m.id));
+        if (newOnes.length === 0) return prev;
+        return [...prev, ...newOnes];
+      });
+      onResetProactive?.();
+    }
+  }, [proactiveMessages]);
 
   useEffect(() => {
     inputRef.current?.focus();

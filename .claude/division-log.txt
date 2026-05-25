@@ -1348,3 +1348,5 @@
 [2026-05-25 14:55:54] POST_COMMIT: aecb635 - fix: 记忆标签去掉'用户'前缀
 [2026-05-25 15:06:10] PRE_COMMIT: OK - 10 files checked
 [2026-05-25 15:06:11] POST_COMMIT: 827973f - chore: P2代码清理-注释console/修复lint/清理未用变量
+[2026-05-25 15:11:11] PRE_COMMIT: OK - 3 files checked
+[2026-05-25 15:11:11] POST_COMMIT: 68d3046 - feat: 角色聊天气泡-主窗口/桌宠/主动问候都显示
