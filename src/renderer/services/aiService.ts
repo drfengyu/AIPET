@@ -166,13 +166,10 @@ export async function analyzeMemory(conversation: string): Promise<string[]> {
   }
   try {
     // 用聊天接口做记忆分析（更稳定）
-    const response = await fetch('http://localhost:3002/api/ai/chat', {
+    const response = await fetch('http://localhost:3002/api/ai/analyze-memory', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: '[记忆分析] 从对话中提取用户特征：\n' + conversation,
-        model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
-      })
+      body: JSON.stringify({ conversation })
     });
     if (!response.ok) return [];
     const data = await response.json();
@@ -180,7 +177,8 @@ export async function analyzeMemory(conversation: string): Promise<string[]> {
     if (text.trim() === '无' || text.trim() === '' || text.includes('抱歉') || text.includes('无法理解')) return [];
     return text.split('\n')
       .map((line: string) => line.replace(/^-\s*/, '').trim())
-      .filter((fact: string) => fact.length > 3 && !fact.includes('无'));
+      .map((line: string) => line.replace(/【.*?】/g, '').trim())
+      .filter((fact: string) => fact.length > 3 && !fact.includes('无') && !fact.includes('【'));
   } catch {
     return [];
   }

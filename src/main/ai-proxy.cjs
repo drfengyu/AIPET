@@ -76,10 +76,10 @@ app.post('/api/ai/analyze-memory', async (req, res) => {
     const data = await callCloudflareAI([
       {
         role: 'system',
-        content: '从对话中提取用户特征。只输出提取结果，每行一个"- xxx"。没有就写"无"。'
+        content: '从对话中提取用户特征。每行一条，用"- "开头。没有就写"无"。'
       },
       { role: 'user', content: '对话记录：\n' + conversation }
-    ]);
+    ], '@cf/meta/llama-3.3-70b-instruct-fp8-fast');
     res.json(data);
   } catch (error) {
     console.error('Memory analysis error:', error.message);
