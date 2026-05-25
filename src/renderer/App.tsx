@@ -419,7 +419,7 @@ function App() {
               <span style={s.statusText}>会话 {sessionDisplay}</span>
               <span style={s.statusText}>消息 {msgCount}</span>
               <span style={s.statusText}>日记 {diaryRecordCount}</span>
-              <span style={s.statusText}>v0.3.0</span>
+              <span style={s.statusText}>v0.3.1</span>
             </div>
           </div>
         </div>
