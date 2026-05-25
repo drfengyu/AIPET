@@ -153,6 +153,9 @@ export function recordEmotion(
   allRecords.push(record);
   saveRecords(allRecords);
 
+  // 每次记录情绪后自动生成日记摘要
+  generateDailySummary();
+
   return record;
 }
 

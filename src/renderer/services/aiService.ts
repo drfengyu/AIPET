@@ -49,7 +49,7 @@ export async function getAIResponse(
       const reply = data.response || data.result?.response || '抱歉，我无法理解您的请求。';
       return {
         text: reply,
-        emotion: detectEmotion(message)
+        emotion: detectEmotion(message, reply)
       };
     } catch (error) {
       console.error('AI IPC error:', error);
@@ -73,7 +73,7 @@ export async function getAIResponse(
     const reply = data.response || data.result?.response || '抱歉，我无法理解您的请求。';
     return {
       text: reply,
-      emotion: detectEmotion(message)
+      emotion: detectEmotion(message, reply)
     };
   } catch (error) {
     console.error('AI API error:', error);
@@ -160,29 +160,57 @@ function getMockResponse(message: string): AIResponse {
 }
 
 /**
- * 检测情绪类型
+ * 检测情绪类型 — 支持中英文混合，从用户消息和 AI 回复中共同检测
  */
-function detectEmotion(message: string): string {
-  const lowerMessage = message.toLowerCase();
+function detectEmotion(message: string, aiResponse?: string): string {
+  const texts = [message, aiResponse || ''].filter(Boolean);
 
-  if (lowerMessage.includes('开心') || lowerMessage.includes('高兴') || lowerMessage.includes('哈哈')) {
+  // 合并所有文本进行检测
+  const combined = texts.join(' ').toLowerCase();
+
+  // 分值统计
+  const scores: Record<string, number> = {
+    happy: 0, sad: 0, angry: 0, surprised: 0, blush: 0, neutral: 0,
+  };
+
+  // 正向情绪（开心/高兴/兴奋）
+  if (/开心|高兴|哈哈|嘻嘻|快乐|兴奋|美好|棒|赞|太好了|真好|不错不错|心情好|开心的一天|阳光|真好呀|太好了吧|妙啊/i.test(combined)) {
+    scores.happy += 3;
+  }
+  if (/😊|😄|😁|🎉|🌈|🌟/.test(combined)) scores.happy += 3;
+  if (/smile|happy|great|wonderful|amazing|fantastic|love it|awesome|lovely|cheer/i.test(combined)) scores.happy += 2;
+
+  // 负面情绪（难过/伤心）
+  if (/难过|伤心|哭|哭了|哭泣|悲伤|伤心事|不开心|郁闷|沮丧|心碎|sad|cry|crying|unhappy|depressed/i.test(combined)) {
+    scores.sad += 3;
+  }
+  if (/😢|😭|💔/.test(combined)) scores.sad += 3;
+
+  // 生气
+  if (/生气|愤怒|气死|烦死了|烦躁|恼火|讨厌|生气|angry|mad|annoyed|frustrated/i.test(combined)) {
+    scores.angry += 3;
+  }
+  if (/😠|😡|💢/.test(combined)) scores.angry += 3;
+
+  // 惊讶
+  if (/惊讶|震惊|没想到|真的吗|不敢相信|惊了|surprised|shocked|amazed|wow|omg|unbelievable/i.test(combined)) {
+    scores.surprised += 2;
+  }
+  if (/😮|😱|😳/.test(combined)) scores.surprised += 2;
+
+  // 害羞/爱慕
+  if (/爱|喜欢|可爱|萌|好喜欢|心动|想念|cute|adorable|love|like|sweet|precious|blush/i.test(combined)) {
+    scores.blush += 2;
+  }
+  if (/🥰|😍|❤️|💕|😊/.test(combined)) scores.blush += 2;
+
+  // 选择分值最高的
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  if (sorted[0][1] > 0) return sorted[0][0];
+
+  // 仍没匹配到但包含正向词汇 → 开心
+  if (/好|不错|可以|行|是|嗯嗯|好的|ok/i.test(combined) && !/不|没|烦|累|困/i.test(combined)) {
     return 'happy';
-  }
-
-  if (lowerMessage.includes('难过') || lowerMessage.includes('伤心') || lowerMessage.includes('哭')) {
-    return 'sad';
-  }
-
-  if (lowerMessage.includes('生气') || lowerMessage.includes('愤怒')) {
-    return 'angry';
-  }
-
-  if (lowerMessage.includes('惊讶') || lowerMessage.includes('震惊')) {
-    return 'surprised';
-  }
-
-  if (lowerMessage.includes('爱') || lowerMessage.includes('喜欢')) {
-    return 'blush';
   }
 
   return 'neutral';
