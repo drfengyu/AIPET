@@ -77,25 +77,25 @@ export function clearAllFacts(): void {
 // 中文和英文的提取模式
 const PATTERNS: { regex: RegExp; category: MemoryFact['category']; template: string }[] = [
   // 个人基本信息
-  { regex: /我(?:叫|是|的名字叫|的名字是)\s*([^\s，。,\.]{1,10})/i, category: 'personal', template: '用户的名字是：{0}' },
-  { regex: /我(?:今年|岁数|已经)\s*(\d{1,3})\s*岁/i, category: 'personal', template: '用户今年{0}岁' },
-  { regex: /我(?:来自|住在|在)\s*([^\s，。,\.]{2,10})(?:市|省|区|镇|工作|生活|住)/i, category: 'personal', template: '用户在{0}' },
+  { regex: /我(?:叫|是|的名字叫|的名字是)\s*([^\s，。,\\.]{1,10})/i, category: 'personal', template: '名字是{0}' },
+  { regex: /我(?:今年|岁数|已经)\s*(\d{1,3})\s*岁/i, category: 'personal', template: '{0}岁' },
+  { regex: /我(?:来自|住在|在)\s*([^\s，。,\\.]{2,10})(?:市|省|区|镇|工作|生活|住)/i, category: 'personal', template: '来自{0}' },
 
   // 偏好 - 喜欢
-  { regex: /我(?:喜欢|爱|最爱|热爱|特别[喜欢爱])\s*([^\s，。,\.]{2,20})/i, category: 'preference', template: '用户喜欢{0}' },
-  { regex: /我(?:最[喜欢爱]的是|很[喜欢爱])\s*([^\s，。,\.]{2,20})/i, category: 'preference', template: '用户喜欢{0}' },
-  { regex: /我(?:的爱好[是]?|的兴趣[是]?|平时[喜欢爱])\s*([^\s，。,\.]{2,20})/i, category: 'preference', template: '用户的爱好是{0}' },
+  { regex: /我(?:喜欢|爱|最爱|热爱|特别[喜欢爱])\s*([^\s，。,\\.]{2,20})/i, category: 'preference', template: '喜欢{0}' },
+  { regex: /我(?:最[喜欢爱]的是|很[喜欢爱])\s*([^\s，。,\\.]{2,20})/i, category: 'preference', template: '喜欢{0}' },
+  { regex: /我(?:的爱好[是]?|的兴趣[是]?|平时[喜欢爱])\s*([^\s，。,\\.]{2,20})/i, category: 'preference', template: '爱好{0}' },
 
   // 偏好 - 不喜欢
-  { regex: /我(?:不喜欢|讨厌|受不了|烦)\s*([^\s，。,\.]{2,20})/i, category: 'preference', template: '用户不喜欢{0}' },
-  { regex: /我(?:最讨厌|最烦|很讨厌)\s*([^\s，。,\.]{2,20})/i, category: 'preference', template: '用户讨厌{0}' },
+  { regex: /我(?:不喜欢|讨厌|受不了|烦)\s*([^\s，。,\\.]{2,20})/i, category: 'preference', template: '不喜欢{0}' },
+  { regex: /我(?:最讨厌|最烦|很讨厌)\s*([^\s，。,\\.]{2,20})/i, category: 'preference', template: '讨厌{0}' },
 
   // 工作/学习
-  { regex: /我(?:做|从事|是[一名位]?)\s*([^\s，。,\.]{2,15})(?:工作|职业|行业|的)/i, category: 'personal', template: '用户从事{0}工作' },
-  { regex: /我(?:在学习|在[读上]|读)\s*([^\s，。,\.]{2,15})(?:专业|方向)?/i, category: 'personal', template: '用户在学习{0}' },
+  { regex: /我(?:做|从事|是[一名位]?)\s*([^\s，。,\\.]{2,15})(?:工作|职业|行业|的)/i, category: 'personal', template: '从事{0}工作' },
+  { regex: /我(?:在学习|在[读上]|读)\s*([^\s，。,\\.]{2,15})(?:专业|方向)?/i, category: 'personal', template: '学习{0}' },
 
   // 情绪/状态
-  { regex: /我(?:最近|今天|现在)?(?:心情|感觉|状态)(?:很|非常|有点|有点|特别)?\s*([^\s，。,\.]{2,6})/i, category: 'emotion', template: '用户最近情绪{0}' },
+  { regex: /我(?:最近|今天|现在)?(?:心情|感觉|状态)(?:很|非常|有点|有点|特别)?\s*([^\s，。,\\.]{2,6})/i, category: 'emotion', template: '情绪{0}' },
 
   // 英文模式
   { regex: /i(?:'m| am)\s*([a-z\s]{2,20})/i, category: 'personal', template: 'user is {0}' },

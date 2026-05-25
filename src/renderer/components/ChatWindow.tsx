@@ -148,10 +148,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           let updated = false;
           for (const factText of facts) {
             const existingFacts = loadFacts();
-            if (!existingFacts.find(f => f.fact.includes(factText.slice(0, 10)))) {
+            // 去掉AI返回的"用户"前缀
+            const cleanFact = factText.replace(/^用户/, '').trim();
+            if (!existingFacts.find(f => f.fact.includes(cleanFact.slice(0, 10)))) {
               addFact({
                 category: 'personal',
-                fact: factText,
+                fact: cleanFact,
                 source: inputValue.slice(0, 60),
                 extractedFrom: aiResponse.text.slice(0, 60),
                 confidence: 0.6,

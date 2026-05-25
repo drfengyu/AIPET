@@ -1342,3 +1342,5 @@
 [2026-05-25 14:33:52] POST_COMMIT: 04c5449 - feat: 记忆分析改用llama-3.3-70b提升准确率
 [2026-05-25 14:37:18] PRE_COMMIT: OK - 2 files checked
 [2026-05-25 14:37:19] POST_COMMIT: fa6924e - feat: 表情面板-6种表情+4种动作手动触发
+[2026-05-25 14:42:44] PRE_COMMIT: OK - 1 files checked
+[2026-05-25 14:42:45] POST_COMMIT: bcebcbb - fix: 记忆分析改用独立端点+70b模型+清理标签
