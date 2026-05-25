@@ -162,22 +162,22 @@ function getMockResponse(message: string): AIResponse {
  */
 export async function analyzeMemory(conversation: string): Promise<string[]> {
   if (isElectron) {
-    // Electron 模式暂不支持
     return [];
   }
   try {
-    const response = await fetch('http://localhost:3002/api/ai/analyze-memory', {
+    // 用聊天接口做记忆分析（更稳定）
+    const response = await fetch('http://localhost:3002/api/ai/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ conversation })
+      body: JSON.stringify({ message: '[记忆分析] 从对话中提取用户特征：\n' + conversation })
     });
     if (!response.ok) return [];
     const data = await response.json();
     const text = data.result?.response || '';
-    if (text.trim() === '无' || text.trim() === '') return [];
+    if (text.trim() === '无' || text.trim() === '' || text.includes('抱歉') || text.includes('无法理解')) return [];
     return text.split('\n')
       .map((line: string) => line.replace(/^-\s*/, '').trim())
-      .filter((fact: string) => fact.length > 3);
+      .filter((fact: string) => fact.length > 3 && !fact.includes('无'));
   } catch {
     return [];
   }

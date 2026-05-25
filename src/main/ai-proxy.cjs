@@ -76,7 +76,7 @@ app.post('/api/ai/analyze-memory', async (req, res) => {
     const data = await callCloudflareAI([
       {
         role: 'system',
-        content: '你是一个记忆分析助手。分析下面对话中关于用户的个人信息，提取出值得记住的内容：名字、年龄、职业、爱好、家庭、宠物、重要经历、偏好等。如果找到多条，逐条列出，每行一条用"- "开头。如果没有值得记住的信息，返回"无"。只要用户透露了个人信息就必须提取。例如：用户说"我叫小明，25岁"你应返回"- 用户叫小明\n- 用户25岁"'
+        content: '从对话中提取用户特征。只输出提取结果，每行一个"- xxx"。没有就写"无"。'
       },
       { role: 'user', content: '对话记录：\n' + conversation }
     ]);
