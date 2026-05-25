@@ -7,6 +7,7 @@ interface AIResponse {
   text: string;
   thinking?: string;
   emotion?: string;
+  memoryFacts?: string[];
 }
 
 export interface ChatMessage {
@@ -153,6 +154,33 @@ function getMockResponse(message: string): AIResponse {
     text: defaultResponses[Math.floor(Math.random() * defaultResponses.length)],
     emotion: 'neutral'
   };
+}
+
+/**
+ * 分析对话，提取值得记住的用户信息
+ * 返回事实列表，如果没找到返回空数组
+ */
+export async function analyzeMemory(conversation: string): Promise<string[]> {
+  if (isElectron) {
+    // Electron 模式暂不支持
+    return [];
+  }
+  try {
+    const response = await fetch('http://localhost:3002/api/ai/analyze-memory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversation })
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    const text = data.result?.response || '';
+    if (text.trim() === '无' || text.trim() === '') return [];
+    return text.split('\n')
+      .map((line: string) => line.replace(/^-\s*/, '').trim())
+      .filter((fact: string) => fact.length > 3);
+  } catch {
+    return [];
+  }
 }
 
 /**

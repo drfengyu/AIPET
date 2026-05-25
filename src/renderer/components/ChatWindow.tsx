@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getAIResponse, type ChatMessage } from '../services/aiService';
+import { getAIResponse, analyzeMemory, type ChatMessage } from '../services/aiService';
 import { speak, stop, isSupported } from '../services/ttsService';
 import { loadFacts, extractFacts, addFact, getRelevantFacts, formatFactsForContext } from '../services/memoryService';
 
@@ -141,6 +141,30 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         onMemoryChange(loadFacts().length);
       }
 
+      // AI 分析对话提取记忆（补充正则覆盖不到的）
+      if (!useMockAI && inputValue.length > 4) {
+        analyzeMemory(`用户: ${inputValue}\nAI: ${aiResponse.text}`).then(facts => {
+          if (facts.length === 0) return;
+          let updated = false;
+          for (const factText of facts) {
+            const existingFacts = loadFacts();
+            if (!existingFacts.find(f => f.fact.includes(factText.slice(0, 10)))) {
+              addFact({
+                category: 'personal',
+                fact: factText,
+                source: inputValue.slice(0, 60),
+                extractedFrom: aiResponse.text.slice(0, 60),
+                confidence: 0.6,
+              });
+              updated = true;
+            }
+          }
+          if (updated && onMemoryChange) {
+            onMemoryChange(loadFacts().length);
+          }
+        });
+      }
+
       if (ttsEnabled && isSupported()) {
         onSpeakingChange?.(true);
         speak(aiResponse.text, { voice: ttsVoice, rate: ttsRate })
@@ -234,16 +258,18 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       </div>
 
       {/* Memory Tags */}
-      {memoryTags.length > 0 && (
-        <div style={s.memoryBar}>
-          <span style={s.memoryLabel}>记忆</span>
-          <div style={s.memoryItems}>
-            {memoryTags.map((tag, i) => (
+      <div style={s.memoryBar}>
+        <span style={s.memoryLabel}>记忆</span>
+        <div style={s.memoryItems}>
+          {memoryTags.length > 0 ? (
+            memoryTags.map((tag, i) => (
               <span key={i} style={s.memoryTag}>{tag}</span>
-            ))}
-          </div>
+            ))
+          ) : (
+            <span style={s.memoryPlaceholder}>聊久了我会记住你的喜好哦</span>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Input Area */}
       <div style={s.inputArea}>
@@ -368,6 +394,12 @@ const s: Record<string, React.CSSProperties> = {
     border: '1px solid rgba(255,255,255,0.04)',
     color: 'rgba(255,255,255,0.15)',
     whiteSpace: 'nowrap', fontWeight: 300,
+  },
+  memoryPlaceholder: {
+    fontSize: 10, padding: '2px 8px',
+    color: 'rgba(255,255,255,0.06)',
+    fontStyle: 'italic', fontWeight: 200,
+    fontFamily: "'Share Tech Mono', 'Microsoft YaHei', sans-serif",
   },
   inputArea: {
     display: 'flex', gap: 8,
