@@ -9,6 +9,7 @@ import { loadFacts, getMemoryStats } from './services/memoryService';
 import { loadConfig, saveConfig, IdleTimer, getProactiveMessage, type ProactiveConfig } from './services/proactiveService';
 import DiaryPanel from './components/DiaryPanel';
 import { recordEmotion, getTodayRecordCount, getTodayAvgMood } from './services/diaryService';
+import { detectSystemEvent, getCurrentTimeLabel } from './services/systemEventService';
 
 interface Settings {
   aiModel: string;
@@ -86,6 +87,49 @@ function App() {
   const [currentEmotion, setCurrentEmotion] = useState('HAPPY');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [petMode, setPetMode] = useState(false);
+
+  // 系统事件
+  const [systemTrigger, setSystemTrigger] = useState<{ motion?: string; expression?: string; id: number } | undefined>(undefined);
+  const eventIdRef = useRef(0);
+  const systemEventCheckedRef = useRef(false);
+
+  // 应用启动问候
+  useEffect(() => {
+    if (systemEventCheckedRef.current) return;
+    systemEventCheckedRef.current = true;
+    // 延迟一点等 Live2D 加载完再触发
+    const timer = setTimeout(() => {
+      const id = ++eventIdRef.current;
+      setSystemTrigger({ motion: 'Idle', expression: 'F02', id });
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 定期检测系统事件 (每 30 秒)
+  useEffect(() => {
+    const check = () => {
+      const result = detectSystemEvent();
+      if (!result) return;
+      const { event } = result;
+      // 触发 Live2D 动作/表情
+      const id = ++eventIdRef.current;
+      setSystemTrigger({ motion: event.motion, expression: event.expression, id });
+      // 如果有消息，添加到主动对话
+      if (event.message) {
+        setProactiveMessages(prev => [...prev, {
+          id: 'sys-' + id,
+          text: `⚡ ${event.message}`,
+          sender: 'ai' as const,
+          timestamp: new Date(),
+          isProactive: true,
+        }]);
+      }
+    };
+    // 首次启动时也检查一次
+    const initTimer = setTimeout(check, 5000);
+    const interval = setInterval(check, 30000);
+    return () => { clearTimeout(initTimer); clearInterval(interval); };
+  }, []);
 
   // 从 localStorage 加载设置
   useEffect(() => {
@@ -239,6 +283,7 @@ function App() {
               scale={settings?.modelScale || 1.0}
               onMotion={handleMotion}
               expression={settings?.expressionEnabled ? currentExpression : undefined}
+              systemTrigger={systemTrigger}
               mood={mood}
               energy={energy}
               memory={memory}

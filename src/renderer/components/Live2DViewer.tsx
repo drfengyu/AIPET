@@ -10,6 +10,8 @@ interface Live2DViewerProps {
   scale?: number;
   onMotion?: (motion: string) => void;
   expression?: string;
+  // 系统事件触发
+  systemTrigger?: { motion?: string; expression?: string; id: number };
   // HUD data
   mood?: number;
   energy?: number;
@@ -25,6 +27,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
   scale = 0.08,
   onMotion,
   expression,
+  systemTrigger,
   mood = 78,
   energy = 65,
   memory = 45,
@@ -406,6 +409,20 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({
       }
     }
   }, [expression]);
+
+  // 处理系统事件触发
+  useEffect(() => {
+    if (!modelRef.current || !systemTrigger) return;
+    const { expression: exp, motion, id } = systemTrigger;
+    if (!exp && !motion) return;
+    // 用 id 作为依赖，确保每次新事件都触发
+    if (exp) {
+      try { modelRef.current.expression(exp); } catch { /* ignore */ }
+    }
+    if (motion) {
+      try { modelRef.current.motion(motion); } catch { /* ignore */ }
+    }
+  }, [systemTrigger?.id]);
 
   const styles: { [key: string]: React.CSSProperties } = {
     viewer: {
