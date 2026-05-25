@@ -1320,3 +1320,5 @@
 [2026-05-23 17:08:25] POST_COMMIT: 4c0a784 - feat: 记忆2.0 - 事实提取/持久化/记忆面板/上下文注入
 [2026-05-23 17:09:34] PRE_COMMIT: OK - 1 files checked
 [2026-05-23 17:09:34] POST_COMMIT: f3541c9 - chore: 修复 lint 错误(无用转义/引号)
+[2026-05-23 17:30:00] PRE_COMMIT: OK - 3 files checked
+[2026-05-23 17:30:01] POST_COMMIT: 61ca3c8 - feat: AI主动对话-闲置计时器/时间段问候/消息气泡

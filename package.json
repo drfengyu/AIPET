@@ -1,6 +1,6 @@
 {
   "name": "live2d-chat-app",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Live2D桌面AI陪聊软件",
   "main": "dist/main/main.mjs",
   "type": "module",
@@ -114,12 +114,6 @@
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
           "arch": [
             "x64"
           ]

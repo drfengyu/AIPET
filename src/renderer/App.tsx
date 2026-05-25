@@ -7,6 +7,8 @@ import AudioVisualizer from './components/AudioVisualizer';
 import { getExpressionForEmotion } from './services/aiService';
 import { loadFacts, getMemoryStats } from './services/memoryService';
 import { loadConfig, saveConfig, IdleTimer, getProactiveMessage, type ProactiveConfig } from './services/proactiveService';
+import DiaryPanel from './components/DiaryPanel';
+import { recordEmotion, getTodayRecordCount, getTodayAvgMood } from './services/diaryService';
 
 interface Settings {
   aiModel: string;
@@ -40,6 +42,8 @@ function App() {
   });
   const [memoryCount, setMemoryCount] = useState(() => getMemoryStats().total);
   const [showMemory, setShowMemory] = useState(false);
+  const [showDiary, setShowDiary] = useState(false);
+  const [diaryRecordCount, setDiaryRecordCount] = useState(() => getTodayRecordCount());
   const [latency] = useState(42);
 
   // 主动对话
@@ -122,6 +126,9 @@ function App() {
     setMood(m => Math.min(100, m + 3));
     setEnergy(e => Math.min(100, e + 1));
     setMemory(m => Math.min(100, m + 1));
+    // 记录情绪到日记
+    recordEmotion(emotion);
+    setDiaryRecordCount(getTodayRecordCount());
   }, []);
 
   const handleSettingsChange = (newSettings: Settings) => {
@@ -202,6 +209,19 @@ function App() {
             🐾 桌宠
           </button>
           <button className="top-btn" onClick={checkUpdate}>⟳ 更新</button>
+          <button className="top-btn" style={{ position: 'relative' } as any} onClick={() => setShowDiary(true)}>
+            📓 日记{diaryRecordCount > 0 && (
+              <span style={{
+                position: 'absolute', top: -4, right: -4,
+                background: 'rgba(0,255,255,0.15)',
+                color: 'rgba(0,255,255,0.6)',
+                fontSize: 8, padding: '1px 5px',
+                borderRadius: 8,
+                fontFamily: "'Share Tech Mono', monospace",
+                lineHeight: '14px',
+              }}>{diaryRecordCount}</span>
+            )}
+          </button>
           <button className="top-btn" style={{ borderColor: 'rgba(255,0,255,0.3)', color: 'rgba(255,0,255,0.6)' }} onClick={() => setShowSettings(true)}>
             ⚙ 设置
           </button>
@@ -315,7 +335,8 @@ function App() {
             <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
               <span style={s.statusText}>会话 {sessionDisplay}</span>
               <span style={s.statusText}>消息 {msgCount}</span>
-              <span style={s.statusText}>v0.2.0</span>
+              <span style={s.statusText}>日记 {diaryRecordCount}</span>
+              <span style={s.statusText}>v0.3.0</span>
             </div>
           </div>
         </div>
@@ -335,6 +356,14 @@ function App() {
           setShowMemory(false);
           // 关闭后刷新记忆显示
           handleMemoryChange(loadFacts().length);
+        }} />
+      )}
+
+      {/* Diary Panel */}
+      {showDiary && (
+        <DiaryPanel onClose={() => {
+          setShowDiary(false);
+          setDiaryRecordCount(getTodayRecordCount());
         }} />
       )}
     </div>

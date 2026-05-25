@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { getAIResponse, type ChatMessage } from '../services/aiService';
 import { speak, stop, isSupported } from '../services/ttsService';
 import { loadFacts, extractFacts, addFact, getRelevantFacts, formatFactsForContext } from '../services/memoryService';
-import { loadFacts, extractFacts, addFact, getRelevantFacts, formatFactsForContext } from '../services/memoryService';
 
 export interface Message {
   id: string;
   text: string;
   sender: 'user' | 'ai';
   timestamp: Date;
+  isProactive?: boolean;
 }
 
 interface ChatWindowProps {
@@ -27,6 +27,8 @@ interface ChatWindowProps {
   memoryTags?: string[];
   memoryCount?: number;
   latency?: number;
+  proactiveMessages?: Message[];
+  onResetProactive?: () => void;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -35,6 +37,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   useMockAI = false, aiModel, fontSize = 14, messageHistory = 10,
   memoryTags = [], memoryCount = 0,
   latency = 0,
+  proactiveMessages = [],
+  onResetProactive,
 }) => {
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
