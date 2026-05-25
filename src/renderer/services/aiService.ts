@@ -169,7 +169,10 @@ export async function analyzeMemory(conversation: string): Promise<string[]> {
     const response = await fetch('http://localhost:3002/api/ai/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: '[记忆分析] 从对话中提取用户特征：\n' + conversation })
+      body: JSON.stringify({
+        message: '[记忆分析] 从对话中提取用户特征：\n' + conversation,
+        model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+      })
     });
     if (!response.ok) return [];
     const data = await response.json();
