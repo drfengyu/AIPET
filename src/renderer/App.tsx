@@ -10,6 +10,7 @@ import { loadConfig, saveConfig, IdleTimer, getProactiveMessage, type ProactiveC
 import DiaryPanel from './components/DiaryPanel';
 import { recordEmotion, getTodayRecordCount, getTodayAvgMood } from './services/diaryService';
 import { detectSystemEvent, getCurrentTimeLabel } from './services/systemEventService';
+import ExpressionPanel from './components/ExpressionPanel';
 
 interface Settings {
   aiModel: string;
@@ -44,8 +45,15 @@ function App() {
   const [memoryCount, setMemoryCount] = useState(() => getMemoryStats().total);
   const [showMemory, setShowMemory] = useState(false);
   const [showDiary, setShowDiary] = useState(false);
+  const [showExpression, setShowExpression] = useState(false);
   const [diaryRecordCount, setDiaryRecordCount] = useState(() => getTodayRecordCount());
   const [latency] = useState(42);
+
+  // 表情/动作触发
+  const handleExpressionTrigger = useCallback((data: { expression?: string; motion?: string }) => {
+    const id = ++eventIdRef.current;
+    setSystemTrigger({ ...data, id });
+  }, []);
 
   // 主动对话
   const [proactiveConfig, setProactiveConfig] = useState<ProactiveConfig>(loadConfig);
@@ -253,6 +261,9 @@ function App() {
             🐾 桌宠
           </button>
           <button className="top-btn" onClick={checkUpdate}>⟳ 更新</button>
+          <button className="top-btn" onClick={() => setShowExpression(true)} style={{ borderColor: 'rgba(255,200,0,0.2)', color: 'rgba(255,200,0,0.5)' }}>
+            🎭 表情
+          </button>
           <button className="top-btn" style={{ position: 'relative' } as any} onClick={() => setShowDiary(true)}>
             📓 日记{diaryRecordCount > 0 && (
               <span style={{
@@ -410,6 +421,14 @@ function App() {
           setShowDiary(false);
           setDiaryRecordCount(getTodayRecordCount());
         }} />
+      )}
+
+      {/* Expression Panel */}
+      {showExpression && (
+        <ExpressionPanel
+          onTrigger={handleExpressionTrigger}
+          onClose={() => setShowExpression(false)}
+        />
       )}
     </div>
   );
