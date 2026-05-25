@@ -170,10 +170,6 @@ function getCurrentHour(): number {
   return new Date().getHours();
 }
 
-function getCurrentMinute(): number {
-  return new Date().getMinutes();
-}
-
 function getTimeCategory(): string {
   const h = getCurrentHour();
   if (h >= 0 && h < 5) return 'deep-night';
@@ -185,12 +181,6 @@ function getTimeCategory(): string {
   if (h >= 17 && h < 19) return 'meal-night';
   if (h >= 19 && h < 22) return 'evening-relax';
   return 'late-night';
-}
-
-/** 当前是否有整点（精确到±1分钟） */
-function isOnTheHour(): boolean {
-  const m = getCurrentMinute();
-  return m >= 0 && m <= 1;
 }
 
 // ===== 事件检测主函数 =====
@@ -238,8 +228,6 @@ export function forceEvent(type: string): SystemEventResult | null {
  * 获取下一个事件倒计时（秒）
  */
 export function getNextEventSeconds(): number {
-  const timeCat = getTimeCategory();
-  // 找下一个不同的事件
   const now = new Date();
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
